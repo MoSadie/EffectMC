@@ -28,6 +28,7 @@ public class MCSDE implements EffectExecutor {
     public MCSDE() {
         LOGGER.info("Starting Core");
         core = new MCSDECore(3000, this);
+        //TODO Make port configurable, add trust system.
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
@@ -210,8 +211,15 @@ public class MCSDE implements EffectExecutor {
     @Override
     public void showTitle(String title, String subtitle) {
         LOGGER.info("Showing Title: " + title + " Subtitle: " + subtitle);
+        Minecraft.getInstance().ingameGUI.setDefaultTitlesTimes();
         Minecraft.getInstance().ingameGUI.func_238452_a_(null, new StringTextComponent(subtitle), -1, -1, -1);
         Minecraft.getInstance().ingameGUI.func_238452_a_(new StringTextComponent(title), null, -1, -1, -1);
+    }
+
+    @Override
+    public void showActionMessage(String message) {
+        LOGGER.info("Showing ActionBar message: " + message);
+        Minecraft.getInstance().ingameGUI.setOverlayMessage(new StringTextComponent(message), false);
     }
 
     private void disconnect() {

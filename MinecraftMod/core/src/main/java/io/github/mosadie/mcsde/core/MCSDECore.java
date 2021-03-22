@@ -32,6 +32,7 @@ public class MCSDECore {
         server.createContext("/sendchat", new SendChatMessageHandler(this));
         server.createContext("/receivechat", new ReceiveChatMessageHandler(this));
         server.createContext("/showtitle", new ShowTitleHandler(this));
+        server.createContext("/showactionmessage", new ShowActionMessageHandler(this));
 
         server.setExecutor(null);
 

@@ -20,4 +20,6 @@ public interface EffectExecutor {
     void receiveChatMessage(String message);
 
     void showTitle(String title, String subtitle);
+
+    void showActionMessage(String message);
 }
