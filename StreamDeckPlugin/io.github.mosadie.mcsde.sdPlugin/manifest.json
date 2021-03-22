@@ -1,0 +1,39 @@
+{
+  "Actions": [
+    {
+      "Icon": "action/images/actionimage", 
+      "Name": "Join Server", 
+      "States": [
+        {
+          "Image": "action/images/action"
+        }
+      ], 
+      "Tooltip": "Automatatically attempts to join the provided Minecraft server.", 
+      "UUID": "io.github.mosadie.mcsde.joinserver",
+      "PropertyInspectorPath": "propertyinspector/joinserver_pi.html"
+    }
+  ], 
+  "SDKVersion": 2,
+  "Author": "MoSadie", 
+  "CodePath": "index.html", 
+  "PropertyInspectorPath": "propertyinspector/index.html", 
+  "Description": "Trigger effects in Minecraft. Minecraft mod required.", 
+  "Name": "MCSDE", 
+  "Icon": "action/images/action", 
+  "URL": "https://github.com/MoSadie/MCSDE", 
+  "Version": "1.0.0",
+  "OS": [
+    {
+        "Platform": "mac", 
+        "MinimumVersion" : "10.11"
+    },
+    {
+        "Platform": "windows", 
+        "MinimumVersion" : "10"
+    }
+  ],
+  "Software": 
+    {
+        "MinimumVersion" : "4.1"
+  }
+}
