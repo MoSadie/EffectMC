@@ -26,4 +26,4 @@ jobs:
 
       # Run Gradle build
       - name: Build
-        run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}:${{ matrix.mc-version }}:build'
+        run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build'
