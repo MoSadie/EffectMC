@@ -1,16 +1,76 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionimage", 
+      "Icon": "action/images/JoinServer/actionImage",
       "Name": "Join Server", 
       "States": [
         {
-          "Image": "action/images/action"
+          "Image": "action/images/JoinServer/keyIcon"
         }
       ], 
       "Tooltip": "Automatatically attempts to join the provided Minecraft server.", 
       "UUID": "io.github.mosadie.mcsde.joinserver",
       "PropertyInspectorPath": "propertyinspector/joinserver_pi.html"
+    },
+    {
+      "Icon": "action/images/ShowTitle/actionImage",
+      "Name": "Show Title",
+      "States": [
+        {
+          "Image": "action/images/ShowTitle/keyIcon"
+        }
+      ],
+      "Tooltip": "Show a title/subtitle as if using the /title command.",
+      "UUID": "io.github.mosadie.mcsde.showtitle",
+      "PropertyInspectorPath": "propertyinspector/showtitle_pi.html"
+    },
+    {
+      "Icon": "action/images/ShowActionMessage/actionImage",
+      "Name": "Show Action Message",
+      "States": [
+        {
+          "Image": "action/images/ShowActionMessage/keyIcon"
+        }
+      ],
+      "Tooltip": "Show a message on the action bar.",
+      "UUID": "io.github.mosadie.mcsde.showactionmessage",
+      "PropertyInspectorPath": "propertyinspector/showactionmessage_pi.html"
+    },
+    {
+      "Icon": "action/images/SendChatMessage/actionImage",
+      "Name": "Send Chat Message",
+      "States": [
+        {
+          "Image": "action/images/SendChatMessage/keyIcon"
+        }
+      ],
+      "Tooltip": "Send a message or run a command as if typed.",
+      "UUID": "io.github.mosadie.mcsde.sendchatmessage",
+      "PropertyInspectorPath": "propertyinspector/sendchatmessage_pi.html"
+    },
+    {
+      "Icon": "action/images/SetSkinLayerVisibility/actionImage",
+      "Name": "Set Skin Layer",
+      "States": [
+        {
+          "Image": "action/images/SetSkinLayerVisibility/keyIcon"
+        }
+      ],
+      "Tooltip": "Sets or toggles the visibility of a skin layer.",
+      "UUID": "io.github.mosadie.mcsde.setskinlayervisibility",
+      "PropertyInspectorPath": "propertyinspector/setskinlayervisibility_pi.html"
+    },
+    {
+      "Icon": "action/images/ReceiveChatMessage/actionImage",
+      "Name": "Receive Chat Message",
+      "States": [
+        {
+          "Image": "action/images/ReceiveChatMessage/keyIcon"
+        }
+      ],
+      "Tooltip": "Displays a message in in-game chat, as if using the /tellraw command",
+      "UUID": "io.github.mosadie.mcsde.receivechatmessage",
+      "PropertyInspectorPath": "propertyinspector/receivechat_pi.html"
     }
   ], 
   "SDKVersion": 2,
@@ -18,7 +78,9 @@
   "CodePath": "index.html", 
   "PropertyInspectorPath": "propertyinspector/index.html", 
   "Description": "Trigger effects in Minecraft. Minecraft mod required.", 
-  "Name": "MCSDE", 
+  "Name": "MCSDE",
+  "Category": "MCSDE",
+  "CategoryIcon": "action/images/JoinServer/actionImage",
   "Icon": "action/images/action", 
   "URL": "https://github.com/MoSadie/MCSDE", 
   "Version": "1.0.0",

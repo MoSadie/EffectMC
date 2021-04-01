@@ -3,14 +3,12 @@ package io.github.mosadie.mcsde.core.handler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.github.mosadie.mcsde.core.MCSDECore;
+import io.github.mosadie.mcsde.core.Util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.github.mosadie.mcsde.core.Util;
 
 public class JoinServerHandler implements HttpHandler {
 
@@ -23,10 +21,16 @@ public class JoinServerHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         core.getExecutor().log("JoinServer started");
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         String query = exchange.getRequestURI().getQuery();
-        core.getExecutor().log(query);
-        Util.parseQuery(query, parameters);
+        try {
+            Util.parseQuery(query, parameters);
+        } catch (UnsupportedEncodingException e) {
+            core.getExecutor().log("Exception occurred parsing query!");
+            parameters = new HashMap<>();
+        }
+        if (!Util.trustCheck(parameters, exchange, core))
+            return;
 
         if (parameters.containsKey("serverip")) {
             core.getExecutor().log("Joining server");

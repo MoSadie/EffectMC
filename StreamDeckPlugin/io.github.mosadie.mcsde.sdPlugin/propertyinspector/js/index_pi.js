@@ -18,7 +18,7 @@
  * or while their value changes 'onchange'.
  */
 
-var onchangeevt = 'onchange'; // 'oninput';
+var onchangeevt = 'oninput'; // 'onchange';
 
 /**
  * cache the static SDPI-WRAPPER, which contains all your HTML elements.
@@ -157,30 +157,12 @@ $SD.on('piDataChanged', (returnValue) => {
 
     console.log('%c%s', 'color: white; background: blue}; font-size: 15px;', 'piDataChanged');
     console.log(returnValue);
-    
-    if (returnValue.key === 'clickme') {
 
-        postMessage = (w) => {
-            w.postMessage(
-                Object.assign({}, $SD.applicationInfo.application, {action: $SD.actionInfo.action})
-                ,'*');
-        }
+    /* SAVE THE VALUE TO SETTINGS */
+    saveSettings(returnValue);
 
-        if (!window.xtWindow || window.xtWindow.closed) {
-            window.xtWindow  = window.open('../externalWindow.html', 'External Window');
-            setTimeout(() => postMessage(window.xtWindow), 200);
-        } else {
-           postMessage(window.xtWindow);
-        }
-
-    } else {
-
-        /* SAVE THE VALUE TO SETTINGS */
-        saveSettings(returnValue);
-
-        /* SEND THE VALUES TO PLUGIN */
-        sendValueToPlugin(returnValue, 'sdpi_collection');
-    }
+    /* SEND THE VALUES TO PLUGIN */
+    sendValueToPlugin(returnValue, 'sdpi_collection');
 });
 
 /**

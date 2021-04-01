@@ -6,6 +6,7 @@ import io.github.mosadie.mcsde.core.MCSDECore;
 import io.github.mosadie.mcsde.core.Util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,10 +21,17 @@ public class ShowTitleHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         core.getExecutor().log("ShowTitle started");
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         String query = exchange.getRequestURI().getQuery();
-        core.getExecutor().log(query);
-        Util.parseQuery(query, parameters);
+        try {
+            Util.parseQuery(query, parameters);
+        } catch (UnsupportedEncodingException e) {
+            core.getExecutor().log("Exception occurred parsing query!");
+            parameters = new HashMap<>();
+        }
+
+        if (!Util.trustCheck(parameters, exchange, core))
+            return;
 
         if (parameters.containsKey("title")) {
             String title = parameters.get("title").toString();
@@ -40,15 +48,12 @@ public class ShowTitleHandler implements HttpHandler {
             String response = "Show title: " + title + " Subtitle: " + subtitle;
             exchange.sendResponseHeaders(200, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
         } else {
             core.getExecutor().log("ShowTitle failed");
             String response = "Title not defined";
             exchange.sendResponseHeaders(400, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
         }
-
-
+        exchange.getResponseBody().close();
     }
 }

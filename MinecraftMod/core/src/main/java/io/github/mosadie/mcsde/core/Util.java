@@ -1,5 +1,8 @@
 package io.github.mosadie.mcsde.core;
 
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -10,9 +13,9 @@ public class Util {
     public static void parseQuery(String query, Map<String, Object> parameters) throws UnsupportedEncodingException {
 
         if (query != null) {
-            String pairs[] = query.split("[&]");
+            String[] pairs = query.split("[&]");
             for (String pair : pairs) {
-                String param[] = pair.split("[=]");
+                String[] param = pair.split("[=]");
                 String key = null;
                 String value = null;
                 if (param.length > 0) {
@@ -32,7 +35,7 @@ public class Util {
                         values.add(value);
 
                     } else if (obj instanceof String) {
-                        List<String> values = new ArrayList<String>();
+                        List<String> values = new ArrayList<>();
                         values.add((String) obj);
                         values.add(value);
                         parameters.put(key, values);
@@ -41,6 +44,33 @@ public class Util {
                     parameters.put(key, value);
                 }
             }
+        }
+    }
+
+    public static boolean trustCheck(Map<String, Object> parameters, HttpExchange exchange, MCSDECore core) {
+        if (parameters == null || !parameters.containsKey("device")) {
+            unauthenticatedResponse(exchange);
+            return false;
+        }
+
+        String device = parameters.get("device").toString();
+
+        if (core.checkTrust(device)) {
+            return true;
+        }
+
+        unauthenticatedResponse(exchange);
+        return false;
+    }
+
+    private static void unauthenticatedResponse(HttpExchange exchange) {
+        try {
+            String response = "Unauthenticated";
+            exchange.sendResponseHeaders(401, response.getBytes().length);
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.getResponseBody().close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
