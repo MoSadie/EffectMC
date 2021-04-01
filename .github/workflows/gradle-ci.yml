@@ -23,6 +23,10 @@ jobs:
         uses: actions/setup-java@v1.4.3
         with:
           java-version: 1.8
+          
+      # CD to correct directory
+      - name: Change Directory
+        run: cd $GITHUB_WORKSPACE/MinecraftMod
 
       # Run Gradle build
       #- name: Build
@@ -30,4 +34,4 @@ jobs:
         
       # DEBUG Figure out what projects DO exist
       - name: DEBUG projects
-        run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew projects'
+        run: './gradlew projects'
