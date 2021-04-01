@@ -29,8 +29,7 @@ jobs:
       #  run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build'
         
       # DEBUG Figure out what projects DO exist
-      - name: DEBUG projects
+      - name: DEBUG ls
         working-directory: $GITHUB_WORKSPACE/MinecraftMod
-        run: |
-          ls
-          './gradlew projects'
+        run: ls
+          #'./gradlew projects'
