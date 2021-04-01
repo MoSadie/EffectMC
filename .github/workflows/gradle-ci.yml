@@ -27,11 +27,15 @@ jobs:
       # CD to correct directory
       - name: Change Directory
         run: cd $GITHUB_WORKSPACE/MinecraftMod
+        
+      # DEBUG: Where am I?
+      - name: Ls
+        run: ls
 
       # Run Gradle build
       #- name: Build
       #  run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build'
         
       # DEBUG Figure out what projects DO exist
-      - name: DEBUG projects
-        run: './gradlew projects'
+      #- name: DEBUG projects
+      #  run: './gradlew projects'
