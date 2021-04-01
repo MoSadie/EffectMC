@@ -31,4 +31,6 @@ jobs:
       # DEBUG Figure out what projects DO exist
       - name: DEBUG projects
         working-directory: $GITHUB_WORKSPACE/MinecraftMod
-        run: './gradlew projects'
+        run: |
+          ls
+          './gradlew projects'
