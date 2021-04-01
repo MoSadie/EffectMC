@@ -25,10 +25,6 @@ jobs:
           java-version: 1.8
           
       # Run Gradle build
-      #- name: Build
-      #  run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build'
-        
-      # DEBUG Figure out what projects DO exist
-      - name: DEBUG projects
+      - name: Build
         working-directory: ./MinecraftMod
-        run: './gradlew projects'
+        run: './gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build'
