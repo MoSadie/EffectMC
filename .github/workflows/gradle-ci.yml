@@ -1,0 +1,29 @@
+name: Gradle CI
+
+# Controls when the action will run. 
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    name: Build ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
+    runs-on: ubuntu-latest
+    
+    # Matrix of jobs to run
+    strategy:
+      matrix:
+        mod-loader: ['forge']
+        mc-version: ['1.16.4']
+        
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - uses: actions/checkout@v2
+
+      # Setup JDK
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      # Run Gradle build
+      - name: Build
+        run: '$GITHUB_WORKSPACE/MinecraftMod/gradlew :${{ matrix.mod-loader }}:${{ matrix.mc-version }}:build'
