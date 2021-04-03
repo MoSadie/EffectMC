@@ -38,5 +38,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: mcsde-${{ matrix.mod-loader }}-${{ matrix.mc-version }}.jar
+          name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
           path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
