@@ -25,9 +25,9 @@ jobs:
           java-version: 1.8
           
       # Build Core
-      #- name: Build Core
-      #  working-directory: ./MinecraftMod
-      #  run: './gradlew :core:build'
+      - name: Build Core
+        working-directory: ./MinecraftMod
+        run: './gradlew :core:build'
           
       # Build Minecraft Mod
       - name: Build Mod
