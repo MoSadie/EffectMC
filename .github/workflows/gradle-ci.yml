@@ -33,3 +33,10 @@ jobs:
       - name: Build Mod
         working-directory: ./MinecraftMod
         run: './gradlew :${{ matrix.mod-loader }}/${{ matrix.mc-version }}:build --no-daemon'
+
+      # Upload Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: mcsde-${{ matrix.mod-loader }}-${{ matrix.mc-version }}.jar
+          path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
