@@ -13,7 +13,7 @@ Add the actions to your Stream Deck! (See [here](docs) for the different types o
 
 In order to have the buttons actually trigger the effects, you need to first add the device to the trusted devices list. See below for how to do that.
 
-Here is a video running through the setup process: [TODO: Insert Video Here]
+Here is a video running through the setup process: https://youtu.be/l7haArORkNY
 
 ## How to trust a device
 
