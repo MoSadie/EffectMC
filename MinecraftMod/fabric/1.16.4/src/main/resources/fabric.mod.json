@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "mcsde",
+  "version": "${version}",
+
+  "name": "MCSDE",
+  "description": "Various Effects that can be triggered by a Elgato Stream Deck.",
+  "authors": [
+    "MoSadie"
+  ],
+  "contact": {
+    "homepage": "https://github.com/MoSadie/MCSDE",
+    "sources": "https://github.com/MoSadie/MCSDE"
+  },
+
+  "license": "GNU GPL v3",
+  "icon": "assets/mcsde/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "io.github.mosadie.mcsde.MCSDE"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": ">=0.31.0+1.16",
+    "minecraft": "1.16.x"
+  }
+}

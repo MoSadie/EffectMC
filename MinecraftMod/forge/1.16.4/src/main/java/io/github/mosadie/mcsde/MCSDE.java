@@ -57,7 +57,7 @@ public class MCSDE implements EffectExecutor {
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
         if (event.getMessage().equalsIgnoreCase("/mcsdetrust")) {
-            setTrustNextRequest();
+            Minecraft.getInstance().enqueue(core::setTrustNextRequest);
             receiveChatMessage("[MCSDE] Now prompting to trust the next request sent.");
             event.setCanceled(true);
         }
@@ -93,6 +93,7 @@ public class MCSDE implements EffectExecutor {
     @Override
     public void setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
         GameSettings gameSettings = Minecraft.getInstance().gameSettings;
+
         switch (section) {
 
             case ALL:
@@ -203,7 +204,7 @@ public class MCSDE implements EffectExecutor {
     @Override
     public void showTrustPrompt(String device) {
         Minecraft.getInstance().enqueue(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new MCSDECore.TrustBooleanConsumer(device, core), new StringTextComponent("MCSDE - Trust Prompt"), new StringTextComponent("Do you want trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new MCSDECore.TrustBooleanConsumer(device, core), new StringTextComponent("MCSDE - Trust Prompt"), new StringTextComponent("Do you want to trust this device? (" + device + ")"));
             Minecraft.getInstance().displayGuiScreen(screen);
         });
     }
@@ -211,9 +212,5 @@ public class MCSDE implements EffectExecutor {
     @Override
     public void resetScreen() {
         Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().displayGuiScreen(null));
-    }
-
-    public void setTrustNextRequest() {
-        Minecraft.getInstance().enqueue(core::setTrustNextRequest);
     }
 }

@@ -1,4 +1,0 @@
-rootProject.name="MCSDE"
-
-include 'core', 'forge/1.16.4'
-
