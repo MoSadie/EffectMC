@@ -3,23 +3,23 @@ loaderVersion="[35,)"
 issueTrackerURL="https://github.com/MoSadie/EffectMC/issues"
 license="GNU GPL v3"
 [[mods]]
-modId="mcsde"
+modId="effectmc"
 version="${file.jarVersion}"
-displayName="MCSDE"
+displayName="EffectMC"
 updateJSONURL="https://raw.githubusercontent.com/MoSadie/EffectMC/main/MinecraftMod/forge/update.json"
 displayURL="https://github.com/MoSadie/EffectMc"
 authors="MoSadie"
 description='''
       Various Effects that can be triggered by devices like an Elgato Stream Deck.
       '''
-[[dependencies.mcsde]]
+[[dependencies.effectmc]]
     modId="forge"
     mandatory=true
     versionRange="[34,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.mcsde]]
+[[dependencies.effectmc]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.16.4]"
