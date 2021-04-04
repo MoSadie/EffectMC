@@ -81,7 +81,7 @@
   "Name": "MCSDE",
   "Category": "MCSDE",
   "CategoryIcon": "action/images/JoinServer/actionImage",
-  "Icon": "action/images/action", 
+  "Icon": "action/images/JoinServer/keyIcon", 
   "URL": "https://github.com/MoSadie/MCSDE", 
   "Version": "1.0.0",
   "OS": [
