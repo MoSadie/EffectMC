@@ -54,7 +54,7 @@ jobs:
 
       # Download DistributionTool from Elgato
       - name: Download DistributionTool
-        uses: crolosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v1.0.3
         with:
           file-url: 'https://developer.elgato.com/documentation/stream-deck/distributiontool/DistributionToolWindows.zip'
         
