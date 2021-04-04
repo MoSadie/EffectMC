@@ -1,8 +1,8 @@
-package io.github.mosadie.mcsde;
+package io.github.mosadie.effectmc;
 
-import io.github.mosadie.mcsde.core.EffectExecutor;
-import io.github.mosadie.mcsde.core.MCSDECore;
-import io.github.mosadie.mcsde.core.handler.SkinLayerHandler;
+import io.github.mosadie.effectmc.core.EffectExecutor;
+import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.ConfirmScreen;
@@ -22,15 +22,15 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-@Mod(MCSDE.MODID)
-public class MCSDE implements EffectExecutor {
-    public final static String MODID = "mcsde";
+@Mod(EffectMC.MODID)
+public class EffectMC implements EffectExecutor {
+    public final static String MODID = "effectmc";
 
-    private final MCSDECore core;
+    private final EffectMCCore core;
 
     public static Logger LOGGER = LogManager.getLogger();
 
-    public MCSDE() throws IOException {
+    public EffectMC() throws IOException {
         File configDir = ModList.get().getModFileById(MODID).getFile().getFilePath().resolve("../" + MODID + "/").toFile();
         if (!configDir.exists()) {
             if (!configDir.mkdirs()) {
@@ -44,7 +44,7 @@ public class MCSDE implements EffectExecutor {
 
 
         LOGGER.info("Starting Core");
-        core = new MCSDECore(configFile, trustFile,this);
+        core = new EffectMCCore(configFile, trustFile,this);
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
@@ -56,9 +56,9 @@ public class MCSDE implements EffectExecutor {
 
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if (event.getMessage().equalsIgnoreCase("/mcsdetrust")) {
+        if (event.getMessage().equalsIgnoreCase("/effectmctrust")) {
             Minecraft.getInstance().enqueue(core::setTrustNextRequest);
-            receiveChatMessage("[MCSDE] Now prompting to trust the next request sent.");
+            receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
             event.setCanceled(true);
         }
     }
@@ -79,7 +79,7 @@ public class MCSDE implements EffectExecutor {
             }
 
             // Create ServerData
-            ServerData server = new ServerData("MCSDE", serverIp, false);
+            ServerData server = new ServerData("EffectMC", serverIp, false);
 
 
             LOGGER.info("Connecting to " + server.serverIP);
@@ -204,7 +204,7 @@ public class MCSDE implements EffectExecutor {
     @Override
     public void showTrustPrompt(String device) {
         Minecraft.getInstance().enqueue(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new MCSDECore.TrustBooleanConsumer(device, core), new StringTextComponent("MCSDE - Trust Prompt"), new StringTextComponent("Do you want to trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), new StringTextComponent("EffectMC - Trust Prompt"), new StringTextComponent("Do you want to trust this device? (" + device + ")"));
             Minecraft.getInstance().displayGuiScreen(screen);
         });
     }

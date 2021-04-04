@@ -1,15 +1,15 @@
-package io.github.mosadie.mcsde.core.handler;
+package io.github.mosadie.effectmc.core.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.github.mosadie.mcsde.core.MCSDECore;
+import io.github.mosadie.effectmc.core.EffectMCCore;
 
 import java.io.IOException;
 
 public class RootHandler implements HttpHandler {
-    private final MCSDECore core;
+    private final EffectMCCore core;
 
-    public RootHandler(MCSDECore core) {
+    public RootHandler(EffectMCCore core) {
         this.core = core;
     }
 

@@ -28,14 +28,14 @@ function connected(jsn) {
 
 const joinServer = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.joinserver.willAppear', (jsonObj) => joinServer.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.joinserver.keyUp', (jsonObj) => joinServer.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.joinserver.sendToPlugin', (jsonObj) => joinServer.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.joinserver.didReceiveSettings', (jsonObj) => joinServer.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.joinserver.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.joinserver.willAppear', (jsonObj) => joinServer.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.joinserver.keyUp', (jsonObj) => joinServer.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.joinserver.sendToPlugin', (jsonObj) => joinServer.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.joinserver.didReceiveSettings', (jsonObj) => joinServer.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.joinserver.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.joinserver.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.joinserver.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },
@@ -150,14 +150,14 @@ const joinServer = {
 
 const showTitle = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.showtitle.willAppear', (jsonObj) => showTitle.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showtitle.keyUp', (jsonObj) => showTitle.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showtitle.sendToPlugin', (jsonObj) => showTitle.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showtitle.didReceiveSettings', (jsonObj) => showTitle.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showtitle.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.showtitle.willAppear', (jsonObj) => showTitle.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showtitle.keyUp', (jsonObj) => showTitle.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showtitle.sendToPlugin', (jsonObj) => showTitle.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showtitle.didReceiveSettings', (jsonObj) => showTitle.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showtitle.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.showtitle.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.showtitle.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },
@@ -269,14 +269,14 @@ const showTitle = {
 
 const showActionMessage = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.willAppear', (jsonObj) => showActionMessage.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.keyUp', (jsonObj) => showActionMessage.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.sendToPlugin', (jsonObj) => showActionMessage.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.didReceiveSettings', (jsonObj) => showActionMessage.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.willAppear', (jsonObj) => showActionMessage.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.keyUp', (jsonObj) => showActionMessage.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.sendToPlugin', (jsonObj) => showActionMessage.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.didReceiveSettings', (jsonObj) => showActionMessage.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.showactionmessage.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.showactionmessage.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },
@@ -386,14 +386,14 @@ const showActionMessage = {
 
 const sendChatMessage = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.willAppear', (jsonObj) => sendChatMessage.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.keyUp', (jsonObj) => sendChatMessage.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.sendToPlugin', (jsonObj) => sendChatMessage.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.didReceiveSettings', (jsonObj) => sendChatMessage.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.willAppear', (jsonObj) => sendChatMessage.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.keyUp', (jsonObj) => sendChatMessage.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.sendToPlugin', (jsonObj) => sendChatMessage.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.didReceiveSettings', (jsonObj) => sendChatMessage.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.sendchatmessage.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.sendchatmessage.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },
@@ -503,14 +503,14 @@ const sendChatMessage = {
 
 const setSkinLayerVisibility = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.willAppear', (jsonObj) => setSkinLayerVisibility.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.keyUp', (jsonObj) => setSkinLayerVisibility.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.sendToPlugin', (jsonObj) => setSkinLayerVisibility.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.didReceiveSettings', (jsonObj) => setSkinLayerVisibility.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.willAppear', (jsonObj) => setSkinLayerVisibility.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.keyUp', (jsonObj) => setSkinLayerVisibility.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.sendToPlugin', (jsonObj) => setSkinLayerVisibility.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.didReceiveSettings', (jsonObj) => setSkinLayerVisibility.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.setskinlayervisibility.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.setskinlayervisibility.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },
@@ -625,14 +625,14 @@ const setSkinLayerVisibility = {
 
 const receiveChatMessage = {
     onConnect: function(jsn) {
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.willAppear', (jsonObj) => receiveChatMessage.onWillAppear(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.keyUp', (jsonObj) => receiveChatMessage.onKeyUp(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.sendToPlugin', (jsonObj) => receiveChatMessage.onSendToPlugin(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.didReceiveSettings', (jsonObj) => receiveChatMessage.onDidReceiveSettings(jsonObj));
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.propertyInspectorDidAppear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.willAppear', (jsonObj) => receiveChatMessage.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.keyUp', (jsonObj) => receiveChatMessage.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.sendToPlugin', (jsonObj) => receiveChatMessage.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.didReceiveSettings', (jsonObj) => receiveChatMessage.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.propertyInspectorDidAppear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
         });
-        $SD.on('io.github.mosadie.mcsde.receivechatmessage.propertyInspectorDidDisappear', (jsonObj) => {
+        $SD.on('io.github.mosadie.effectmc.receivechatmessage.propertyInspectorDidDisappear', (jsonObj) => {
             console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
         });
     },

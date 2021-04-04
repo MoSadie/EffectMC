@@ -1,6 +1,6 @@
-package io.github.mosadie.mcsde.core;
+package io.github.mosadie.effectmc.core;
 
-import io.github.mosadie.mcsde.core.handler.SkinLayerHandler;
+import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 
 public interface EffectExecutor {
     void log(String message);

@@ -1,16 +1,16 @@
 modLoader="javafml"
 loaderVersion="[35,)"
-issueTrackerURL="https://github.com/MoSadie/MCSDE/issues"
+issueTrackerURL="https://github.com/MoSadie/EffectMC/issues"
 license="GNU GPL v3"
 [[mods]]
 modId="mcsde"
 version="${file.jarVersion}"
 displayName="MCSDE"
-updateJSONURL="https://raw.githubusercontent.com/MoSadie/MCSDE/main/MinecraftMod/forge/update.json"
-displayURL="https://github.com/MoSadie/MCSDE"
+updateJSONURL="https://raw.githubusercontent.com/MoSadie/EffectMC/main/MinecraftMod/forge/update.json"
+displayURL="https://github.com/MoSadie/EffectMc"
 authors="MoSadie"
 description='''
-      Various Effects that can be triggered by a Elgato Stream Deck.
+      Various Effects that can be triggered by devices like an Elgato Stream Deck.
       '''
 [[dependencies.mcsde]]
     modId="forge"

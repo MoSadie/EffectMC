@@ -5,7 +5,7 @@
   <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
   <meta name=apple-mobile-web-app-capable content=yes>
   <meta name=apple-mobile-web-app-status-bar-style content=black>
-  <title>io.github.mosadie.mcsde Property Inspector</title>
+  <title>io.github.mosadie.effectmc Property Inspector</title>
   <link rel="stylesheet" href="css/sdpi.css">
 </head>
 <body>
@@ -26,10 +26,16 @@
       <div class="sdpi-item-label">Minecaft IP</div>
       <input id="minecraftip" class="sdpi-item-value" type="text" value="" placeholder="http://localhost:3000"/>
     </div>
+
+    <div class="sdpi-item">
+      <details class="message info">
+        <summary>Set color using § color codes.</summary>
+      </details>
+    </div>
     
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Server IP</div>
-      <input id="serverip" class="sdpi-item-value" type="text" value="" placeholder="localhost:25565"/>
+      <div class="sdpi-item-label">Message</div>
+      <input id="message" class="sdpi-item-value" type="text" value=""/>
     </div>
     
     <!-- END OF SDPI-WRAPPER -->

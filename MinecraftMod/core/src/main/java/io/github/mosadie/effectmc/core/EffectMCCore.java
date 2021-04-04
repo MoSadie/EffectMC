@@ -1,17 +1,17 @@
-package io.github.mosadie.mcsde.core;
+package io.github.mosadie.effectmc.core;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.sun.net.httpserver.HttpServer;
-import io.github.mosadie.mcsde.core.handler.*;
+import io.github.mosadie.effectmc.core.handler.*;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.*;
 
-public class MCSDECore {
+public class EffectMCCore {
 
     private final static int DEFAULT_PORT = 3000;
 
@@ -25,7 +25,7 @@ public class MCSDECore {
     private Set<String> trustedDevices;
     private boolean trustNextRequest;
 
-    public MCSDECore(File configFile, File trustFile, EffectExecutor executor) {
+    public EffectMCCore(File configFile, File trustFile, EffectExecutor executor) {
         this.configFile = configFile;
         this.trustFile = trustFile;
         this.executor = executor;
@@ -130,9 +130,9 @@ public class MCSDECore {
 
     public static class TrustBooleanConsumer implements BooleanConsumer {
         private final String device;
-        private final MCSDECore core;
+        private final EffectMCCore core;
 
-        public TrustBooleanConsumer(String device, MCSDECore core) {
+        public TrustBooleanConsumer(String device, EffectMCCore core) {
             this.device = device;
             this.core = core;
         }

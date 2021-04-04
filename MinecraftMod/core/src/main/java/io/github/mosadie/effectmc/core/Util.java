@@ -1,4 +1,4 @@
-package io.github.mosadie.mcsde.core;
+package io.github.mosadie.effectmc.core;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -47,7 +47,7 @@ public class Util {
         }
     }
 
-    public static boolean trustCheck(Map<String, Object> parameters, HttpExchange exchange, MCSDECore core) {
+    public static boolean trustCheck(Map<String, Object> parameters, HttpExchange exchange, EffectMCCore core) {
         if (parameters == null || !parameters.containsKey("device")) {
             unauthenticatedResponse(exchange);
             return false;

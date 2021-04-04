@@ -1,26 +1,26 @@
-package io.github.mosadie.mcsde.core.handler;
+package io.github.mosadie.effectmc.core.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.github.mosadie.mcsde.core.MCSDECore;
-import io.github.mosadie.mcsde.core.Util;
+import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SendChatMessageHandler implements HttpHandler {
+public class ShowActionMessageHandler implements HttpHandler {
 
-    private final MCSDECore core;
+    private final EffectMCCore core;
 
-    public SendChatMessageHandler(MCSDECore core) {
+    public ShowActionMessageHandler(EffectMCCore core) {
         this.core = core;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("SendChatMessage started");
+        core.getExecutor().log("ShowActionMessage started");
         Map<String, Object> parameters = new HashMap<>();
         String query = exchange.getRequestURI().getQuery();
         try {
@@ -35,15 +35,15 @@ public class SendChatMessageHandler implements HttpHandler {
 
         if (parameters.containsKey("message")) {
             String message = parameters.get("message").toString();
-            core.getExecutor().log("Sending chat message: " + message);
+            core.getExecutor().log("Showing ActionBar message: " + message);
 
-            core.getExecutor().sendChatMessage(message);
+            core.getExecutor().showActionMessage(message);
 
-            String response = "Sending chat message: " + message;
+            String response = "Show ActionBar message: " + message;
             exchange.sendResponseHeaders(200, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
         } else {
-            core.getExecutor().log("SendChatMessage failed");
+            core.getExecutor().log("ShowActionMessage failed");
             String response = "Message not defined";
             exchange.sendResponseHeaders(400, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());

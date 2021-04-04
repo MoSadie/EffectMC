@@ -1,9 +1,9 @@
-package io.github.mosadie.mcsde.core.handler;
+package io.github.mosadie.effectmc.core.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.github.mosadie.mcsde.core.MCSDECore;
-import io.github.mosadie.mcsde.core.Util;
+import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -12,9 +12,9 @@ import java.util.Map;
 
 public class SkinLayerHandler implements HttpHandler {
 
-    private final MCSDECore core;
+    private final EffectMCCore core;
 
-    public SkinLayerHandler(MCSDECore core) {
+    public SkinLayerHandler(EffectMCCore core) {
         this.core = core;
     }
 

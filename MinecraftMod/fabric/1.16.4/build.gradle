@@ -37,7 +37,7 @@ dependencies {
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 
-	shade ("io.github.mosadie.mcsde:core:${project.mcsde_core_version}") {
+	shade ("io.github.mosadie.effectmc:core:${project.mcsde_core_version}") {
 		exclude(group: "com.google.code.gson", module: "gson")
 		exclude(group: "it.unimi.dsi", module: "fastutil")
 	}

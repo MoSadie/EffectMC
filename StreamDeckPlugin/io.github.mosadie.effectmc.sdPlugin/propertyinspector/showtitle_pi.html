@@ -5,7 +5,7 @@
   <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
   <meta name=apple-mobile-web-app-capable content=yes>
   <meta name=apple-mobile-web-app-status-bar-style content=black>
-  <title>io.github.mosadie.mcsde Property Inspector</title>
+  <title>io.github.mosadie.effectmc Property Inspector</title>
   <link rel="stylesheet" href="css/sdpi.css">
 </head>
 <body>
@@ -27,28 +27,26 @@
       <input id="minecraftip" class="sdpi-item-value" type="text" value="" placeholder="http://localhost:3000"/>
     </div>
 
-    <div class="sdpi-item" id="select_single">
-      <div class="sdpi-item-label">Skin Section</div>
-      <select class="sdpi-item-value select" id="section">
-         <option value="all">All</option>
-         <option value="all_body">All Body</option>
-         <option value="cape">Cape</option>
-         <option value="jacket">Jacket</option>
-         <option value="left_sleeve">Left Sleeve</option>
-         <option value="right_sleeve">Right Sleeve</option>
-         <option value="left_pants_leg">Left Pant Leg</option>
-         <option value="right_pants_leg">Right Pant Leg</option>
-         <option value="hat">Hat</option>
-      </select>
+    <div class="sdpi-item">
+      <details class="message info">
+        <summary>Set color using § color codes.</summary>
+      </details>
+    </div>
+    
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Title</div>
+      <input id="title" class="sdpi-item-value" type="text" value="" placeholder="Title"/>
     </div>
 
-    <div class="sdpi-item" id="select_single">
-      <div class="sdpi-item-label">Skin Section</div>
-      <select class="sdpi-item-value select" id="visibility">
-         <option value="true">Show</option>
-         <option value="false">Hide</option>
-         <option value="toggle">Toggle</option>
-      </select>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Subtitle</div>
+      <input id="subtitle" class="sdpi-item-value" type="text" value="" placeholder="Subtitle"/>
+    </div>
+
+    <div class="sdpi-item">
+      <details class="message info">
+        <summary>For a blank subtitle, use a single space.</summary>
+      </details>
     </div>
     
     <!-- END OF SDPI-WRAPPER -->

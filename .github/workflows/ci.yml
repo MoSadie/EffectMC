@@ -68,7 +68,7 @@ jobs:
       # Run DistributionTool
       - name: Run DistributionTool
         working-directory: './StreamDeckPlugin'
-        run: './DistributionTool.exe -b -i io.github.mosadie.mcsde.sdPlugin -o .'
+        run: './DistributionTool.exe -b -i io.github.mosadie.effectmc.sdPlugin -o .'
         
       # Upload Artifact
       - name: Upload Artifact

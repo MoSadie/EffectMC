@@ -4,8 +4,8 @@ plugins {
 }
 
 version = 1.0
-group = 'io.github.mosadie.mcsde'
-archivesBaseName = "MCSDE-Core"
+group = 'io.github.mosadie.effectmc'
+archivesBaseName = "EffectMC-Core"
 
 configurations {
     shade
@@ -24,7 +24,7 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "mcsde-core",
+            "Specification-Title": "EffectMC-Core",
             "Specification-Vendor": "MoSadie",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,

@@ -1,15 +1,13 @@
-package io.github.mosadie.mcsde;
+package io.github.mosadie.effectmc;
 
-import io.github.mosadie.mcsde.core.EffectExecutor;
-import io.github.mosadie.mcsde.core.MCSDECore;
-import io.github.mosadie.mcsde.core.handler.SkinLayerHandler;
+import io.github.mosadie.effectmc.core.EffectExecutor;
+import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.WindowSettings;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -21,13 +19,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 
-public class MCSDE implements ModInitializer, ClientModInitializer, EffectExecutor {
+public class EffectMC implements ModInitializer, ClientModInitializer, EffectExecutor {
 
-    public static String MODID = "mcsde";
+    public static String MODID = "effectmc";
 
-    private MCSDECore core;
+    private EffectMCCore core;
 
     public static Logger LOGGER = LogManager.getLogger();
 
@@ -51,7 +48,7 @@ public class MCSDE implements ModInitializer, ClientModInitializer, EffectExecut
 
 
         LOGGER.info("Starting Core");
-        core = new MCSDECore(configFile, trustFile,this);
+        core = new EffectMCCore(configFile, trustFile,this);
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
@@ -59,9 +56,9 @@ public class MCSDE implements ModInitializer, ClientModInitializer, EffectExecut
         LOGGER.info("Server start result: " + result);
 
         // Register command
-        ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("mcsdetrust").executes((context -> {
+        ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmctrust").executes((context -> {
             MinecraftClient.getInstance().send(core::setTrustNextRequest);
-            receiveChatMessage("[MCSDE] Now prompting to trust the next request sent.");
+            receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
             return 0;
         })));
     }
@@ -82,7 +79,7 @@ public class MCSDE implements ModInitializer, ClientModInitializer, EffectExecut
             }
 
             // Create ServerInfo
-            ServerInfo server = new ServerInfo("MCSDE", serverIp, false);
+            ServerInfo server = new ServerInfo("EffectMC", serverIp, false);
             
             
             LOGGER.info("Connecting to " + server.address);
@@ -207,7 +204,7 @@ public class MCSDE implements ModInitializer, ClientModInitializer, EffectExecut
     @Override
     public void showTrustPrompt(String device) {
         MinecraftClient.getInstance().send(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new MCSDECore.TrustBooleanConsumer(device, core), Text.of("MCSDE - Trust Prompt"), Text.of("Do you want to trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device? (" + device + ")"));
             MinecraftClient.getInstance().openScreen(screen);
         });
     }

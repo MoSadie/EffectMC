@@ -1,25 +1,24 @@
 {
   "schemaVersion": 1,
-  "id": "mcsde",
+  "id": "effectmc",
   "version": "${version}",
-
-  "name": "MCSDE",
-  "description": "Various Effects that can be triggered by a Elgato Stream Deck.",
+  "name": "EffectMC",
+  "description": "Various Effects that can be triggered by devices like an Elgato Stream Deck.",
   "authors": [
     "MoSadie"
   ],
   "contact": {
-    "homepage": "https://github.com/MoSadie/MCSDE",
-    "sources": "https://github.com/MoSadie/MCSDE"
+    "homepage": "https://github.com/MoSadie/EffectMC",
+    "sources": "https://github.com/MoSadie/EffectMC"
   },
 
   "license": "GNU GPL v3",
-  "icon": "assets/mcsde/icon.png",
+  "icon": "assets/effectmc/icon.png",
 
   "environment": "client",
   "entrypoints": {
     "client": [
-      "io.github.mosadie.mcsde.MCSDE"
+      "io.github.mosadie.effectmc.EffectMC"
     ]
   },
 

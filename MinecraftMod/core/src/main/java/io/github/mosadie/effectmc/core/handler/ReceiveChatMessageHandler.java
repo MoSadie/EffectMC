@@ -1,26 +1,26 @@
-package io.github.mosadie.mcsde.core.handler;
+package io.github.mosadie.effectmc.core.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.github.mosadie.mcsde.core.MCSDECore;
-import io.github.mosadie.mcsde.core.Util;
+import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JoinServerHandler implements HttpHandler {
+public class ReceiveChatMessageHandler implements HttpHandler {
 
-    private final MCSDECore core;
+    private final EffectMCCore core;
 
-    public JoinServerHandler(MCSDECore core) {
+    public ReceiveChatMessageHandler(EffectMCCore core) {
         this.core = core;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("JoinServer started");
+        core.getExecutor().log("ReceiveChatMessage started");
         Map<String, Object> parameters = new HashMap<>();
         String query = exchange.getRequestURI().getQuery();
         try {
@@ -29,23 +29,27 @@ public class JoinServerHandler implements HttpHandler {
             core.getExecutor().log("Exception occurred parsing query!");
             parameters = new HashMap<>();
         }
+
         if (!Util.trustCheck(parameters, exchange, core))
             return;
 
-        if (parameters.containsKey("serverip")) {
-            core.getExecutor().log("Joining server");
-            String response = "Joining server";
+
+        if (parameters.containsKey("message")) {
+            String message = parameters.get("message").toString();
+            core.getExecutor().log("Receiving chat message: " + message);
+
+            core.getExecutor().receiveChatMessage(message);
+
+            String response = "Received chat message: " + message;
             exchange.sendResponseHeaders(200, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
-           core.getExecutor().joinServer(parameters.get("serverip").toString());
         } else {
-            core.getExecutor().log("JoinServer failed");
-            String response = "Server not defined";
+            core.getExecutor().log("ReceiveChatMessage failed");
+            String response = "Message not defined";
             exchange.sendResponseHeaders(400, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
         }
+        exchange.getResponseBody().close();
 
 
     }
