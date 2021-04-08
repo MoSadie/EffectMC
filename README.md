@@ -1,24 +1,14 @@
 # EffectMC
+
+[![CI](https://github.com/MoSadie/EffectMC/actions/workflows/ci.yml/badge.svg)](https://github.com/MoSadie/EffectMC/actions/workflows/ci.yml)
+[![CurseForge](https://cf.way2muchnoise.eu/full_466864_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/effectmc/)
+
 Various effects triggered in Minecraft by devices like an Elgato Stream Deck.
+
 
 ## How to setup:
 
-Download the Stream Deck plugin and Minecraft mod from the [latest release](https://github.com/MoSadie/EffectMC/releases/latest)
-
-Install the Stream Deck plugin by running the plugin file and following the prompt.
-
-Install the Minecraft mod using the standard method for your mod loader. (Usually involves placing the correct jar file into the mods folder)
-
-Add the actions to your Stream Deck! (See [here](docs) for the different types of actions and how to configure them.)
-
-In order to have the buttons actually trigger the effects, you need to first add the device to the trusted devices list. See below for how to do that.
-
-Here is a video running through the setup process: https://youtu.be/l7haArORkNY
-
-## How to trust a device
-
-1) Run the command `/effectmctrust` in Minecraft.
-2) Send a effect to trigger the trust prompt in Minecraft. Follow the instructions on the prompt to add the device as a trusted device.
+Instructions on how to setup the Minecraft mod and Stream Deck plugin can be found on [the wiki](https://github.com/MoSadie/EffectMC/wiki/setup-guide). The latest downloads can be found [here](https://github.com/MoSadie/EffectMC/releases/latest) or on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/effectmc/files/all).
 
 ## How to configure the port:
 
