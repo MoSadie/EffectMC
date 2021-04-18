@@ -68,9 +68,33 @@
           "Image": "action/images/ReceiveChatMessage/keyIcon"
         }
       ],
-      "Tooltip": "Displays a message in in-game chat, as if using the /tellraw command",
+      "Tooltip": "Displays a message in in-game chat, as if using the /tellraw command.",
       "UUID": "io.github.mosadie.effectmc.receivechatmessage",
       "PropertyInspectorPath": "propertyinspector/receivechat_pi.html"
+    },
+    {
+      "Icon": "action/images/TriggerDisconnect/actionImage",
+      "Name": "Trigger Disconnect",
+      "UUID": "io.github.mosadie.effectmc.triggerdisconnect",
+      "States": [
+        {
+          "Image": "action/images/TriggerDisconnect/keyIcon"
+        }
+      ],
+      "Tooltip": "Disconnect from server/world and show a custom disconnect screen.",
+      "PropertyInspectorPath": "propertyinspector/triggerdisconnect_pi.html"
+    },
+    {
+      "Icon": "action/images/PlaySound/actionImage",
+      "Name": "Play Sound",
+      "UUID": "io.github.mosadie.effectmc.playsound",
+      "States": [
+        {
+          "Image": "action/images/PlaySound/keyIcon"
+        }
+      ],
+      "Tooltip": "Play any sound.",
+      "PropertyInspectorPath": "propertyinspector/playsound_pi.html"
     }
   ], 
   "SDKVersion": 2,
@@ -83,7 +107,7 @@
   "CategoryIcon": "action/images/JoinServer/actionImage",
   "Icon": "action/images/JoinServer/keyIcon", 
   "URL": "https://github.com/MoSadie/EffectMC", 
-  "Version": "1.0.0",
+  "Version": "1.1.0.7",
   "OS": [
     {
         "Platform": "mac", 

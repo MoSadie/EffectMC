@@ -91,6 +91,8 @@ public class EffectMCCore {
         server.createContext("/receivechat", new ReceiveChatMessageHandler(this));
         server.createContext("/showtitle", new ShowTitleHandler(this));
         server.createContext("/showactionmessage", new ShowActionMessageHandler(this));
+        server.createContext("/triggerdisconnect", new DisconnectHandler(this));
+        server.createContext("/playsound", new PlaySoundHandler(this));
 
         server.setExecutor(null);
 

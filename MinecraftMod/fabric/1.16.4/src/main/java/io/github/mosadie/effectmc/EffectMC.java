@@ -2,19 +2,24 @@ package io.github.mosadie.effectmc;
 
 import io.github.mosadie.effectmc.core.EffectExecutor;
 import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.handler.DisconnectHandler;
 import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.ConnectScreen;
-import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.entity.PlayerModelPart;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundInstance;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -206,6 +211,74 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
         MinecraftClient.getInstance().send(() -> {
             ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device? (" + device + ")"));
             MinecraftClient.getInstance().openScreen(screen);
+        });
+    }
+
+    @Override
+    public void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+        MinecraftClient.getInstance().send(() -> {
+            if (MinecraftClient.getInstance().world != null) {
+                LOGGER.info("Disconnecting from world...");
+
+                MinecraftClient.getInstance().world.disconnect();
+                MinecraftClient.getInstance().disconnect();
+            }
+
+            Screen nextScreen;
+
+            switch (nextScreenType) {
+                case MAIN_MENU:
+                    nextScreen = new TitleScreen();
+                    break;
+
+                case SERVER_SELECT:
+                    nextScreen = new MultiplayerScreen(new TitleScreen());
+                    break;
+
+                case WORLD_SELECT:
+                    nextScreen = new SelectWorldScreen(new TitleScreen());
+                    break;
+
+                default:
+                    nextScreen = new TitleScreen();
+                    break;
+            }
+
+            DisconnectedScreen screen = new DisconnectedScreen(nextScreen, Text.of(title), Text.of(message));
+            MinecraftClient.getInstance().openScreen(screen);
+        });
+    }
+
+    @Override
+    public void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
+        MinecraftClient.getInstance().send(() -> {
+            Identifier sound = new Identifier(soundID);
+
+            SoundCategory category;
+            try {
+                category = SoundCategory.valueOf(categoryName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                category = SoundCategory.MASTER;
+            }
+
+            SoundInstance.AttenuationType attenuation;
+            try {
+                attenuation = SoundInstance.AttenuationType.valueOf(attenuationType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                attenuation = SoundInstance.AttenuationType.NONE;
+            }
+
+            double trueX = x;
+            double trueY = y;
+            double trueZ = z;
+
+            if (relative && MinecraftClient.getInstance().world != null) {
+                trueX += MinecraftClient.getInstance().player.getX();
+                trueY += MinecraftClient.getInstance().player.getY();
+                trueZ += MinecraftClient.getInstance().player.getZ();
+            }
+
+            MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(sound, category, volume, pitch, repeat, repeatDelay, attenuation, trueX, trueY, trueZ, global));
         });
     }
 

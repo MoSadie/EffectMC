@@ -55,7 +55,7 @@ public class SkinLayerHandler implements HttpHandler {
             }
 
             core.getExecutor().log("Toggle Skin Layer");
-            String response = "Toggled Skin Layer: " + section.getName();
+            String response = "Toggled Skin Layer: " + section.toString();
             exchange.sendResponseHeaders(200, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());
         } else {
@@ -69,25 +69,15 @@ public class SkinLayerHandler implements HttpHandler {
     }
 
     public enum SKIN_SECTION {
-        ALL("all"),
-        ALL_BODY("all_body"),
-        CAPE("cape"),
-        JACKET("jacket"),
-        LEFT_SLEEVE("left_sleeve"),
-        RIGHT_SLEEVE("right_sleeve"),
-        LEFT_PANTS_LEG( "left_pants_leg"),
-        RIGHT_PANTS_LEG("right_pants_leg"),
-        HAT("hat");
-
-        private final String name;
-
-        SKIN_SECTION(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
+        ALL,
+        ALL_BODY,
+        CAPE,
+        JACKET,
+        LEFT_SLEEVE,
+        RIGHT_SLEEVE,
+        LEFT_PANTS_LEG,
+        RIGHT_PANTS_LEG,
+        HAT;
 
         public static SKIN_SECTION getFromName(String name) {
             try {

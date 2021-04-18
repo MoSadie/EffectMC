@@ -22,6 +22,8 @@ function connected(jsn) {
     sendChatMessage.onConnect(jsn);
     setSkinLayerVisibility.onConnect(jsn);
     receiveChatMessage.onConnect(jsn);
+    triggerDisconnect.onConnect(jsn);
+    playSound.onConnect(jsn);
 };
 
 /** ACTIONS */
@@ -682,6 +684,267 @@ const receiveChatMessage = {
         var url = new URL('/receivechat', jsn.payload.settings.minecraftip);
         
         url.searchParams.set('message', (jsn.payload.settings.message ? jsn.payload.settings.message : ''));
+        url.searchParams.set('device', jsn.device);
+        
+        fetch(url).then(response => {
+            console.log("DEBUG yay", response);
+            if (response.status == 200) $SD.api.showOk(jsn.context);
+            else {
+                console.log("Request Failed", response);
+                $SD.api.showAlert(jsn.context);
+            }
+        }, reason => {
+            console.log("DEBUG fail", reason);
+            $SD.api.showAlert(jsn.context);
+        });
+    },
+
+    onSendToPlugin: function (jsn) {
+        /**
+         * this is a message sent directly from the Property Inspector 
+         * (e.g. some value, which is not saved to settings) 
+         * You can send this event from Property Inspector (see there for an example)
+         */ 
+
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+            this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
+        }
+    },
+
+    /**
+     * This snippet shows, how you could save settings persistantly to Stream Deck software
+     * It is not used in this example plugin.
+     */
+
+    saveSettings: function (jsn, sdpi_collection) {
+        console.log('saveSettings:', jsn);
+        if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
+            if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+                this.settings[sdpi_collection.key] = sdpi_collection.value;
+                console.log('setSettings....', this.settings);
+                $SD.api.setSettings(jsn.context, this.settings);
+            }
+        }
+    },
+
+    /**
+     * Finally here's a methood which gets called from various events above.
+     * This is just an idea how you can act on receiving some interesting message
+     * from Stream Deck.
+     */
+
+    doSomeThing: function(inJsonData, caller, tagColor) {
+        console.log('%c%s', `color: white; background: ${tagColor || 'grey'}; font-size: 15px;`, `[app.js]doSomeThing from: ${caller}`);
+        // console.log(inJsonData);
+    }, 
+
+
+};
+
+const triggerDisconnect = {
+    onConnect: function(jsn) {
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.willAppear', (jsonObj) => triggerDisconnect.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.keyUp', (jsonObj) => triggerDisconnect.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.sendToPlugin', (jsonObj) => triggerDisconnect.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.didReceiveSettings', (jsonObj) => triggerDisconnect.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.propertyInspectorDidAppear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
+        });
+        $SD.on('io.github.mosadie.effectmc.triggerdisconnect.propertyInspectorDidDisappear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
+        });
+    },
+
+    settings:{},
+    onDidReceiveSettings: function(jsn) {
+        this.settings = Utils.getProp(jsn, 'payload.settings', {});
+
+    },
+
+    /** 
+     * The 'willAppear' event is the first event a key will receive, right before it gets
+     * showed on your Stream Deck and/or in Stream Deck software.
+     * This event is a good place to setup your plugin and look at current settings (if any),
+     * which are embedded in the events payload.
+     */
+
+    onWillAppear: function (jsn) {
+        //console.log("You can cache your settings in 'onWillAppear'", jsn.payload.settings);
+        /**
+         * "The willAppear event carries your saved settings (if any). You can use these settings
+         * to setup your plugin or save the settings for later use. 
+         * If you want to request settings at a later time, you can do so using the
+         * 'getSettings' event, which will tell Stream Deck to send your data 
+         * (in the 'didReceiceSettings above)
+         * 
+         * $SD.api.getSettings(jsn.context);
+        */
+        this.settings = jsn.payload.settings;
+
+        // If no settings, fill in some default settings.
+        if (!this.settings || Object.keys(this.settings).length === 0) {
+            this.settings.title = '§9Hello!';
+            this.settings.message = '';
+            this.settings.nextscreen = "main_menu";
+        }
+    },
+
+    onKeyUp: function (jsn) {
+        this.doSomeThing(jsn, 'onKeyUp', 'green');
+        console.log(jsn);
+        
+        if (!jsn.payload.settings || !jsn.payload.settings.minecraftip || jsn.payload.settings.minecraftip == '') {
+            $SD.api.showAlert(jsn.context);
+            console.log('No Minecraft IP!');
+            return;
+        }
+        
+        var url = new URL('/triggerdisconnect', jsn.payload.settings.minecraftip);
+        
+        url.searchParams.set('title', (jsn.payload.settings.title ? jsn.payload.settings.title : ''));
+        url.searchParams.set('message', (jsn.payload.settings.message ? jsn.payload.settings.message : ''));
+        url.searchParams.set('nextscreen', (jsn.payload.settings.nextscreen ? jsn.payload.settings.nextscreen : 'main_menu'));
+        url.searchParams.set('device', jsn.device);
+        
+        fetch(url).then(response => {
+            console.log("DEBUG yay", response);
+            if (response.status == 200) $SD.api.showOk(jsn.context);
+            else {
+                console.log("Request Failed", response);
+                $SD.api.showAlert(jsn.context);
+            }
+        }, reason => {
+            console.log("DEBUG fail", reason);
+            $SD.api.showAlert(jsn.context);
+        });
+    },
+
+    onSendToPlugin: function (jsn) {
+        /**
+         * this is a message sent directly from the Property Inspector 
+         * (e.g. some value, which is not saved to settings) 
+         * You can send this event from Property Inspector (see there for an example)
+         */ 
+
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+            this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
+        }
+    },
+
+    /**
+     * This snippet shows, how you could save settings persistantly to Stream Deck software
+     * It is not used in this example plugin.
+     */
+
+    saveSettings: function (jsn, sdpi_collection) {
+        console.log('saveSettings:', jsn);
+        if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
+            if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+                this.settings[sdpi_collection.key] = sdpi_collection.value;
+                console.log('setSettings....', this.settings);
+                $SD.api.setSettings(jsn.context, this.settings);
+            }
+        }
+    },
+
+    /**
+     * Finally here's a methood which gets called from various events above.
+     * This is just an idea how you can act on receiving some interesting message
+     * from Stream Deck.
+     */
+
+    doSomeThing: function(inJsonData, caller, tagColor) {
+        console.log('%c%s', `color: white; background: ${tagColor || 'grey'}; font-size: 15px;`, `[app.js]doSomeThing from: ${caller}`);
+        // console.log(inJsonData);
+    }, 
+
+
+};
+
+const playSound = {
+    onConnect: function(jsn) {
+        $SD.on('io.github.mosadie.effectmc.playsound.willAppear', (jsonObj) => playSound.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.playsound.keyUp', (jsonObj) => playSound.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.playsound.sendToPlugin', (jsonObj) => playSound.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.playsound.didReceiveSettings', (jsonObj) => playSound.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.playsound.propertyInspectorDidAppear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
+        });
+        $SD.on('io.github.mosadie.effectmc.playsound.propertyInspectorDidDisappear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
+        });
+    },
+
+    settings:{},
+    onDidReceiveSettings: function(jsn) {
+        this.settings = Utils.getProp(jsn, 'payload.settings', {});
+
+    },
+
+    /** 
+     * The 'willAppear' event is the first event a key will receive, right before it gets
+     * showed on your Stream Deck and/or in Stream Deck software.
+     * This event is a good place to setup your plugin and look at current settings (if any),
+     * which are embedded in the events payload.
+     */
+
+    onWillAppear: function (jsn) {
+        //console.log("You can cache your settings in 'onWillAppear'", jsn.payload.settings);
+        /**
+         * "The willAppear event carries your saved settings (if any). You can use these settings
+         * to setup your plugin or save the settings for later use. 
+         * If you want to request settings at a later time, you can do so using the
+         * 'getSettings' event, which will tell Stream Deck to send your data 
+         * (in the 'didReceiceSettings above)
+         * 
+         * $SD.api.getSettings(jsn.context);
+        */
+        this.settings = jsn.payload.settings;
+
+        // If no settings, fill in some default settings.
+        if (!this.settings || Object.keys(this.settings).length === 0) {
+            this.settings.sound = 'entity.ghast.ambient';
+            this.settings.category = 'master';
+            this.settings.volume = 1.0;
+            this.settings.pitch = 1.0;
+            this.settings.repeat = 'false';
+            this.settings.repeatDelay = 1.0;
+            this.settings.attenuationType = 'none';
+            this.settings.x = '0';
+            this.settings.y = '0';
+            this.settings.z = '0';
+            this.settings.relative = 'false';
+            this.settings.global = 'false';
+        }
+    },
+
+    onKeyUp: function (jsn) {
+        this.doSomeThing(jsn, 'onKeyUp', 'green');
+        console.log(jsn);
+        
+        if (!jsn.payload.settings || !jsn.payload.settings.minecraftip || jsn.payload.settings.minecraftip == '') {
+            $SD.api.showAlert(jsn.context);
+            console.log('No Minecraft IP!');
+            return;
+        }
+        
+        var url = new URL('/playsound', jsn.payload.settings.minecraftip);
+        
+        url.searchParams.set('sound', (jsn.payload.settings.sound ? jsn.payload.settings.sound : ''));
+        url.searchParams.set('category', (jsn.payload.settings.category ? jsn.payload.settings.category : 'master'));
+        url.searchParams.set('volume', (jsn.payload.settings.volume ? jsn.payload.settings.volume : 1));
+        url.searchParams.set('pitch', (jsn.payload.settings.pitch ? jsn.payload.settings.pitch : 1));
+        url.searchParams.set('repeat', (jsn.payload.settings.repeat ? jsn.payload.settings.repeat : 'false'));
+        url.searchParams.set('repeatDelay', (jsn.payload.settings.repeatDelay ? jsn.payload.settings.repeatDelay : 0));
+        url.searchParams.set('attenuationType', (jsn.payload.settings.attenuationType ? jsn.payload.settings.attenuationType : 'none'));
+        url.searchParams.set('x', (jsn.payload.settings.x ? jsn.payload.settings.x : '0'));
+        url.searchParams.set('y', (jsn.payload.settings.y ? jsn.payload.settings.y : '0'));
+        url.searchParams.set('z', (jsn.payload.settings.z ? jsn.payload.settings.z : '0'));
+        url.searchParams.set('relative', (jsn.payload.settings.relative ? jsn.payload.settings.relative : 'false'));
+        url.searchParams.set('global', (jsn.payload.settings.global ? jsn.payload.settings.global : 'false'));
+
         url.searchParams.set('device', jsn.device);
         
         fetch(url).then(response => {

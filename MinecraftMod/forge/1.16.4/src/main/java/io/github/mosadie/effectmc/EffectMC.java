@@ -1,15 +1,19 @@
 package io.github.mosadie.effectmc;
 
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import io.github.mosadie.effectmc.core.EffectExecutor;
 import io.github.mosadie.effectmc.core.EffectMCCore;
+import io.github.mosadie.effectmc.core.handler.DisconnectHandler;
 import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.ConnectingScreen;
-import net.minecraft.client.gui.screen.MainMenuScreen;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.entity.player.PlayerModelPart;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -199,6 +203,73 @@ public class EffectMC implements EffectExecutor {
     public void showActionMessage(String message) {
         LOGGER.info("Showing ActionBar message: " + message);
         Minecraft.getInstance().ingameGUI.setOverlayMessage(new StringTextComponent(message), false);
+    }
+
+    @Override
+    public void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+        Minecraft.getInstance().enqueue(() -> {
+            if (Minecraft.getInstance().world != null) {
+                LOGGER.info("Disconnecting from world...");
+
+                Minecraft.getInstance().world.sendQuittingDisconnectingPacket();
+                Minecraft.getInstance().unloadWorld();
+            }
+
+            Screen nextScreen;
+
+            switch (nextScreenType) {
+                case MAIN_MENU:
+                    nextScreen = new MainMenuScreen();
+                    break;
+
+                case SERVER_SELECT:
+                    nextScreen = new MultiplayerScreen(new MainMenuScreen());
+                    break;
+
+                case WORLD_SELECT:
+                    nextScreen = new WorldSelectionScreen(new MainMenuScreen());
+                    break;
+
+                default:
+                    nextScreen = new MainMenuScreen();
+            }
+
+            DisconnectedScreen screen = new DisconnectedScreen(nextScreen, new StringTextComponent(title), new StringTextComponent(message));
+            Minecraft.getInstance().displayGuiScreen(screen);
+        });
+    }
+
+    @Override
+    public void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
+        Minecraft.getInstance().enqueue(() -> {
+            ResourceLocation sound = new ResourceLocation(soundID);
+
+            SoundCategory category;
+            try {
+                category = SoundCategory.valueOf(categoryName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                category = SoundCategory.MASTER;
+            }
+
+            ISound.AttenuationType attenuation;
+            try {
+                attenuation = ISound.AttenuationType.valueOf(attenuationType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                attenuation = ISound.AttenuationType.NONE;
+            }
+
+            double trueX = x;
+            double trueY = y;
+            double trueZ = z;
+
+            if (relative && Minecraft.getInstance().world != null) {
+                trueX += Minecraft.getInstance().player.getPosX();
+                trueY += Minecraft.getInstance().player.getPosY();
+                trueZ += Minecraft.getInstance().player.getPosZ();
+            }
+
+            Minecraft.getInstance().getSoundHandler().play(new SimpleSound(sound, category, volume, pitch, repeat, repeatDelay, attenuation, trueX, trueY, trueZ, global));
+        });
     }
 
     @Override
