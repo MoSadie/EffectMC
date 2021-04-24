@@ -4,12 +4,15 @@ import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import io.github.mosadie.effectmc.core.EffectExecutor;
 import io.github.mosadie.effectmc.core.EffectMCCore;
 import io.github.mosadie.effectmc.core.handler.DisconnectHandler;
+import io.github.mosadie.effectmc.core.handler.PlaySoundHandler;
 import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.toasts.SystemToast;
+import net.minecraft.client.gui.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.util.ResourceLocation;
@@ -283,5 +286,28 @@ public class EffectMC implements EffectExecutor {
     @Override
     public void resetScreen() {
         Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().displayGuiScreen(null));
+    }
+
+    @Override
+    public void stopSound(String sound, String categoryName) {
+        Minecraft.getInstance().enqueue(() -> {
+            ResourceLocation location = sound == null ? null : ResourceLocation.tryCreate(sound);
+            SoundCategory category = null;
+
+            try {
+                category = SoundCategory.valueOf(categoryName);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                // Do nothing, if soundId is non-null Minecraft will auto-search, otherwise Minecraft stops all sounds.
+            }
+
+            Minecraft.getInstance().getSoundHandler().stop(location, category);
+        });
+    }
+
+    @Override
+    public void showToast(String title, String subtitle) {
+        Minecraft.getInstance().enqueue(() -> {
+            Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle)));
+        });
     }
 }

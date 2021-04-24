@@ -95,6 +95,30 @@
       ],
       "Tooltip": "Play any sound.",
       "PropertyInspectorPath": "propertyinspector/playsound_pi.html"
+    },
+    {
+      "Icon": "action/images/ShowToast/actionImage",
+      "Name": "Show Toast",
+      "UUID": "io.github.mosadie.effectmc.showtoast",
+      "States": [
+        {
+          "Image": "action/images/ShowToast/keyIcon"
+        }
+      ],
+      "Tooltip": "Show a toast on screen with a custom message.",
+      "PropertyInspectorPath": "propertyinspector/showtoast_pi.html"
+    },
+    {
+      "Icon": "action/images/StopSound/actionImage",
+      "Name": "Stop Sound",
+      "UUID": "io.github.mosadie.effectmc.stopsound",
+      "States": [
+        {
+          "Image": "action/images/StopSound/keyIcon"
+        }
+      ],
+      "Tooltip": "Stop a specific or any sound.",
+      "PropertyInspectorPath": "propertyinspector/stopsound_pi.html"
     }
   ], 
   "SDKVersion": 2,
@@ -107,7 +131,7 @@
   "CategoryIcon": "action/images/JoinServer/actionImage",
   "Icon": "action/images/JoinServer/keyIcon", 
   "URL": "https://github.com/MoSadie/EffectMC", 
-  "Version": "1.1.0.7",
+  "Version": "1.2.0.6",
   "OS": [
     {
         "Platform": "mac", 

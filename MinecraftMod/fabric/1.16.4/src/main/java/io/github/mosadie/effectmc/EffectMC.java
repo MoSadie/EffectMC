@@ -17,6 +17,8 @@ import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
+import net.minecraft.client.toast.SystemToast;
+import net.minecraft.resource.Resource;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -285,5 +287,28 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     @Override
     public void resetScreen() {
         MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().openScreen(null));
+    }
+
+    @Override
+    public void stopSound(String sound, String categoryName) {
+        MinecraftClient.getInstance().send(() -> {
+            Identifier location = sound == null ? null : Identifier.tryParse(sound);
+            SoundCategory category = null;
+
+            try {
+                category = SoundCategory.valueOf(categoryName);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                // Do nothing, if soundId is non-null Minecraft will auto-search, otherwise Minecraft stops all sounds.
+            }
+
+            MinecraftClient.getInstance().getSoundManager().stopSounds(location, category);
+        });
+    }
+
+    @Override
+    public void showToast(String title, String subtitle) {
+        MinecraftClient.getInstance().send(() -> {
+            MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle)));
+        });
     }
 }

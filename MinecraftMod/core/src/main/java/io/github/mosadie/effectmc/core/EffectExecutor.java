@@ -25,4 +25,8 @@ public interface EffectExecutor {
     void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global);
 
     void resetScreen();
+
+    void stopSound(String sound, String category);
+
+    void showToast(String title, String subtitle);
 }

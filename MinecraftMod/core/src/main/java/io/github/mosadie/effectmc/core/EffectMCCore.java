@@ -93,6 +93,8 @@ public class EffectMCCore {
         server.createContext("/showactionmessage", new ShowActionMessageHandler(this));
         server.createContext("/triggerdisconnect", new DisconnectHandler(this));
         server.createContext("/playsound", new PlaySoundHandler(this));
+        server.createContext("/stopsound", new StopSoundHandler(this));
+        server.createContext("/showtoast", new ShowToastHandler(this));
 
         server.setExecutor(null);
 
