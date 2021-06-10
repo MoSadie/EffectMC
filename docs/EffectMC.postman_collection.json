@@ -1,0 +1,474 @@
+{
+	"info": {
+		"_postman_id": "bbda3309-1ef0-4c83-a268-1b23de496aff",
+		"name": "EffectMC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Root",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JoinServer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/joinserver?serverip=127.0.0.1:25577&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"joinserver"
+					],
+					"query": [
+						{
+							"key": "serverip",
+							"value": "127.0.0.1:25577"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SetSkinLayerVisibility",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/setskinlayervisibility?section=all&visibility=true&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"setskinlayervisibility"
+					],
+					"query": [
+						{
+							"key": "section",
+							"value": "all",
+							"description": "Allowed values: all, all_body, cape, jacket, left_sleeve, right_sleeve, left_pants_leg, right_pants_leg, hat (case insensitive)"
+						},
+						{
+							"key": "visibility",
+							"value": "true",
+							"description": "Optional. Allowed values: true, false (case insensitive)"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ShowTitle",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/showtitle?title=§9Hello&subtitle=World!&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"showtitle"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "§9Hello",
+							"description": "Color codes allowed"
+						},
+						{
+							"key": "subtitle",
+							"value": "World!",
+							"description": "Color codes allowed"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ShowToast",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/showtoast?title=§9Hello&subtitle=World!&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"showtoast"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "§9Hello",
+							"description": "Color codes allowed"
+						},
+						{
+							"key": "subtitle",
+							"value": "World!",
+							"description": "Color codes allowed"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SendChatMessage",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/sendchatmessage?message=Hello world!",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"sendchatmessage"
+					],
+					"query": [
+						{
+							"key": "message",
+							"value": "Hello world!",
+							"description": "Commands allowed"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ReceiveChat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/receivechat?message=Hello world! §9(Only you can see this :D )&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"receivechat"
+					],
+					"query": [
+						{
+							"key": "message",
+							"value": "Hello world! §9(Only you can see this :D )",
+							"description": "Color codes allowed"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ShowActionMessage",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/showactionmessage?message=This is a test!&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"showactionmessage"
+					],
+					"query": [
+						{
+							"key": "message",
+							"value": "This is a test!"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TriggerDisconnect",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/triggerdisconnect?title=This is a §6title!&message=This is a §6test!&device=postman-test&nextscreen=main_menu",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"triggerdisconnect"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "This is a §6title!",
+							"description": "Color works"
+						},
+						{
+							"key": "message",
+							"value": "This is a §6test!",
+							"description": "Color works"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						},
+						{
+							"key": "nextscreen",
+							"value": "main_menu",
+							"description": "main_menu, server_select, world_select"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PlaySound",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/playsound?sound=music_disc.mellohi&category=master&volume=1.0&pitch=1.0&repeat=false&repeatDelay=1&attenuationType=linear&x=0&y=0&z=0&relative=false&global=true&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"playsound"
+					],
+					"query": [
+						{
+							"key": "sound",
+							"value": "music_disc.mellohi"
+						},
+						{
+							"key": "category",
+							"value": "master"
+						},
+						{
+							"key": "volume",
+							"value": "1.0",
+							"description": "Float (0 - 1.0)"
+						},
+						{
+							"key": "pitch",
+							"value": "1.0",
+							"description": "Float (0 - 2.0)"
+						},
+						{
+							"key": "repeat",
+							"value": "false",
+							"description": "Boolean, can be cancelled by moving volume slider"
+						},
+						{
+							"key": "repeatDelay",
+							"value": "1",
+							"description": "int"
+						},
+						{
+							"key": "attenuationType",
+							"value": "linear",
+							"description": "Values: none, linear"
+						},
+						{
+							"key": "x",
+							"value": "0",
+							"description": "int"
+						},
+						{
+							"key": "y",
+							"value": "0",
+							"description": "int"
+						},
+						{
+							"key": "z",
+							"value": "0",
+							"description": "int"
+						},
+						{
+							"key": "relative",
+							"value": "false",
+							"description": "boolean"
+						},
+						{
+							"key": "global",
+							"value": "true",
+							"description": "boolean"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "StopSound",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/stopsound?sound=music_disc.mellohi&category=music&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"stopsound"
+					],
+					"query": [
+						{
+							"key": "sound",
+							"value": "music_disc.mellohi"
+						},
+						{
+							"key": "category",
+							"value": "music"
+						},
+						{
+							"key": "device",
+							"value": "postman-test",
+							"description": "Float (0 - 1.0)"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OpenBook",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/openbook?device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"openbook"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman-test",
+							"description": "Device ID"
+						},
+						{
+							"key": "book",
+							"value": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}",
+							"description": "JSON ItemStack of a book.",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Narrate",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/narrate?device=postman-test&message=Hello World!&interrupt=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"narrate"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman-test"
+						},
+						{
+							"key": "message",
+							"value": "Hello World!"
+						},
+						{
+							"key": "interrupt",
+							"value": "true",
+							"description": "(Optional) True/False, default False"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
