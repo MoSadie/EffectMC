@@ -1,5 +1,8 @@
 package io.github.mosadie.effectmc;
 
+import com.google.gson.JsonObject;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.text2speech.Narrator;
 import io.github.mosadie.effectmc.core.EffectExecutor;
 import io.github.mosadie.effectmc.core.EffectMCCore;
 import io.github.mosadie.effectmc.core.handler.DisconnectHandler;
@@ -10,6 +13,8 @@ import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.screen.ingame.BookScreen;
+import net.minecraft.client.gui.screen.ingame.BookScreen.Contents;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
@@ -18,6 +23,11 @@ import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.client.toast.SystemToast;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.WrittenBookItem;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.resource.Resource;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
@@ -34,6 +44,8 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     private EffectMCCore core;
 
     public static Logger LOGGER = LogManager.getLogger();
+
+    private static Narrator narrator = Narrator.getNarrator();
 
     @Override
     public void onInitialize() {
@@ -66,6 +78,31 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
         ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmctrust").executes((context -> {
             MinecraftClient.getInstance().send(core::setTrustNextRequest);
             receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
+            return 0;
+        })));
+
+        ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmcexportbook").executes((context -> {
+            if (MinecraftClient.getInstance().player == null) {
+                return 0;
+            }
+
+            ItemStack mainHand = MinecraftClient.getInstance().player.getMainHandStack();
+            ItemStack offHand = MinecraftClient.getInstance().player.getOffHandStack();
+
+            ItemStack bookStack = null;
+            if (mainHand.getItem().equals(Items.WRITTEN_BOOK)) {
+                bookStack = mainHand;
+            } else if (offHand.getItem().equals(Items.WRITTEN_BOOK)) {
+                bookStack = offHand;
+            }
+
+            if (bookStack == null) {
+                receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
+                return 0;
+            }
+
+            LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
+            receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             return 0;
         })));
     }
@@ -309,6 +346,40 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     public void showToast(String title, String subtitle) {
         MinecraftClient.getInstance().send(() -> {
             MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle)));
+        });
+    }
+
+    @Override
+    public void openBook(JsonObject bookJSON) {
+        MinecraftClient.getInstance().send(() -> {
+            CompoundTag tag = null;
+            try {
+                tag = StringNbtReader.parse(bookJSON.toString());
+            } catch (CommandSyntaxException e) {
+                LOGGER.error("Invalid JSON");
+                return;
+            }
+
+            if (!WrittenBookItem.isValid(tag)) {
+                LOGGER.error("Invalid Book JSON");
+                return;
+            }
+
+            ItemStack bookStack = new ItemStack(Items.WRITTEN_BOOK);
+            bookStack.setTag(tag);
+
+            Contents bookContents = Contents.create(bookStack);
+
+            BookScreen screen = new BookScreen(bookContents);
+
+            MinecraftClient.getInstance().openScreen(screen);
+        });
+    }
+
+    @Override
+    public void narrate(String message, boolean interrupt) {
+        MinecraftClient.getInstance().send(() -> {
+            narrator.say(message, interrupt);
         });
     }
 }

@@ -1,6 +1,7 @@
 package io.github.mosadie.effectmc.core;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.sun.net.httpserver.HttpServer;
@@ -95,12 +96,23 @@ public class EffectMCCore {
         server.createContext("/playsound", new PlaySoundHandler(this));
         server.createContext("/stopsound", new StopSoundHandler(this));
         server.createContext("/showtoast", new ShowToastHandler(this));
+        server.createContext("/openbook", new OpenBookHandler(this));
+        server.createContext("/narrate", new NarrateHandler(this));
 
         server.setExecutor(null);
 
         server.start();
 
         return true;
+    }
+
+    public JsonObject fromJson(String json) {
+        try {
+            return gson.fromJson(json, JsonObject.class);
+        } catch (JsonSyntaxException e) {
+            executor.log("WARNING: Invalid Json attempted to be parsed.");
+            return null;
+        }
     }
 
     public EffectExecutor getExecutor() {

@@ -26,6 +26,8 @@ function connected(jsn) {
     playSound.onConnect(jsn);
     showToast.onConnect(jsn);
     stopSound.onConnect(jsn);
+    openBook.onConnect(jsn);
+    narrate.onConnect(jsn);
 };
 
 /** ACTIONS */
@@ -1191,6 +1193,240 @@ const stopSound = {
         }
         
 
+        url.searchParams.set('device', jsn.device);
+        
+        fetch(url).then(response => {
+            console.log("DEBUG yay", response);
+            if (response.status == 200) $SD.api.showOk(jsn.context);
+            else {
+                console.log("Request Failed", response);
+                $SD.api.showAlert(jsn.context);
+            }
+        }, reason => {
+            console.log("DEBUG fail", reason);
+            $SD.api.showAlert(jsn.context);
+        });
+    },
+
+    onSendToPlugin: function (jsn) {
+        /**
+         * this is a message sent directly from the Property Inspector 
+         * (e.g. some value, which is not saved to settings) 
+         * You can send this event from Property Inspector (see there for an example)
+         */ 
+
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+            this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
+        }
+    },
+
+    /**
+     * This snippet shows, how you could save settings persistantly to Stream Deck software
+     * It is not used in this example plugin.
+     */
+
+    saveSettings: function (jsn, sdpi_collection) {
+        console.log('saveSettings:', jsn);
+        if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
+            if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+                this.settings[sdpi_collection.key] = sdpi_collection.value;
+                console.log('setSettings....', this.settings);
+                $SD.api.setSettings(jsn.context, this.settings);
+            }
+        }
+    },
+
+    /**
+     * Finally here's a methood which gets called from various events above.
+     * This is just an idea how you can act on receiving some interesting message
+     * from Stream Deck.
+     */
+
+    doSomeThing: function(inJsonData, caller, tagColor) {
+        console.log('%c%s', `color: white; background: ${tagColor || 'grey'}; font-size: 15px;`, `[app.js]doSomeThing from: ${caller}`);
+        // console.log(inJsonData);
+    }, 
+
+
+};
+
+const openBook = {
+    onConnect: function(jsn) {
+        $SD.on('io.github.mosadie.effectmc.openbook.willAppear', (jsonObj) => openBook.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.openbook.keyUp', (jsonObj) => openBook.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.openbook.sendToPlugin', (jsonObj) => openBook.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.openbook.didReceiveSettings', (jsonObj) => openBook.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.openbook.propertyInspectorDidAppear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
+        });
+        $SD.on('io.github.mosadie.effectmc.openbook.propertyInspectorDidDisappear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
+        });
+    },
+
+    settings:{},
+    onDidReceiveSettings: function(jsn) {
+        this.settings = Utils.getProp(jsn, 'payload.settings', {});
+
+    },
+
+    /** 
+     * The 'willAppear' event is the first event a key will receive, right before it gets
+     * showed on your Stream Deck and/or in Stream Deck software.
+     * This event is a good place to setup your plugin and look at current settings (if any),
+     * which are embedded in the events payload.
+     */
+
+    onWillAppear: function (jsn) {
+        //console.log("You can cache your settings in 'onWillAppear'", jsn.payload.settings);
+        /**
+         * "The willAppear event carries your saved settings (if any). You can use these settings
+         * to setup your plugin or save the settings for later use. 
+         * If you want to request settings at a later time, you can do so using the
+         * 'getSettings' event, which will tell Stream Deck to send your data 
+         * (in the 'didReceiceSettings above)
+         * 
+         * $SD.api.getSettings(jsn.context);
+        */
+        this.settings = jsn.payload.settings;
+
+        // If no settings, fill in some default settings.
+        if (!this.settings || Object.keys(this.settings).length === 0) {
+            this.settings.book = '{}';
+        }
+    },
+
+    onKeyUp: function (jsn) {
+        this.doSomeThing(jsn, 'onKeyUp', 'green');
+        console.log(jsn);
+        
+        if (!jsn.payload.settings || !jsn.payload.settings.minecraftip || jsn.payload.settings.minecraftip == '') {
+            $SD.api.showAlert(jsn.context);
+            console.log('No Minecraft IP!');
+            return;
+        }
+        
+        var url = new URL('/openbook', jsn.payload.settings.minecraftip);
+        
+        url.searchParams.set('device', jsn.device);
+        
+        fetch(url, {method: 'POST', body: (jsn.payload.settings.book ? jsn.payload.settings.book : '')}).then(response => {
+            console.log("DEBUG yay", response);
+            if (response.status == 200) $SD.api.showOk(jsn.context);
+            else {
+                console.log("Request Failed", response);
+                $SD.api.showAlert(jsn.context);
+            }
+        }, reason => {
+            console.log("DEBUG fail", reason);
+            $SD.api.showAlert(jsn.context);
+        });
+    },
+
+    onSendToPlugin: function (jsn) {
+        /**
+         * this is a message sent directly from the Property Inspector 
+         * (e.g. some value, which is not saved to settings) 
+         * You can send this event from Property Inspector (see there for an example)
+         */ 
+
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+            this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
+        }
+    },
+
+    /**
+     * This snippet shows, how you could save settings persistantly to Stream Deck software
+     * It is not used in this example plugin.
+     */
+
+    saveSettings: function (jsn, sdpi_collection) {
+        console.log('saveSettings:', jsn);
+        if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
+            if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+                this.settings[sdpi_collection.key] = sdpi_collection.value;
+                console.log('setSettings....', this.settings);
+                $SD.api.setSettings(jsn.context, this.settings);
+            }
+        }
+    },
+
+    /**
+     * Finally here's a methood which gets called from various events above.
+     * This is just an idea how you can act on receiving some interesting message
+     * from Stream Deck.
+     */
+
+    doSomeThing: function(inJsonData, caller, tagColor) {
+        console.log('%c%s', `color: white; background: ${tagColor || 'grey'}; font-size: 15px;`, `[app.js]doSomeThing from: ${caller}`);
+        // console.log(inJsonData);
+    }, 
+
+
+};
+
+const narrate = {
+    onConnect: function(jsn) {
+        $SD.on('io.github.mosadie.effectmc.narrate.willAppear', (jsonObj) => narrate.onWillAppear(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.narrate.keyUp', (jsonObj) => narrate.onKeyUp(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.narrate.sendToPlugin', (jsonObj) => narrate.onSendToPlugin(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.narrate.didReceiveSettings', (jsonObj) => narrate.onDidReceiveSettings(jsonObj));
+        $SD.on('io.github.mosadie.effectmc.narrate.propertyInspectorDidAppear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
+        });
+        $SD.on('io.github.mosadie.effectmc.narrate.propertyInspectorDidDisappear', (jsonObj) => {
+            console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
+        });
+    },
+
+    settings:{},
+    onDidReceiveSettings: function(jsn) {
+        this.settings = Utils.getProp(jsn, 'payload.settings', {});
+
+    },
+
+    /** 
+     * The 'willAppear' event is the first event a key will receive, right before it gets
+     * showed on your Stream Deck and/or in Stream Deck software.
+     * This event is a good place to setup your plugin and look at current settings (if any),
+     * which are embedded in the events payload.
+     */
+
+    onWillAppear: function (jsn) {
+        //console.log("You can cache your settings in 'onWillAppear'", jsn.payload.settings);
+        /**
+         * "The willAppear event carries your saved settings (if any). You can use these settings
+         * to setup your plugin or save the settings for later use. 
+         * If you want to request settings at a later time, you can do so using the
+         * 'getSettings' event, which will tell Stream Deck to send your data 
+         * (in the 'didReceiceSettings above)
+         * 
+         * $SD.api.getSettings(jsn.context);
+        */
+        this.settings = jsn.payload.settings;
+
+        // If no settings, fill in some default settings.
+        if (!this.settings || Object.keys(this.settings).length === 0) {
+            this.settings.message = 'Hello!';
+        }
+    },
+
+    onKeyUp: function (jsn) {
+        this.doSomeThing(jsn, 'onKeyUp', 'green');
+        console.log(jsn);
+        
+        if (!jsn.payload.settings || !jsn.payload.settings.minecraftip || jsn.payload.settings.minecraftip == '') {
+            $SD.api.showAlert(jsn.context);
+            console.log('No Minecraft IP!');
+            return;
+        }
+        
+        var url = new URL('/narrate', jsn.payload.settings.minecraftip);
+        
+        url.searchParams.set('message', (jsn.payload.settings.message ? jsn.payload.settings.message : ''));
+        url.searchParams.set('interrupt', (jsn.payload.settings.interrupt ? jsn.payload.settings.interrupt : 'false'));
         url.searchParams.set('device', jsn.device);
         
         fetch(url).then(response => {

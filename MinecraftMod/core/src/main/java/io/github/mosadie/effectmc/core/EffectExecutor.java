@@ -1,5 +1,6 @@
 package io.github.mosadie.effectmc.core;
 
+import com.google.gson.JsonObject;
 import io.github.mosadie.effectmc.core.handler.DisconnectHandler;
 import io.github.mosadie.effectmc.core.handler.SkinLayerHandler;
 
@@ -29,4 +30,8 @@ public interface EffectExecutor {
     void stopSound(String sound, String category);
 
     void showToast(String title, String subtitle);
+
+    void openBook(JsonObject bookJSON);
+
+    void narrate(String message, boolean interrupt);
 }

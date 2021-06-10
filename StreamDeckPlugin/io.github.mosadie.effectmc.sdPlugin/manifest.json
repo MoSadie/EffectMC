@@ -119,6 +119,30 @@
       ],
       "Tooltip": "Stop a specific or any sound.",
       "PropertyInspectorPath": "propertyinspector/stopsound_pi.html"
+    },
+    {
+      "Icon": "action/images/OpenBook/actionImage",
+      "Name": "Open Book",
+      "UUID": "io.github.mosadie.effectmc.openbook",
+      "States": [
+        {
+          "Image": "action/images/OpenBook/keyIcon"
+        }
+      ],
+      "Tooltip": "Open any book.",
+      "PropertyInspectorPath": "propertyinspector/openbook_pi.html"
+    },
+    {
+      "Icon": "action/images/Narrate/actionImage",
+      "Name": "Narrate",
+      "UUID": "io.github.mosadie.effectmc.narrate",
+      "States": [
+        {
+          "Image": "action/images/Narrate/keyIcon"
+        }
+      ],
+      "Tooltip": "Say text using the in-game narrator.",
+      "PropertyInspectorPath": "propertyinspector/narrate_pi.html"
     }
   ], 
   "SDKVersion": 2,
@@ -131,7 +155,7 @@
   "CategoryIcon": "action/images/JoinServer/actionImage",
   "Icon": "action/images/JoinServer/keyIcon", 
   "URL": "https://github.com/MoSadie/EffectMC", 
-  "Version": "1.2.0.6",
+  "Version": "1.3.0.1",
   "OS": [
     {
         "Platform": "mac", 
