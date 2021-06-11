@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         mod-loader: ['forge', 'fabric']
-        mc-version: ['1.16.4']
-        #exclude:
-        # - mod-loader: 'fabric'
-        # - mc-version: ['1.8.4']
+        mc-version: ['1.16.4', '1.17']
+        exclude:
+          - mod-loader: 'forge'
+            mc-version: ['1.17']
         
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
