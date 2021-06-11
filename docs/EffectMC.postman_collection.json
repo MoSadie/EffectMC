@@ -305,7 +305,8 @@
 						},
 						{
 							"key": "category",
-							"value": "master"
+							"value": "master",
+							"description": "Accepted values: master, music, record, weather, block, hostile, neutral, player, ambient, voice. (Default: master)"
 						},
 						{
 							"key": "volume",
@@ -424,12 +425,6 @@
 							"key": "device",
 							"value": "postman-test",
 							"description": "Device ID"
-						},
-						{
-							"key": "book",
-							"value": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}",
-							"description": "JSON ItemStack of a book.",
-							"disabled": true
 						}
 					]
 				}
