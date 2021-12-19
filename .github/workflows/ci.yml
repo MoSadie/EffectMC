@@ -51,11 +51,13 @@ jobs:
     # Matrix of jobs to run
     strategy:
       matrix:
-        mod-loader: ['fabric']
-        mc-version: ['1.17']
-        #exclude:
-        #  - mod-loader: 'forge'
-        #    mc-version: '1.17'
+        mod-loader: ['fabric', 'forge']
+        mc-version: ['1.17', '1.17.1']
+        exclude:
+          - mod-loader: 'forge'
+            mc-version: '1.17'
+          - mod-loader: 'fabric'
+            mc-version: '1.17.1'
         
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
@@ -79,6 +81,54 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: 16
+          
+      # Build Minecraft Mod
+      - name: Build Mod
+        working-directory: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}
+        run: './gradlew build --no-daemon'
+
+      # Upload Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
+          path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
+
+  buildJava17:
+    name: Build ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
+    runs-on: ubuntu-latest
+    
+    # Matrix of jobs to run
+    strategy:
+      matrix:
+        mod-loader: ['fabric', 'forge']
+        mc-version: ['1.18.1']
+        #exclude:
+        #  - mod-loader: 'forge'
+        #    mc-version: '1.17'
+        
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - uses: actions/checkout@v2
+
+      # Setup JDK
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 8
+          
+      # Build Core
+      - name: Build/Install Core
+        working-directory: ./MinecraftMod/core
+        run: './gradlew publishToMavenLocal'
+
+      # Setup JDK
+      - name: Set up JDK 1.17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 17
           
       # Build Minecraft Mod
       - name: Build Mod
