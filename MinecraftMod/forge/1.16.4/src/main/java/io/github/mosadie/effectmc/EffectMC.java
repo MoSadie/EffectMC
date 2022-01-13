@@ -21,10 +21,14 @@ import net.minecraft.item.WritableBookItem;
 import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -35,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.registry.Registry;
 
 import static net.minecraft.client.gui.screen.ReadBookScreen.*;
 
@@ -103,6 +108,12 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
                 receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmcexportitem")) {
+            event.setCanceled(true);
+            exportHeldItem();
+        } else if (event.getMessage().equalsIgnoreCase("/effectmctest")) {
+            event.setCanceled(true);
+            ghostItem(JSONUtils.fromJson("{\"id\":\"minecraft:bedrock\",\"Count\":\"60b\"}"), 0);
         }
     }
 
@@ -379,5 +390,44 @@ public class EffectMC implements EffectExecutor {
         Minecraft.getInstance().enqueue(() -> {
             narrator.say(message, interrupt);
         });
+    }
+
+    public void exportHeldItem() {
+        if (Minecraft.getInstance().player != null) {
+            ItemStack item = Minecraft.getInstance().player.getHeldItemMainhand();
+
+            if (item.equals(ItemStack.EMPTY)) {
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent("Your hand is empty!"), Minecraft.getInstance().player.getUniqueID());
+            } else {
+                CompoundNBT itemNBT = new CompoundNBT();
+                item.write(itemNBT);
+
+                String itemJSON = itemNBT.toString();
+
+                LOGGER.info("Exported Item JSON: " + itemJSON);
+
+                StringTextComponent message = new StringTextComponent("Held item exported. Click [here] to copy the JSON.");
+                message.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, itemJSON));
+                message.getStyle().setColor(Color.fromTextFormatting(TextFormatting.DARK_GREEN));
+                Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().player.sendMessage(message, Minecraft.getInstance().player.getUniqueID()));
+            }
+        }
+    }
+
+    public void ghostItem(JsonObject jsonNBT, int itemLoc) {
+        try {
+            CompoundNBT itemNBT = JsonToNBT.getTagFromJson(jsonNBT.toString());
+            ItemStack ghostItemStack = ItemStack.read(itemNBT);
+
+            Minecraft.getInstance().enqueue(() -> {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.inventory.mainInventory.set(itemLoc, ghostItemStack);//add(itemLoc, ghostItemStack);
+                    LOGGER.info("Inventory test complete! Added " + ghostItemStack.getDisplayName().getString());
+                }
+            });
+        } catch (CommandSyntaxException e) {
+            //FIXME ahhhhh logging
+            LOGGER.error("Invalid Item Json", e);
+        }
     }
 }
