@@ -98,6 +98,8 @@ public class EffectMCCore {
         server.createContext("/showtoast", new ShowToastHandler(this));
         server.createContext("/openbook", new OpenBookHandler(this));
         server.createContext("/narrate", new NarrateHandler(this));
+        server.createContext("/listinputs", new ListInputHandler(this));
+        server.createContext("/pressinput", new PressInputHandler(this));
 
         server.setExecutor(null);
 
@@ -113,6 +115,10 @@ public class EffectMCCore {
             executor.log("WARNING: Invalid Json attempted to be parsed.");
             return null;
         }
+    }
+
+    public String toJson(Object obj) {
+            return gson.toJson(obj);
     }
 
     public EffectExecutor getExecutor() {

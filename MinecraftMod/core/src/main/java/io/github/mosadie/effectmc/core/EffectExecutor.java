@@ -34,4 +34,10 @@ public interface EffectExecutor {
     void openBook(JsonObject bookJSON);
 
     void narrate(String message, boolean interrupt);
+
+    void pressInput(String keyDesc, long holdTime);
+
+    String[] getInputList();
+
+    boolean keyExists(String keyDesc);
 }
