@@ -98,6 +98,7 @@ public class EffectMCCore {
         server.createContext("/showtoast", new ShowToastHandler(this));
         server.createContext("/openbook", new OpenBookHandler(this));
         server.createContext("/narrate", new NarrateHandler(this));
+        server.createContext("/loadworld", new LoadWorldHandler(this));
 
         server.setExecutor(null);
 

@@ -389,4 +389,23 @@ public class EffectMC implements EffectExecutor {
             narrator.say(message, interrupt);
         });
     }
+
+    @Override
+    public void loadWorld(String worldName) {
+        Minecraft.getInstance().execute(() -> {
+            if (Minecraft.getInstance().getLevelSource().levelExists(worldName)) {
+                if (Minecraft.getInstance().level != null) {
+                    LOGGER.info("Disconnecting from world...");
+
+                    Minecraft.getInstance().level.disconnect();
+                    Minecraft.getInstance().clearLevel();
+                }
+
+                LOGGER.info("Loading world...");
+                Minecraft.getInstance().loadLevel(worldName);
+            } else {
+                LOGGER.warn("World " + worldName + " does not exist!");
+            }
+        });
+    }
 }

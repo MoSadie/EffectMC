@@ -389,4 +389,23 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 			narrator.say(message, interrupt);
 		});
 	}
+
+	@Override
+	public void loadWorld(String worldName) {
+		MinecraftClient.getInstance().send(() -> {
+			if (MinecraftClient.getInstance().getLevelStorage().levelExists(worldName)) {
+				if (MinecraftClient.getInstance().world != null) {
+					LOGGER.info("Disconnecting from world...");
+
+					MinecraftClient.getInstance().world.disconnect();
+					MinecraftClient.getInstance().disconnect();
+				}
+
+				LOGGER.info("Loading world...");
+				MinecraftClient.getInstance().startIntegratedServer(worldName);
+			} else {
+				LOGGER.warn("World " + worldName + " does not exist!");
+			}
+		});
+	}
 }

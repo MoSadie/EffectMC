@@ -34,4 +34,6 @@ public interface EffectExecutor {
     void openBook(JsonObject bookJSON);
 
     void narrate(String message, boolean interrupt);
+
+    void loadWorld(String worldName);
 }
