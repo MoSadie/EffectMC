@@ -143,6 +143,18 @@
       ],
       "Tooltip": "Say text using the in-game narrator.",
       "PropertyInspectorPath": "propertyinspector/narrate_pi.html"
+    },
+    {
+      "Icon": "action/images/LoadWorld/actionImage",
+      "Name": "Load World",
+      "UUID": "io.github.mosadie.effectmc.loadworld",
+      "States": [
+        {
+          "Image": "action/images/LoadWorld/keyIcon"
+        }
+      ],
+      "Tooltip": "Load the specified local world.",
+      "PropertyInspectorPath": "propertyinspector/loadworld_pi.html"
     }
   ], 
   "SDKVersion": 2,
