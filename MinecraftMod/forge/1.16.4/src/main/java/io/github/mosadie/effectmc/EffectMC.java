@@ -380,4 +380,23 @@ public class EffectMC implements EffectExecutor {
             narrator.say(message, interrupt);
         });
     }
+
+    @Override
+    public void loadWorld(String worldName) {
+        Minecraft.getInstance().enqueue(() -> {
+            if (Minecraft.getInstance().getSaveLoader().canLoadWorld(worldName)) {
+                if (Minecraft.getInstance().world != null) {
+                    LOGGER.info("Disconnecting from world...");
+
+                    Minecraft.getInstance().world.sendQuittingDisconnectingPacket();
+                    Minecraft.getInstance().unloadWorld();
+                }
+
+                LOGGER.info("Loading world...");
+                Minecraft.getInstance().loadWorld(worldName);
+            } else {
+                LOGGER.warn("World " + worldName + " does not exist!");
+            }
+        });
+    }
 }
