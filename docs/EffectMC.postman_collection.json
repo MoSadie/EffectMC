@@ -164,7 +164,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/sendchatmessage?message=Hello world!",
+					"raw": "http://localhost:3000/sendchatmessage?message=Hello world!&device=postman-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -178,6 +178,10 @@
 							"key": "message",
 							"value": "Hello world!",
 							"description": "Commands allowed"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
 						}
 					]
 				}
@@ -459,6 +463,93 @@
 							"key": "interrupt",
 							"value": "true",
 							"description": "(Optional) True/False, default False"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PressInput",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/pressinput?key=key.the_vault.open_shard_trader_screen&holdtime=2000&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"pressinput"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "key.the_vault.open_shard_trader_screen"
+						},
+						{
+							"key": "holdtime",
+							"value": "2000"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ListInputs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/listinputs?device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"listinputs"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LoadWorld",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/loadworld?device=postman-test&world=Test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"loadworld"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman-test"
+						},
+						{
+							"key": "world",
+							"value": "Test"
 						}
 					]
 				}
