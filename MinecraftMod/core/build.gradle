@@ -4,7 +4,7 @@ plugins {
 }
 
 version = 1.3
-group = 'io.github.mosadie.effectmc'
+group = 'com.mosadie.effectmc'
 archivesBaseName = "EffectMC-Core"
 
 configurations {
