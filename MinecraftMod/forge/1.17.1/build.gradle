@@ -14,7 +14,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = '1.3.0'
-group = 'io.github.mosadie.effectmc' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = 'com.mosadie.effectmc' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'effectmc-forge-1.17.1'
 
 // Mojang ships Java 16 to end users in 1.17+ instead of Java 8 in 1.16 or lower, so your mod should target Java 16.
@@ -130,7 +130,7 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
 
-    shade 'io.github.mosadie.effectmc:core:1.3'
+    shade 'com.mosadie.effectmc:core:1.3'
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
