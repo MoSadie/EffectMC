@@ -116,7 +116,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
                     return;
                 }
             } else if (parameters.containsKey(propKey)) {
-                if (!properties.get(propKey).setValue(parameters.get(propKey))) {
+                if (!properties.get(propKey).setValue(parameters.get(propKey)) && properties.get(propKey).isRequired()) {
                     core.getExecutor().log(getEffectName() + " failed");
                     String response = propKey + " is invalid";
                     exchange.sendResponseHeaders(400, response.getBytes().length);

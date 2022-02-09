@@ -6,7 +6,7 @@ public class StopSoundHandler extends EffectRequestHandler{
 
     public StopSoundHandler(EffectMCCore core) {
         super(core);
-        addStringProperty("sound", "", false, "Sound", "minecraft:entity.ghast.ambient");
+        addStringProperty("sound", "minecraft:entity.ghast.ambient", false, "Sound", "minecraft:entity.ghast.ambient");
 //        addSelectionProperty("category", "", false, "Category", PlaySoundHandler.SOUND_CATEGORY.toStringArray());
     }
 

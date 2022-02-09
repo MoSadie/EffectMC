@@ -113,8 +113,9 @@ public class StreamDeckPluginGen {
                 if (prop.getPropType() != EffectProperty.PropertyType.COMMENT) {
                     settingsDefaultsBuilder.append("this.settings.").append(key).append("= '").append(prop.getAsString()).append("';\n");
 
+                    // If required and not set, use a default value.
                     if (prop.isRequired())
-                        settingsIfCheckBuilder.append("if (!jsn.payload.settings.").append(key).append(") { $SD.api.showAlert(jsn.context); console.log('Missing ").append(key).append("'); return }\n");
+                        settingsIfCheckBuilder.append("if (!jsn.payload.settings.").append(key).append(") { jsn.payload.settings.").append(key).append(" = '").append(props.get(key).getAsString()).append("'; }");
 
                     if (prop.getPropType() != EffectProperty.PropertyType.BODY)
                         setParamsBuilder.append("url.searchParams.set('").append(key).append("', (jsn.payload.settings.").append(key).append(" ? jsn.payload.settings.").append(key).append(" : ''));\n");
