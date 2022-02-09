@@ -204,7 +204,7 @@ public class StreamDeckPluginGen {
 
             action.Icon = "images/" + effect.getEffectSlug() + "/actionImage";
             action.Name = effect.getEffectName();
-            action.States = new Manifest.Action.State[] { new Manifest.Action.State("action/images/" + effect.getEffectSlug() + "/keyIcon")};
+            action.States = new Manifest.Action.State[] { new Manifest.Action.State("images/" + effect.getEffectSlug() + "/keyIcon")};
             action.Tooltip = effect.getEffectTooltip();
             action.UUID = "com.mosadie.effectmc." + effect.getEffectSlug();
             action.PropertyInspectorPath = "propertyinspector/" + effect.getEffectSlug() + "_pi.html";
