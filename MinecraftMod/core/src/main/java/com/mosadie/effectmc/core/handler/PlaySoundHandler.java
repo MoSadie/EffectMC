@@ -1,88 +1,87 @@
 package com.mosadie.effectmc.core.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.Util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PlaySoundHandler implements HttpHandler {
-
-    private final EffectMCCore core;
-
+public class PlaySoundHandler extends EffectRequestHandler {
     public PlaySoundHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addStringProperty("sound", "minecraft:entity.ghast.ambient", true, "Sound", "minecraft:entity.ghast.ambient");
+        addSelectionProperty("category", SOUND_CATEGORY.MASTER.toString(), true, "Category", SOUND_CATEGORY.toStringArray());
+        addFloatProperty("volume", 1.0f, true, "Volume", 0.0f, 1.0f);
+        addFloatProperty("pitch", 1.0f, true, "Pitch", 0.0f, 2.0f);
+        addBooleanProperty("repeat", false, true, "Repeat", "Enabled", "Disabled");
+        addIntegerProperty("repeatDelay", 0, false, "Repeat Delay", "0");
+        addSelectionProperty("attenuationType", ATTENUATION_TYPE.NONE.toString(), true, "Attenuation Type", ATTENUATION_TYPE.toStringArray());
+        addIntegerProperty("x", 0, true, "X", "0");
+        addIntegerProperty("y", 0, true, "Y", "0");
+        addIntegerProperty("z", 0, true, "Z", "0");
+        addBooleanProperty("relative", false, true, "Relative", "Enabled", "Disabled");
+        addBooleanProperty("global", false, true, "Global", "Enabled", "Disabled");
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("PlaySound started");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
-        }
-
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
-
-
-        if (containsAllParameters(parameters)) {
-            try {
-                String sound = parameters.get("sound").toString();
-                core.getExecutor().log("Attempting to play sound: " + sound);
-
-                String category = parameters.get("category").toString();
-                float volume = Float.parseFloat(parameters.get("volume").toString());
-                float pitch = Float.parseFloat(parameters.get("pitch").toString());
-                boolean repeat = Boolean.parseBoolean(parameters.get("repeat").toString());
-                int repeatDelay = Integer.parseInt(parameters.get("repeatDelay").toString());
-                String attenuationType = parameters.get("attenuationType").toString();
-                double x = Double.parseDouble(parameters.get("x").toString());
-                double y = Double.parseDouble(parameters.get("y").toString());
-                double z = Double.parseDouble(parameters.get("z").toString());
-                boolean relative = Boolean.parseBoolean(parameters.get("relative").toString());
-                boolean global = Boolean.parseBoolean(parameters.get("global").toString());
-
-                core.getExecutor().playSound(sound, category, volume, pitch, repeat, repeatDelay, attenuationType, x, y, z, relative, global);
-
-                String response = "Playing sound: " + sound;
-                exchange.sendResponseHeaders(200, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-            } catch (NumberFormatException e) {
-                core.getExecutor().log("PlaySound failed: Format exception");
-                String response = "Format Exception";
-                exchange.sendResponseHeaders(400, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-            }
-        } else {
-            core.getExecutor().log("PlaySound failed");
-            String response = "Missing parameter";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-        }
-        exchange.getResponseBody().close();
-
-
+    public String getEffectName() {
+        return "Play Sound";
     }
 
-    private boolean containsAllParameters(Map<String, Object> parameters) {
-        String[] keys = new String[] { "sound", "category", "volume", "pitch", "repeat", "repeatDelay", "attenuationType", "x", "y", "z", "relative", "global" };
+    @Override
+    public String getEffectTooltip() {
+        return "Play any sound.";
+    }
 
-        for(String key : keys) {
-            if (!parameters.containsKey(key)) {
-                core.getExecutor().log("Missing parameter: " + key);
-                return false;
+    @Override
+    String execute() {
+        core.getExecutor().log("Play sound: " + getProperty("sound").getAsString());
+        if (core.getExecutor().playSound(getProperty("sound").getAsString(),
+                getProperty("category").getAsString(), getProperty("volume").getAsFloat(),
+                getProperty("pitch").getAsFloat(),
+                getProperty("repeat").getAsBoolean(),
+                getProperty("repeatDelay").getAsInt(),
+                getProperty("attenuationType").getAsString(),
+                getProperty("x").getAsDouble(),
+                getProperty("y").getAsDouble(),
+                getProperty("z").getAsDouble(),
+                getProperty("relative").getAsBoolean(),
+                getProperty("global").getAsBoolean()))
+            return "Played sound " + getProperty("sound").getAsString();
+        else
+            return "Failed to play sound.";
+    }
+
+    public enum SOUND_CATEGORY {
+        MASTER,
+        MUSIC,
+        RECORD,
+        WEATHER,
+        BLOCK,
+        HOSTILE,
+        NEUTRAL,
+        PLAYER,
+        AMBIENT,
+        VOICE;
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (SOUND_CATEGORY category : SOUND_CATEGORY.values()) {
+                list.add(category.name());
             }
+            return list.toArray(new String[0]);
         }
+    }
 
-        return true;
+    public enum ATTENUATION_TYPE {
+        NONE,
+        LINEAR;
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (ATTENUATION_TYPE type : ATTENUATION_TYPE.values()) {
+                list.add(type.name());
+            }
+            return list.toArray(new String[0]);
+        }
     }
 }

@@ -1,0 +1,10 @@
+$SD.on('connected', (jsonObj) => connected(jsonObj));
+
+/* Subscribe to onConnect for each Action */
+function connected(jsn) {
+    ${onConnect}
+};
+
+/* Actions */
+
+${actions}

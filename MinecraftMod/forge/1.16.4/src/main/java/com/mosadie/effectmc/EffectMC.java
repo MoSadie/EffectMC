@@ -110,7 +110,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void joinServer(String serverIp) {
+    public boolean joinServer(String serverIp) {
         Minecraft.getInstance().enqueue(() -> {
             if (Minecraft.getInstance().world != null) {
                 LOGGER.info("Disconnecting from world...");
@@ -129,10 +129,11 @@ public class EffectMC implements EffectExecutor {
             ConnectingScreen connectingScreen = new ConnectingScreen(new MainMenuScreen(), Minecraft.getInstance(), server);
             Minecraft.getInstance().displayGuiScreen(connectingScreen);
         });
+        return true;
     }
 
     @Override
-    public void setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+    public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
         GameSettings gameSettings = Minecraft.getInstance().gameSettings;
 
         switch (section) {
@@ -170,10 +171,12 @@ public class EffectMC implements EffectExecutor {
                 gameSettings.setModelPartEnabled(PlayerModelPart.HAT, visibility);
                 break;
         }
+
+        return true;
     }
 
     @Override
-    public void toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+    public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
         GameSettings gameSettings = Minecraft.getInstance().gameSettings;
         switch (section) {
 
@@ -210,40 +213,48 @@ public class EffectMC implements EffectExecutor {
                 gameSettings.switchModelPartEnabled(PlayerModelPart.HAT);
                 break;
         }
+
+        return true;
     }
 
     @Override
-    public void sendChatMessage(String message) {
+    public boolean sendChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
             LOGGER.info("Sending chat message: " + message);
             Minecraft.getInstance().player.sendChatMessage(message);
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void receiveChatMessage(String message) {
+    public boolean receiveChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
             LOGGER.info("Showing chat message: " + message);
             Minecraft.getInstance().player.sendMessage(new StringTextComponent(message), Minecraft.getInstance().player.getUniqueID());
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void showTitle(String title, String subtitle) {
+    public boolean showTitle(String title, String subtitle) {
         LOGGER.info("Showing Title: " + title + " Subtitle: " + subtitle);
         Minecraft.getInstance().ingameGUI.setDefaultTitlesTimes();
         Minecraft.getInstance().ingameGUI.func_238452_a_(null, new StringTextComponent(subtitle), -1, -1, -1);
         Minecraft.getInstance().ingameGUI.func_238452_a_(new StringTextComponent(title), null, -1, -1, -1);
+        return true;
     }
 
     @Override
-    public void showActionMessage(String message) {
+    public boolean showActionMessage(String message) {
         LOGGER.info("Showing ActionBar message: " + message);
         Minecraft.getInstance().ingameGUI.setOverlayMessage(new StringTextComponent(message), false);
+        return true;
     }
 
     @Override
-    public void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+    public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().enqueue(() -> {
             if (Minecraft.getInstance().world != null) {
                 LOGGER.info("Disconnecting from world...");
@@ -274,10 +285,11 @@ public class EffectMC implements EffectExecutor {
             DisconnectedScreen screen = new DisconnectedScreen(nextScreen, new StringTextComponent(title), new StringTextComponent(message));
             Minecraft.getInstance().displayGuiScreen(screen);
         });
+        return true;
     }
 
     @Override
-    public void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
+    public boolean playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
         Minecraft.getInstance().enqueue(() -> {
             ResourceLocation sound = new ResourceLocation(soundID);
 
@@ -307,6 +319,7 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().getSoundHandler().play(new SimpleSound(sound, category, volume, pitch, repeat, repeatDelay, attenuation, trueX, trueY, trueZ, global));
         });
+        return true;
     }
 
     @Override
@@ -323,7 +336,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void stopSound(String sound, String categoryName) {
+    public boolean stopSound(String sound, String categoryName) {
         Minecraft.getInstance().enqueue(() -> {
             ResourceLocation location = sound == null ? null : ResourceLocation.tryCreate(sound);
             SoundCategory category = null;
@@ -336,17 +349,19 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().getSoundHandler().stop(location, category);
         });
+        return true;
     }
 
     @Override
-    public void showToast(String title, String subtitle) {
+    public boolean showToast(String title, String subtitle) {
         Minecraft.getInstance().enqueue(() -> {
             Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle)));
         });
+        return true;
     }
 
     @Override
-    public void openBook(JsonObject bookJSON) {
+    public boolean openBook(JsonObject bookJSON) {
         Minecraft.getInstance().enqueue(() -> {
             CompoundNBT nbt = null;
             try {
@@ -370,17 +385,19 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().displayGuiScreen(screen);
         });
+        return true;
     }
 
     @Override
-    public void narrate(String message, boolean interrupt) {
+    public boolean narrate(String message, boolean interrupt) {
         Minecraft.getInstance().enqueue(() -> {
             narrator.say(message, interrupt);
         });
+        return true;
     }
 
     @Override
-    public void loadWorld(String worldName) {
+    public boolean loadWorld(String worldName) {
         Minecraft.getInstance().enqueue(() -> {
             if (Minecraft.getInstance().getSaveLoader().canLoadWorld(worldName)) {
                 if (Minecraft.getInstance().world != null) {
@@ -396,5 +413,6 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.warn("World " + worldName + " does not exist!");
             }
         });
+        return true;
     }
 }

@@ -1,49 +1,40 @@
 package com.mosadie.effectmc.core.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.Util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-
-public class StopSoundHandler implements HttpHandler {
-
-    private final EffectMCCore core;
+public class StopSoundHandler extends EffectRequestHandler{
 
     public StopSoundHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addStringProperty("sound", "", false, "Sound", "minecraft:entity.ghast.ambient");
+//        addSelectionProperty("category", "", false, "Category", PlaySoundHandler.SOUND_CATEGORY.toStringArray());
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("StopSound started");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
+    public String getEffectName() {
+        return "Stop Sound";
+    }
+
+    @Override
+    public String getEffectTooltip() {
+        return "Stop a specific or any sound.";
+    }
+
+    @Override
+    String execute() {
+        // Note for the future, to re-enable category specific sound searching update the stopSound calls as well as the commented out line in the constructor.
+        if (getProperty("sound").getAsString().equalsIgnoreCase("null") || getProperty("sound").getAsString().equalsIgnoreCase(" ") || getProperty("sound").getAsString().equalsIgnoreCase("")) {
+            core.getExecutor().log("Stopping all sounds");
+            if (core.getExecutor().stopSound(null, null))
+                return "Stopping all sounds.";
+            else
+                return "Failed to stop all sounds.";
+        } else {
+            core.getExecutor().log("Stopping specific sound: " + getProperty("sound").getAsString());
+            if (core.getExecutor().stopSound(getProperty("sound").getAsString(), null))
+                return "Stopping specific sound: " + getProperty("sound").getAsString();
+            else
+                return "Failed to stop specific sound.";
         }
-
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
-
-        String sound = parameters.containsKey("sound") ? parameters.get("sound").toString() : null;
-        String category = parameters.containsKey("category") ? parameters.get("category").toString() : null;
-
-        core.getExecutor().stopSound(sound, category);
-
-        String response = "Stopping sound: " + sound + " in category: " + category;
-        exchange.sendResponseHeaders(200, response.getBytes().length);
-        exchange.getResponseBody().write(response.getBytes());
-
-        exchange.getResponseBody().close();
-
-
     }
 }

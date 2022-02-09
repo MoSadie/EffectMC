@@ -1,71 +1,42 @@
 package com.mosadie.effectmc.core.handler;
 
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.Util;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class SkinLayerHandler implements HttpHandler {
+public class SkinLayerHandler extends EffectRequestHandler {
 
-    private final EffectMCCore core;
 
     public SkinLayerHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addSelectionProperty("section", SKIN_SECTION.ALL.toString(), true, "Skin Section", SKIN_SECTION.toStringArray());
+        addSelectionProperty("visibility", VISIBILITY.TOGGLE.toString(), true, "Visibility", VISIBILITY.toStringArray());
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("SkinLayerHandler triggered");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
-        }
+    public String getEffectName() {
+        return "Set Skin Layer";
+    }
 
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
+    @Override
+    public String getEffectTooltip() {
+        return "Sets or toggles the visibility of skin layers.";
+    }
 
-        if (parameters.containsKey("section")) {
-            SKIN_SECTION section = SKIN_SECTION.getFromName(parameters.get("section").toString());
-
-            if (section == null) {
-                core.getExecutor().log("Skin section invalid");
-                String response = "Invalid Skin Section";
-                exchange.sendResponseHeaders(400, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-                exchange.getResponseBody().close();
-                return;
-            }
-
-            if (parameters.containsKey("visibility")) {
-                // Set skin layer, fallback to false if unknown string.
-                boolean newVisibility = Boolean.parseBoolean(parameters.get("visibility").toString());
-                core.getExecutor().setSkinLayer(section, newVisibility);
-            } else {
-                // Toggle skin layer
-                core.getExecutor().toggleSkinLayer(section);
-            }
-
-            core.getExecutor().log("Toggle Skin Layer");
-            String response = "Toggled Skin Layer: " + section.toString();
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
+    @Override
+    String execute() {
+        if (getProperty("visibility").getAsString().equalsIgnoreCase(VISIBILITY.TOGGLE.name())) {
+            if (core.getExecutor().toggleSkinLayer(SKIN_SECTION.getFromName(getProperty("section").getAsString())))
+                return "Toggled " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " skin section";
+            else
+                return "Failed to toggle skin section.";
         } else {
-            core.getExecutor().log("SkinLayer failed");
-            String response = "Section not defined";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
+            if (core.getExecutor().setSkinLayer(SKIN_SECTION.getFromName(getProperty("section").getAsString()), getProperty("visibility").getAsString().equalsIgnoreCase(VISIBILITY.SHOW.name())))
+                return "Set " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " to " + getProperty("visibility").getAsString();
+            else
+                return "Failed to set skin section visibility.";
         }
-        exchange.getResponseBody().close();
-
     }
 
     public enum SKIN_SECTION {
@@ -85,6 +56,28 @@ public class SkinLayerHandler implements HttpHandler {
             } catch (IllegalArgumentException e) {
                 return null;
             }
+        }
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (SKIN_SECTION section : SKIN_SECTION.values()) {
+                list.add(section.name());
+            }
+            return list.toArray(new String[0]);
+        }
+    }
+
+    public enum VISIBILITY {
+        SHOW,
+        HIDE,
+        TOGGLE;
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (VISIBILITY visibility : VISIBILITY.values()) {
+                list.add(visibility.name());
+            }
+            return list.toArray(new String[0]);
         }
     }
 }

@@ -1,67 +1,51 @@
 package com.mosadie.effectmc.core.handler;
 
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.Util;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DisconnectHandler implements HttpHandler {
 
-    private final EffectMCCore core;
+public class DisconnectHandler extends EffectRequestHandler {
+
 
     public DisconnectHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addSelectionProperty("nextscreen", NEXT_SCREEN.MAIN_MENU.toString(), true, "Next Screen", NEXT_SCREEN.toStringArray());
+        addStringProperty("title", "", true, "Title", "Title");
+        addStringProperty("message", "", true, "Message", "Message");
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("Disconnect started");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
+    public String getEffectName() {
+        return "Disconnect";
+    }
+
+    @Override
+    public String getEffectSlug() {
+        return "triggerdisconnect";
+    }
+
+    @Override
+    public String getEffectTooltip() {
+        return "Disconnect from server/world and show a custom disconnect screen.";
+    }
+
+    @Override
+    public String execute() {
+        NEXT_SCREEN nextScreen = NEXT_SCREEN.getFromName(getProperty("nextscreen").getAsString());
+
+        if (nextScreen == null) {
+            core.getExecutor().log("Next Screen invalid");
+            return "Next Screen Invalid";
         }
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
 
-        if (parameters.containsKey("nextscreen")) {
-            NEXT_SCREEN nextScreen = NEXT_SCREEN.getFromName(parameters.get("nextscreen").toString());
-
-            if (nextScreen == null) {
-                core.getExecutor().log("Next Screen invalid");
-                String response = "Invalid Next Screen";
-                exchange.sendResponseHeaders(400, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-                exchange.getResponseBody().close();
-                return;
-            }
-
-            core.getExecutor().log("Triggering Disconnect");
-            String response = "Triggering Disconnect";
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
-
-            String title = parameters.containsKey("title") ? parameters.get("title").toString() : "";
-            String message = parameters.containsKey("message") ? parameters.get("message").toString() : "";
-            core.getExecutor().triggerDisconnect(nextScreen, title, message);
+        core.getExecutor().log("Triggering Disconnect");
+        if (core.getExecutor().triggerDisconnect(nextScreen, getProperty("title").getAsString(), getProperty("message").getAsString())) {
+            return "Disconnected from world.";
         } else {
-            core.getExecutor().log("Disconnect failed");
-            String response = "Next Screen not defined";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
+            return "Failed to disconnect.";
         }
-
-
     }
 
     public enum NEXT_SCREEN {
@@ -75,6 +59,14 @@ public class DisconnectHandler implements HttpHandler {
             } catch (IllegalArgumentException e) {
                 return null;
             }
+        }
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (NEXT_SCREEN screen : NEXT_SCREEN.values()) {
+                list.add(screen.name());
+            }
+            return list.toArray(new String[0]);
         }
     }
 }
