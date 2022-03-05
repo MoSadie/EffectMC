@@ -167,8 +167,13 @@ public abstract class EffectRequestHandler implements HttpHandler {
         addProperty(id, new BodyProperty(id, value, required, label, placeholder));
     }
 
+    void addCommentProperty(String comment) {
+        String id = UUID.randomUUID().toString();
+        addProperty(id, new CommentProperty(id, comment));
+    }
+
     private void sendToWebInterface(HttpExchange exchange) throws IOException {
-        StringBuilder response = new StringBuilder("<html><head><title>" + getEffectName() + " - EffectMC</title><body><h1>" + getEffectName() + "</h1>");
+        StringBuilder response = new StringBuilder("<html><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>" + getEffectName() + " - EffectMC</title><link rel=\"stylesheet\" href=\"/style.css\"><body><div class=\"wrapper\"><h1>" + getEffectName() + "</h1>");
         boolean needsPost = false;
         for (EffectProperty property : properties.values()) {
             if (property.getPropType().equals(EffectProperty.PropertyType.BODY)) {
@@ -182,7 +187,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
             response.append(property.getHTMLInput()).append("</br>");
         }
 
-        response.append("<input type=\"submit\"></form><br/><iframe name=\"result\"/></body></html>");
+        response.append("<input type=\"submit\" value=\"Trigger Effect\"></form><br/><iframe name=\"result\"></iframe></br></br><a href=\"/\">Back to effect list</a></div></body></html>");
         exchange.sendResponseHeaders(200, response.toString().getBytes().length);
         exchange.getResponseBody().write(response.toString().getBytes());
         exchange.getResponseBody().close();

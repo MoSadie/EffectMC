@@ -6,8 +6,10 @@ public class ShowTitleHandler extends EffectRequestHandler {
 
     public ShowTitleHandler(EffectMCCore core) {
         super(core);
+        addCommentProperty("Set color using &sect; color codes.");
         addStringProperty("title", "", true, "Title", "Hello");
         addStringProperty("subtitle", "", true, "Subtitle", "World!");
+        addCommentProperty("For a blank title/subtitle, use a single space.");
     }
 
     @Override

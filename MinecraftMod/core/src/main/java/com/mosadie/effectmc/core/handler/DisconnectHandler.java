@@ -11,9 +11,11 @@ public class DisconnectHandler extends EffectRequestHandler {
 
     public DisconnectHandler(EffectMCCore core) {
         super(core);
-        addSelectionProperty("nextscreen", NEXT_SCREEN.MAIN_MENU.toString(), true, "Next Screen", NEXT_SCREEN.toStringArray());
+        addCommentProperty("Set color using &sect; color codes.");
         addStringProperty("title", "", true, "Title", "Title");
         addStringProperty("message", "", true, "Message", "Message");
+        addCommentProperty("For a blank line, use a single space.");
+        addSelectionProperty("nextscreen", NEXT_SCREEN.MAIN_MENU.toString(), true, "Next Screen", NEXT_SCREEN.toStringArray());
     }
 
     @Override

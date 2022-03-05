@@ -45,7 +45,7 @@ public class BooleanProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        return "<span class=\"label\">" + getLabel() + "</span><select id=\"" + id + "\" name=\"" + id + "\"><option value=\"true\" " + (value ? "selected" : "") + ">" + trueLabel + "</option><option value=\"false\" " + (!value ? "selected" : "") + ">" + falseLabel + "</option></select>";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><select id=\"" + id + "\" name=\"" + id + "\"><option value=\"true\" " + (value ? "selected" : "") + ">" + trueLabel + "</option><option value=\"false\" " + (!value ? "selected" : "") + ">" + falseLabel + "</option></select>";
     }
 
     @Override

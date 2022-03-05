@@ -23,7 +23,7 @@ public class StringProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        return "<span class=\"label\">" + getLabel() + "</span><input type=\"text\" id=\"" + id + "\" name=\"" + id + "\" placeholder=\"" + placeholder + "\" " + (isRequired() ? "required" : "") + ">";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"text\" id=\"" + id + "\" name=\"" + id + "\" placeholder=\"" + placeholder + "\" " + (isRequired() ? "required" : "") + ">";
     }
 
     @Override

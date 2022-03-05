@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static net.minecraft.client.gui.screen.ReadBookScreen.*;
 
@@ -64,7 +65,13 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
-        boolean result = core.initServer();
+        boolean result = false;
+        try {
+            result = core.initServer();
+        } catch (URISyntaxException e) {
+            LOGGER.error("Failed to initialize server due to internal error, please report this!", e);
+            result = false;
+        }
         LOGGER.info("Server start result: " + result);
 
         MinecraftForge.EVENT_BUS.addListener(this::onChat);
@@ -362,27 +369,27 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean openBook(JsonObject bookJSON) {
+        CompoundNBT nbt = null;
+        try {
+            nbt = JsonToNBT.getTagFromJson(bookJSON.toString());
+        } catch (CommandSyntaxException e) {
+            LOGGER.error("Invalid JSON");
+            return false;
+        }
+
+        if (!WrittenBookItem.validBookTagContents(nbt)) {
+            LOGGER.error("Invalid Book JSON");
+            return false;
+        }
+
+        ItemStack bookStack = new ItemStack(Items.WRITTEN_BOOK);
+        bookStack.setTag(nbt);
+
+        IBookInfo bookInfo = IBookInfo.func_216917_a(bookStack);
+
+        ReadBookScreen screen = new ReadBookScreen(bookInfo);
+
         Minecraft.getInstance().enqueue(() -> {
-            CompoundNBT nbt = null;
-            try {
-                nbt = JsonToNBT.getTagFromJson(bookJSON.toString());
-            } catch (CommandSyntaxException e) {
-                LOGGER.error("Invalid JSON");
-                return;
-            }
-
-            if (!WrittenBookItem.validBookTagContents(nbt)) {
-                LOGGER.error("Invalid Book JSON");
-                return;
-            }
-
-            ItemStack bookStack = new ItemStack(Items.WRITTEN_BOOK);
-            bookStack.setTag(nbt);
-
-            IBookInfo bookInfo = IBookInfo.func_216917_a(bookStack);
-
-            ReadBookScreen screen = new ReadBookScreen(bookInfo);
-
             Minecraft.getInstance().displayGuiScreen(screen);
         });
         return true;
@@ -398,8 +405,9 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean loadWorld(String worldName) {
-        Minecraft.getInstance().enqueue(() -> {
+
             if (Minecraft.getInstance().getSaveLoader().canLoadWorld(worldName)) {
+                Minecraft.getInstance().enqueue(() -> {
                 if (Minecraft.getInstance().world != null) {
                     LOGGER.info("Disconnecting from world...");
 
@@ -409,10 +417,11 @@ public class EffectMC implements EffectExecutor {
 
                 LOGGER.info("Loading world...");
                 Minecraft.getInstance().loadWorld(worldName);
+                });
+                return true;
             } else {
                 LOGGER.warn("World " + worldName + " does not exist!");
+                return false;
             }
-        });
-        return true;
     }
 }

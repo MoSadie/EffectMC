@@ -17,23 +17,23 @@ public class RootHandler implements HttpHandler {
     }
 
     private String generateHomepage() {
-        StringBuilder response = new StringBuilder("<html><head><title>EffectMC v" + RootHandler.class.getPackage().getImplementationVersion() + "</title><body><h1>EffectMC v" + RootHandler.class.getPackage().getImplementationVersion() + "</h1><h2>Effect List:</h2><ul>");
+        StringBuilder response = new StringBuilder("<html><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>EffectMC v" + RootHandler.class.getPackage().getImplementationVersion() + "</title><link rel=\"stylesheet\" href=\"/style.css\"></head><body><div class=\"wrapper\"><h1>EffectMC v" + RootHandler.class.getPackage().getImplementationVersion() + "</h1><h2>Effect List:</h2><ul>");
 
         for (EffectRequestHandler effect : core.getEffects()) {
             response.append("<li><a href=\"" + effect.getEffectSlug() + "\">" + effect.getEffectName() + "</a></li>");
         }
 
-        response.append("</ul></body></html>");
+        response.append("</ul></div></body></html>");
         return response.toString();
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("Root Message Received!");
+        core.getExecutor().log("Showing homepage!");
 
 
         exchange.sendResponseHeaders(200, homepage.getBytes().length);
-        exchange.getResponseBody().write(homepage.toString().getBytes());
+        exchange.getResponseBody().write(homepage.getBytes());
         exchange.getResponseBody().close();
     }
 }

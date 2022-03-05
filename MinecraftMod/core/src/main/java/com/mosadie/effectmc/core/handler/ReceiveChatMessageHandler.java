@@ -6,6 +6,7 @@ public class ReceiveChatMessageHandler extends EffectRequestHandler {
 
     public ReceiveChatMessageHandler(EffectMCCore core) {
         super(core);
+        addCommentProperty("Set color using &sect; color codes.");
         addStringProperty("message", "", true, "Message", "Hello World!");
     }
 

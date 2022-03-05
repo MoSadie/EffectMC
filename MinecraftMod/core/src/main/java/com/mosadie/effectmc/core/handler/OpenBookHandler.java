@@ -7,6 +7,7 @@ public class OpenBookHandler extends EffectRequestHandler {
 
     public OpenBookHandler(EffectMCCore core) {
         super(core);
+        addCommentProperty("More information on how to configure this on the <a href=\"https://github.com/MoSadie/EffectMC/wiki/open-book\" target=\"_blank\">wiki.</a>");
         addBodyProperty("bookJSON", "", true, "Book JSON", "{}");
     }
 

@@ -25,7 +25,7 @@ public class DoubleProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        return "<span class=\"label\">" + getLabel() + "</span><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString() + "\" step=\"0.001\">";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString() + "\" step=\"0.001\">";
     }
 
     @Override

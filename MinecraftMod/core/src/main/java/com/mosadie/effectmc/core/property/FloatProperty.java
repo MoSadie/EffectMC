@@ -34,7 +34,7 @@ public class FloatProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        return "<span class=\"label\">" + getLabel() + "</span><input type=\"range\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString() + "\" min=\"" + min + "\" max=\"" + max + "\" step=\"0.01\">";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"range\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString() + "\" min=\"" + min + "\" max=\"" + max + "\" step=\"0.01\">";
     }
 
     @Override

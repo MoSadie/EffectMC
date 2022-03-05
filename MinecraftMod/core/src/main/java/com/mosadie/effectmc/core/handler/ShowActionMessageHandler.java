@@ -7,6 +7,7 @@ public class ShowActionMessageHandler extends EffectRequestHandler {
 
     public ShowActionMessageHandler(EffectMCCore core) {
         super(core);
+        addCommentProperty("Set color using &sect; color codes.");
         addStringProperty("message", "", true, "Message", "Hello World!");
     }
 

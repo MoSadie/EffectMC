@@ -35,7 +35,7 @@ public class SelectionProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        String result = "<span class=\"label\">" + getLabel() + "</span><select id=\"" + id + "\" name=\"" + id + "\" " + (isRequired() ? "required" : "") + ">";
+        String result = "<label for=\""+ id + "\">" + getLabel() + "</label><select id=\"" + id + "\" name=\"" + id + "\" " + (isRequired() ? "required" : "") + ">";
         for (String option : options) {
             result += "<option value=\"" + option + "\"" + (option == selected ? "selected" : "") + ">" + option + "</option>";
         }

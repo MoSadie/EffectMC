@@ -6,8 +6,10 @@ public class ShowToastHandler extends EffectRequestHandler {
 
     public ShowToastHandler(EffectMCCore core) {
         super(core);
+        addCommentProperty("Set color using &sect; color codes.");
         addStringProperty("title", "", true, "Title", "Hello");
         addStringProperty("subtitle", "", true, "Subtitle", "World!");
+        addCommentProperty("For a blank subtitle, use a single space.");
     }
 
     @Override

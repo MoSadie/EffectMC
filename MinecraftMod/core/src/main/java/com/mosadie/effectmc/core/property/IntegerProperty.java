@@ -27,7 +27,7 @@ public class IntegerProperty extends EffectProperty{
 
     @Override
     public String getHTMLInput() {
-        return "<span class=\"label\">" + getLabel() + "</span><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" placeholder=\"" + placeholder + "\" " + (isRequired() ? "required" : "") + ">";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" placeholder=\"" + placeholder + "\" " + (isRequired() ? "required" : "") + ">";
     }
 
     @Override

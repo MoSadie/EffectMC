@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.util.*;
 
 public class EffectMCCore {
@@ -53,7 +54,7 @@ public class EffectMCCore {
         effects.add(new LoadWorldHandler(this));
     }
 
-    public boolean initServer() {
+    public boolean initServer() throws URISyntaxException {
         int port = DEFAULT_PORT;
         if (configFile.exists()) {
             try {
@@ -103,6 +104,8 @@ public class EffectMCCore {
         }
 
         server.createContext("/", new RootHandler(this));
+
+        server.createContext("/style.css", new CSSRequestHandler());
 
         for(EffectRequestHandler effect : effects) {
             server.createContext("/" + effect.getEffectSlug(), effect);
