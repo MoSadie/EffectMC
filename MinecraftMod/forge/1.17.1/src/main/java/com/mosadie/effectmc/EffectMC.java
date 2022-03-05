@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 @Mod(EffectMC.MODID)
 public class EffectMC implements EffectExecutor {
@@ -66,7 +67,13 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
-        boolean result = core.initServer();
+        boolean result = false;
+        try {
+            result = core.initServer();
+        } catch (URISyntaxException e) {
+            LOGGER.error("Failed to initialize server due to internal error, please report this!", e);
+            result = false;
+        }
         LOGGER.info("Server start result: " + result);
 
         MinecraftForge.EVENT_BUS.addListener(this::onChat);
@@ -112,7 +119,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void joinServer(String serverIp) {
+    public boolean joinServer(String serverIp) {
         Minecraft.getInstance().execute(() -> {
             if (Minecraft.getInstance().level != null) {
                 LOGGER.info("Disconnecting from world...");
@@ -140,10 +147,12 @@ public class EffectMC implements EffectExecutor {
 
             ConnectScreen.startConnecting(new TitleScreen(), Minecraft.getInstance(), serverAddress, serverData);
         });
+
+        return true;
     }
 
     @Override
-    public void setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+    public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
         Options options = Minecraft.getInstance().options;
 
         switch (section) {
@@ -181,10 +190,12 @@ public class EffectMC implements EffectExecutor {
                 options.toggleModelPart(PlayerModelPart.HAT, visibility);
                 break;
         }
+
+        return true;
     }
 
     @Override
-    public void toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+    public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
         Options options = Minecraft.getInstance().options;
         switch (section) {
 
@@ -221,40 +232,54 @@ public class EffectMC implements EffectExecutor {
                 options.toggleModelPart(PlayerModelPart.HAT, !options.isModelPartEnabled(PlayerModelPart.HAT));
                 break;
         }
+
+        return true;
     }
 
     @Override
-    public void sendChatMessage(String message) {
+    public boolean sendChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
             LOGGER.info("Sending chat message: " + message);
             Minecraft.getInstance().player.chat(message);
+
+            return true;
         }
+
+        return false;
     }
 
     @Override
-    public void receiveChatMessage(String message) {
+    public boolean receiveChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
             LOGGER.info("Showing chat message: " + message);
             Minecraft.getInstance().player.sendMessage(new TextComponent(message), Minecraft.getInstance().player.getUUID());
+
+            return true;
         }
+
+        return false;
     }
 
     @Override
-    public void showTitle(String title, String subtitle) {
+    public boolean showTitle(String title, String subtitle) {
         LOGGER.info("Showing Title: " + title + " Subtitle: " + subtitle);
         Minecraft.getInstance().gui.resetTitleTimes();
         Minecraft.getInstance().gui.setSubtitle(new TextComponent(subtitle));
         Minecraft.getInstance().gui.setTitle(new TextComponent(title));
+
+        return true;
     }
 
     @Override
-    public void showActionMessage(String message) {
+    public boolean showActionMessage(String message) {
         LOGGER.info("Showing ActionBar message: " + message);
         Minecraft.getInstance().gui.setOverlayMessage(new TextComponent(message), false);
+
+        return true;
     }
 
     @Override
-    public void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+    public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().execute(() -> {
             if (Minecraft.getInstance().level != null) {
                 LOGGER.info("Disconnecting from world...");
@@ -285,10 +310,12 @@ public class EffectMC implements EffectExecutor {
             DisconnectedScreen screen = new DisconnectedScreen(nextScreen, new TextComponent(title), new TextComponent(message));
             Minecraft.getInstance().setScreen(screen);
         });
+
+        return true;
     }
 
     @Override
-    public void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
+    public boolean playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
         Minecraft.getInstance().execute(() -> {
             ResourceLocation sound = new ResourceLocation(soundID);
 
@@ -318,6 +345,8 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(sound, category, volume, pitch, repeat, repeatDelay, attenuation, trueX, trueY, trueZ, global));
         });
+
+        return true;
     }
 
     @Override
@@ -334,7 +363,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void stopSound(String sound, String categoryName) {
+    public boolean stopSound(String sound, String categoryName) {
         Minecraft.getInstance().execute(() -> {
             ResourceLocation location = sound == null ? null : ResourceLocation.tryParse(sound);
             SoundSource category = null;
@@ -347,17 +376,21 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().getSoundManager().stop(location, category);
         });
+
+        return true;
     }
 
     @Override
-    public void showToast(String title, String subtitle) {
+    public boolean showToast(String title, String subtitle) {
         Minecraft.getInstance().execute(() -> {
             Minecraft.getInstance().getToasts().addToast(new SystemToast(null, new TextComponent(title), new TextComponent(subtitle)));
         });
+
+        return true;
     }
 
     @Override
-    public void openBook(JsonObject bookJSON) {
+    public boolean openBook(JsonObject bookJSON) {
         Minecraft.getInstance().execute(() -> {
             CompoundTag tag = null;
             try {
@@ -381,17 +414,21 @@ public class EffectMC implements EffectExecutor {
 
             Minecraft.getInstance().setScreen(screen);
         });
+
+        return true;
     }
 
     @Override
-    public void narrate(String message, boolean interrupt) {
+    public boolean narrate(String message, boolean interrupt) {
         Minecraft.getInstance().execute(() -> {
             narrator.say(message, interrupt);
         });
+
+        return true;
     }
 
     @Override
-    public void loadWorld(String worldName) {
+    public boolean loadWorld(String worldName) {
         Minecraft.getInstance().execute(() -> {
             if (Minecraft.getInstance().getLevelSource().levelExists(worldName)) {
                 if (Minecraft.getInstance().level != null) {
@@ -407,5 +444,7 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.warn("World " + worldName + " does not exist!");
             }
         });
+
+        return true;
     }
 }

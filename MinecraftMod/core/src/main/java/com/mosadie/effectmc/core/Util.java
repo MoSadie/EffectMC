@@ -47,16 +47,13 @@ public class Util {
         }
     }
 
-    public static boolean trustCheck(Map<String, Object> parameters, HttpExchange exchange, EffectMCCore core) {
-        if (parameters == null || !parameters.containsKey("device")) {
-            unauthenticatedResponse(exchange);
-            return false;
-        }
-
-        String device = parameters.get("device").toString();
-
-        if (core.checkTrust(device)) {
-            return true;
+    public static boolean trustCheck(Map<String, Object> parameters, Map<String, Object> bodyParameters, HttpExchange exchange, EffectMCCore core) {
+        if (parameters != null && parameters.containsKey("device")) {
+            if (core.checkTrust(parameters.get("device").toString()))
+                return true;
+        } else if (bodyParameters != null && bodyParameters.containsKey("device")) {
+            if (core.checkTrust(bodyParameters.get("device").toString()))
+                return true;
         }
 
         unauthenticatedResponse(exchange);

@@ -1,59 +1,33 @@
 package com.mosadie.effectmc.core.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.Util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-
-public class ShowTitleHandler implements HttpHandler {
-
-    private final EffectMCCore core;
+public class ShowTitleHandler extends EffectRequestHandler {
 
     public ShowTitleHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addCommentProperty("Set color using &sect; color codes.");
+        addStringProperty("title", "", true, "Title", "Hello");
+        addStringProperty("subtitle", "", true, "Subtitle", "World!");
+        addCommentProperty("For a blank title/subtitle, use a single space.");
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("ShowTitle started");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
-        }
+    public String getEffectName() {
+        return "Show Title";
+    }
 
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
+    @Override
+    public String getEffectTooltip() {
+        return "Show a title/subtitle as if using the /title command.";
+    }
 
-        if (parameters.containsKey("title")) {
-            String title = parameters.get("title").toString();
-            String subtitle = "";
-
-            if (parameters.containsKey("subtitle"))
-                subtitle = parameters.get("subtitle").toString();
-
-
-            core.getExecutor().log("Showing title: " + title + " Subtitle: " + subtitle);
-
-            core.getExecutor().showTitle(title, subtitle);
-
-            String response = "Show title: " + title + " Subtitle: " + subtitle;
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-        } else {
-            core.getExecutor().log("ShowTitle failed");
-            String response = "Title not defined";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-        }
-        exchange.getResponseBody().close();
+    @Override
+    String execute() {
+        core.getExecutor().log("Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString());
+        if (core.getExecutor().showTitle(getProperty("title").getAsString(), getProperty("subtitle").getAsString()))
+            return "Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString();
+        else
+            return "Failed to show title";
     }
 }

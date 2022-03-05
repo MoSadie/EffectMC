@@ -153,6 +153,30 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
       - uses: actions/checkout@v2
 
+      # Setup JDK
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 8
+          
+      # Build Core
+      - name: Build/Install Core
+        working-directory: ./MinecraftMod/core
+        run: './gradlew.bat publishToMavenLocal'
+
+      # Setup JDK
+      - name: Set up JDK 16
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 16
+
+      # Generate Stream Deck Plugin
+      - name: Generate Stream Deck Plugin
+        working-directory: ./StreamDeckPlugin
+        run: './gradlew.bat run'
+
       # Download DistributionTool from Elgato
       - name: Download DistributionTool
         uses: carlosperate/download-file-action@v1.0.3

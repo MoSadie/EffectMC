@@ -1,75 +1,44 @@
 package com.mosadie.effectmc.core.handler;
 
 import com.google.gson.JsonObject;
-import com.mosadie.effectmc.core.Util;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.mosadie.effectmc.core.EffectMCCore;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-
-public class OpenBookHandler implements HttpHandler {
-
-    private final EffectMCCore core;
+public class OpenBookHandler extends EffectRequestHandler {
 
     public OpenBookHandler(EffectMCCore core) {
-        this.core = core;
+        super(core);
+        addCommentProperty("More information on how to configure this on the <a href=\"https://github.com/MoSadie/EffectMC/wiki/open-book\" target=\"_blank\">wiki.</a>");
+        addBodyProperty("bookJSON", "", true, "Book JSON", "{}");
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log("OpenBook started");
-        Map<String, Object> parameters = new HashMap<>();
-        String query = exchange.getRequestURI().getQuery();
-        try {
-            Util.parseQuery(query, parameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing query!");
-            parameters = new HashMap<>();
-        }
-        if (!Util.trustCheck(parameters, exchange, core))
-            return;
+    public String getEffectName() {
+        return "Open Book";
+    }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()));
-        String bookJson = null;
+    @Override
+    public String getEffectTooltip() {
+        return "Open any book.";
+    }
 
-        try {
-            bookJson = reader.readLine();
-        } catch(IOException e) {
-            core.getExecutor().log("WARN: An IOException occurred reading book json: " + e.toString());
-            return;
-        }
-
-        if (bookJson != null) {
-            JsonObject book = core.fromJson(bookJson);
+    @Override
+    String execute() {
+        if (!getProperty("bookJSON").getAsString().equalsIgnoreCase("")) {
+            JsonObject book = core.fromJson(getProperty("bookJSON").getAsString());
 
             if (book == null) {
                 core.getExecutor().log("Book invalid");
-                String response = "Invalid Book";
-                exchange.sendResponseHeaders(400, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-                exchange.getResponseBody().close();
-                return;
+                return "Invalid Book";
             }
 
-            core.getExecutor().log("Triggering Open Book");
-            String response = "Triggering Open Book";
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
+            core.getExecutor().log("Opening Book");
+            if (core.getExecutor().openBook(book))
+                return "Opened Book";
+            else
+                return "Failed to open book.";
 
-            core.getExecutor().openBook(book);
-        } else {
-            core.getExecutor().log("OpenBook failed");
-            String response = "Book not defined";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
         }
+
+        return "Book JSON not found!";
     }
 }

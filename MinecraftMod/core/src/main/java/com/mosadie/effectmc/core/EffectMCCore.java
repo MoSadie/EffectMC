@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.util.*;
 
 public class EffectMCCore {
@@ -20,6 +21,8 @@ public class EffectMCCore {
     private final File trustFile;
     private final EffectExecutor executor;
     private final Gson gson;
+
+    private final List<EffectRequestHandler> effects;
 
     private HttpServer server;
 
@@ -34,9 +37,24 @@ public class EffectMCCore {
         trustNextRequest = false;
 
         gson = new Gson();
+
+        effects = new ArrayList<>();
+        effects.add(new JoinServerHandler(this));
+        effects.add(new SkinLayerHandler(this));
+        effects.add(new SendChatMessageHandler(this));
+        effects.add(new ReceiveChatMessageHandler(this));
+        effects.add(new ShowTitleHandler(this));
+        effects.add(new ShowActionMessageHandler(this));
+        effects.add(new DisconnectHandler(this));
+        effects.add(new PlaySoundHandler(this));
+        effects.add(new StopSoundHandler(this));
+        effects.add(new ShowToastHandler(this));
+        effects.add(new OpenBookHandler(this));
+        effects.add(new NarrateHandler(this));
+        effects.add(new LoadWorldHandler(this));
     }
 
-    public boolean initServer() {
+    public boolean initServer() throws URISyntaxException {
         int port = DEFAULT_PORT;
         if (configFile.exists()) {
             try {
@@ -86,19 +104,12 @@ public class EffectMCCore {
         }
 
         server.createContext("/", new RootHandler(this));
-        server.createContext("/joinserver", new JoinServerHandler(this));
-        server.createContext("/setskinlayervisibility", new SkinLayerHandler(this));
-        server.createContext("/sendchat", new SendChatMessageHandler(this));
-        server.createContext("/receivechat", new ReceiveChatMessageHandler(this));
-        server.createContext("/showtitle", new ShowTitleHandler(this));
-        server.createContext("/showactionmessage", new ShowActionMessageHandler(this));
-        server.createContext("/triggerdisconnect", new DisconnectHandler(this));
-        server.createContext("/playsound", new PlaySoundHandler(this));
-        server.createContext("/stopsound", new StopSoundHandler(this));
-        server.createContext("/showtoast", new ShowToastHandler(this));
-        server.createContext("/openbook", new OpenBookHandler(this));
-        server.createContext("/narrate", new NarrateHandler(this));
-        server.createContext("/loadworld", new LoadWorldHandler(this));
+
+        server.createContext("/style.css", new CSSRequestHandler());
+
+        for(EffectRequestHandler effect : effects) {
+            server.createContext("/" + effect.getEffectSlug(), effect);
+        }
 
         server.setExecutor(null);
 
@@ -143,6 +154,10 @@ public class EffectMCCore {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<EffectRequestHandler> getEffects() {
+        return effects;
     }
 
     public static class TrustBooleanConsumer implements BooleanConsumer {

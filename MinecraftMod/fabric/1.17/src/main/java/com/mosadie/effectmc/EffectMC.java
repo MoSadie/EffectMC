@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.net.URISyntaxException;
 
 public class EffectMC implements ModInitializer, ClientModInitializer, EffectExecutor {
 
@@ -70,7 +71,13 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		LOGGER.info("Core Started");
 
 		LOGGER.info("Starting Server");
-		boolean result = core.initServer();
+		boolean result = false;
+		try {
+			result = core.initServer();
+		} catch (URISyntaxException e) {
+			LOGGER.error("Failed to initialize server due to internal error, please report this!", e);
+			result = false;
+		}
 		LOGGER.info("Server start result: " + result);
 
 		// Register command
@@ -112,7 +119,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public void joinServer(String serverIp) {
+	public boolean joinServer(String serverIp) {
 		MinecraftClient.getInstance().send(() -> {
 			if (MinecraftClient.getInstance().world != null) {
 				LOGGER.info("Disconnecting from world...");
@@ -136,10 +143,12 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 			ConnectScreen.connect(new TitleScreen(), MinecraftClient.getInstance(), address, info);
 		});
+
+		return true;
 	}
 
 	@Override
-	public void setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+	public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
 		GameOptions options = MinecraftClient.getInstance().options;
 
 		switch (section) {
@@ -176,10 +185,12 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 				options.togglePlayerModelPart(PlayerModelPart.HAT, visibility);
 				break;
 		}
+
+		return true;
 	}
 
 	@Override
-	public void toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+	public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
 		GameOptions options = MinecraftClient.getInstance().options;
 
 		switch (section) {
@@ -216,6 +227,8 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 				trueTogglePlayerModelPart(options, PlayerModelPart.HAT);
 				break;
 		}
+
+		return true;
 	}
 
 	private void trueTogglePlayerModelPart(GameOptions options, PlayerModelPart part) {
@@ -223,33 +236,45 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public void sendChatMessage(String message) {
+	public boolean sendChatMessage(String message) {
 		if (MinecraftClient.getInstance().player != null) {
 			LOGGER.info("Sending chat message: " + message);
 			MinecraftClient.getInstance().player.sendChatMessage(message);
+
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
-	public void receiveChatMessage(String message) {
+	public boolean receiveChatMessage(String message) {
 		if (MinecraftClient.getInstance().player != null) {
 			LOGGER.info("Showing chat message: " + message);
 			MinecraftClient.getInstance().player.sendSystemMessage(Text.of(message), MinecraftClient.getInstance().player.getUuid());
+
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
-	public void showTitle(String title, String subtitle) {
+	public boolean showTitle(String title, String subtitle) {
 		LOGGER.info("Showing Title: " + title + " Subtitle: " + subtitle);
 		MinecraftClient.getInstance().inGameHud.setDefaultTitleFade();
 		MinecraftClient.getInstance().inGameHud.setSubtitle(Text.of(subtitle));
 		MinecraftClient.getInstance().inGameHud.setTitle(Text.of(title));
+
+		return true;
 	}
 
 	@Override
-	public void showActionMessage(String message) {
+	public boolean showActionMessage(String message) {
 		LOGGER.info("Showing ActionBar message: " + message);
 		MinecraftClient.getInstance().inGameHud.setOverlayMessage(Text.of(message), false);
+
+		return true;
 	}
 
 	@Override
@@ -261,7 +286,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+	public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
 		MinecraftClient.getInstance().send(() -> {
 			if (MinecraftClient.getInstance().world != null) {
 				LOGGER.info("Disconnecting from world...");
@@ -293,10 +318,12 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 			DisconnectedScreen screen = new DisconnectedScreen(nextScreen, Text.of(title), Text.of(message));
 			MinecraftClient.getInstance().openScreen(screen);
 		});
+
+		return true;
 	}
 
 	@Override
-	public void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
+	public boolean playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global) {
 		MinecraftClient.getInstance().send(() -> {
 			Identifier sound = new Identifier(soundID);
 
@@ -326,6 +353,8 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 			MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(sound, category, volume, pitch, repeat, repeatDelay, attenuation, trueX, trueY, trueZ, global));
 		});
+
+		return true;
 	}
 
 	@Override
@@ -334,7 +363,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public void stopSound(String sound, String categoryName) {
+	public boolean stopSound(String sound, String categoryName) {
 		MinecraftClient.getInstance().send(() -> {
 			Identifier location = sound == null ? null : Identifier.tryParse(sound);
 			SoundCategory category = null;
@@ -347,17 +376,21 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 			MinecraftClient.getInstance().getSoundManager().stopSounds(location, category);
 		});
+
+		return true;
 	}
 
 	@Override
-	public void showToast(String title, String subtitle) {
+	public boolean showToast(String title, String subtitle) {
 		MinecraftClient.getInstance().send(() -> {
 			MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle)));
 		});
+
+		return true;
 	}
 
 	@Override
-	public void openBook(JsonObject bookJSON) {
+	public boolean openBook(JsonObject bookJSON) {
 		MinecraftClient.getInstance().send(() -> {
 			NbtCompound nbt = null;
 			try {
@@ -381,17 +414,21 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 			MinecraftClient.getInstance().openScreen(screen);
 		});
+
+		return true;
 	}
 
 	@Override
-	public void narrate(String message, boolean interrupt) {
+	public boolean narrate(String message, boolean interrupt) {
 		MinecraftClient.getInstance().send(() -> {
 			narrator.say(message, interrupt);
 		});
+
+		return true;
 	}
 
 	@Override
-	public void loadWorld(String worldName) {
+	public boolean loadWorld(String worldName) {
 		MinecraftClient.getInstance().send(() -> {
 			if (MinecraftClient.getInstance().getLevelStorage().levelExists(worldName)) {
 				if (MinecraftClient.getInstance().world != null) {
@@ -407,5 +444,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 				LOGGER.warn("World " + worldName + " does not exist!");
 			}
 		});
+
+		return true;
 	}
 }

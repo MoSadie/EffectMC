@@ -7,33 +7,33 @@ import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 public interface EffectExecutor {
     void log(String message);
 
-    void joinServer(String serverIp);
+    boolean joinServer(String serverIp);
 
-    void setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility);
-    void toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section);
+    boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility);
+    boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section);
 
-    void sendChatMessage(String message);
-    void receiveChatMessage(String message);
+    boolean sendChatMessage(String message);
+    boolean receiveChatMessage(String message);
 
-    void showTitle(String title, String subtitle);
+    boolean showTitle(String title, String subtitle);
 
-    void showActionMessage(String message);
+    boolean showActionMessage(String message);
 
     void showTrustPrompt(String device);
 
-    void triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreen, String title, String message);
+    boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreen, String title, String message);
 
-    void playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global);
+    boolean playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global);
 
     void resetScreen();
 
-    void stopSound(String sound, String category);
+    boolean stopSound(String sound, String category);
 
-    void showToast(String title, String subtitle);
+    boolean showToast(String title, String subtitle);
 
-    void openBook(JsonObject bookJSON);
+    boolean openBook(JsonObject bookJSON);
 
-    void narrate(String message, boolean interrupt);
+    boolean narrate(String message, boolean interrupt);
 
-    void loadWorld(String worldName);
+    boolean loadWorld(String worldName);
 }
