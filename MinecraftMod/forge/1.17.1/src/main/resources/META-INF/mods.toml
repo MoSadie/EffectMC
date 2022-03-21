@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+issueTrackerURL="https://github.com/MoSadie/EffectMC/issues"
+license="GNU GPL v3"
+[[mods]]
+modId="effectmc"
+version="${file.jarVersion}"
+displayName="EffectMC"
+updateJSONURL="https://raw.githubusercontent.com/MoSadie/EffectMC/main/MinecraftMod/forge/update.json"
+displayURL="https://github.com/MoSadie/EffectMC"
+authors="MoSadie"
+description='''
+      Various Effects that can be triggered by devices like an Elgato Stream Deck.
+      '''
+[[dependencies.effectmc]]
+    modId="forge"
+    mandatory=true
+    versionRange="[37,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.effectmc]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.17.1]"
+    ordering="NONE"
+    side="BOTH"

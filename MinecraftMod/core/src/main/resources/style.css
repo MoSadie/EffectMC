@@ -1,0 +1,23 @@
+/* Right now this is just manually copied into the CSSRequestHandler class. */
+.wrapper {
+    margin: auto;
+    width: fit-content;
+    text-align: center;
+    margin-top: 2em;
+    border: grey 5px solid;
+    padding: 2em;
+    background: darkgrey;
+    border-radius: 5px;
+}
+
+body {
+    background: dimgrey;
+}
+
+label {
+    padding-right: 5px;
+}
+
+input {
+    margin: 5px
+}
