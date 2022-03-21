@@ -2,38 +2,80 @@ package com.mosadie.effectmc.core.handler;
 
 import com.mosadie.effectmc.core.EffectMCCore;
 
-public class PressInputHandler extends EffectRequestHandler {
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SetSkinHandler extends EffectRequestHandler {
 
     private final EffectMCCore core;
 
-    public PressInputHandler(EffectMCCore core) {
+    public SetSkinHandler(EffectMCCore core) {
         super(core);
-        addStringProperty("key", "", true, "Key", "");
-        addIntegerProperty("holdtime", 0, true, "Hold Duration", "100");
+        addStringProperty("url", "", true, "Skin URL", "");
+        addSelectionProperty("skinType", SKIN_TYPE.CLASSIC.getValue(), true, "Skin Type", SKIN_TYPE.toStringArray());
         this.core = core;
     }
 
     @Override
     public String getEffectName() {
-        return "Press Input";
+        return "Set Skin";
     }
 
     @Override
     public String getEffectTooltip() {
-        return "Press any control.";
+        return "Update your skin and locally refresh it.";
     }
 
     @Override
     String execute() {
-        if (getProperty("key") != null) {
-            core.getExecutor().log("Attempting to press key");
-            if (core.getExecutor().pressInput(getProperty("key").getAsString(), getProperty("holdtime").getAsInt()))
-                return "Pressed key";
-            else
-                return "Failed to press key.";
+            try {
+                URL skinUrl = new URL(getProperty("url").getAsString());
+
+                SKIN_TYPE skinType = SKIN_TYPE.getFromName(getProperty("skinType").getAsString());
+
+                core.getExecutor().log("Attempting to update & refresh skin.");
+                if (core.getExecutor().setSkin(skinUrl, skinType))
+                    return "Updated and locally refreshed skin.";
+                else
+                    return "Failed update and refresh skin.";
+            } catch (MalformedURLException e) {
+                core.getExecutor().log("Malformed url! Aborting effect.");
+                e.printStackTrace();
+                return "Malformed url!";
+            }
+    }
+
+    public enum SKIN_TYPE {
+        SLIM("slim"),
+        CLASSIC("classic");
+
+        private final String value;
+
+        SKIN_TYPE(String value) {
+            this.value = value;
         }
 
-        return "Something went wrong.";
+        public String getValue() {
+            return value;
+        }
+
+        public static SKIN_TYPE getFromName(String name) {
+            try {
+                return SKIN_TYPE.valueOf(name.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+
+        public static String[] toStringArray() {
+            List<String> list = new ArrayList<>();
+            for (SKIN_TYPE skinType : SKIN_TYPE.values()) {
+                list.add(skinType.name());
+            }
+            return list.toArray(new String[0]);
+        }
     }
 
 }

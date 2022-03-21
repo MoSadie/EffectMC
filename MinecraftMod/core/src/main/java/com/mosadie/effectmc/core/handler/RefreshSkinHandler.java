@@ -2,48 +2,47 @@ package com.mosadie.effectmc.core.handler;
 
 import com.mosadie.effectmc.core.EffectMCCore;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.UUID;
 
-public class SetSkinHandler extends EffectRequestHandler {
+public class RefreshSkinHandler extends EffectRequestHandler {
 
     private final EffectMCCore core;
 
-    public SetSkinHandler(EffectMCCore core) {
+    public RefreshSkinHandler(EffectMCCore core) {
         super(core);
-        addStringProperty("url", "", true, "Skin URL", "");
+        addStringProperty("uuid", "", true, "Skin URL", "");
         this.core = core;
     }
 
     @Override
     public String getEffectName() {
-        return "Set Skin";
+        return "Refresh Skin";
     }
 
     @Override
     public String getEffectTooltip() {
-        return "Update your skin and locally refresh it.";
+        return "Refreshes the specified player's skin.";
     }
 
     @Override
     String execute() {
-        if (getProperty("url") != null) {
+        if (getProperty("uuid") != null) {
             try {
-                URL skinUrl = new URL(getProperty("url").getAsString());
+                UUID uuid = UUID.fromString(getProperty("uuid").getAsString());
 
-                core.getExecutor().log("Attempting to update & refresh skin.");
-                if (core.getExecutor().setSkin(skinUrl))
-                    return "Updated and locally refreshed skin.";
+                core.getExecutor().log("Attempting to refresh skin.");
+                if (core.getExecutor().refreshSkin(uuid))
+                    return "Refreshed skin.";
                 else
-                    return "Failed update and refresh skin.";
-            } catch (MalformedURLException e) {
-                core.getExecutor().log("Malformed url! Aborting effect.");
+                    return "Failed to refresh skin.";
+            } catch (IllegalArgumentException e) {
+                core.getExecutor().log("Malformed UUID! Aborting effect.");
                 e.printStackTrace();
-                return "Malformed url!";
+                return "Malformed UUID!";
             }
         }
 
-        return "Missing URL";
+        return "Missing UUID";
     }
 
 }

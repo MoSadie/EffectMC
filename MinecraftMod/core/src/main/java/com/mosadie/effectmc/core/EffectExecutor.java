@@ -2,7 +2,11 @@ package com.mosadie.effectmc.core;
 
 import com.google.gson.JsonObject;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
+
+import java.net.URL;
+import java.util.UUID;
 
 public interface EffectExecutor {
     void log(String message);
@@ -36,4 +40,8 @@ public interface EffectExecutor {
     boolean narrate(String message, boolean interrupt);
 
     boolean loadWorld(String worldName);
+
+    boolean refreshSkin(UUID uuid);
+
+    boolean setSkin(URL url, SetSkinHandler.SKIN_TYPE skinType);
 }
