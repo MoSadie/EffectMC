@@ -1,14 +1,7 @@
 package com.mosadie.effectmc;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.InsecureTextureException;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
@@ -23,8 +16,6 @@ import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.toasts.SystemToast;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -55,13 +46,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import static net.minecraft.client.gui.screen.ReadBookScreen.IBookInfo;
 
@@ -96,7 +84,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
-        boolean result = false;
+        boolean result;
         try {
             result = core.initServer();
         } catch (URISyntaxException e) {
@@ -115,11 +103,11 @@ public class EffectMC implements EffectExecutor {
 
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if (event.getMessage().equalsIgnoreCase("/effectmctrust")) {
+        if (event.getMessage().equalsIgnoreCase("/effectmc trust")) {
             Minecraft.getInstance().enqueue(core::setTrustNextRequest);
             receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
             event.setCanceled(true);
-        } else if (event.getMessage().equalsIgnoreCase("/effectmcexportbook")) {
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportbook")) {
             event.setCanceled(true);
             Minecraft.getInstance().enqueue(() -> {
                 if (Minecraft.getInstance().player == null) {
@@ -141,17 +129,14 @@ public class EffectMC implements EffectExecutor {
                     return;
                 }
 
+                if (bookStack.getTag() == null) {
+                    receiveChatMessage("[EffectMC] Failed to export book: Missing tag.");
+                    return;
+                }
+
                 LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
                 receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             });
-        } else if (event.getMessage().equalsIgnoreCase("/effectmctest")) {
-            event.setCanceled(true);
-            refreshSkin(Minecraft.getInstance().player.getUniqueID());
-//            try {
-//                updateSkinFromURL(new URL("https://texture.namemc.com/6f/43/6f436a047c2beb42.png"), SKIN_TYPE.SLIM);
-//            } catch (MalformedURLException e) {
-//                LOGGER.error(e);
-//            }
         }
     }
 
@@ -317,6 +302,7 @@ public class EffectMC implements EffectExecutor {
             Screen nextScreen;
 
             switch (nextScreenType) {
+                default:
                 case MAIN_MENU:
                     nextScreen = new MainMenuScreen();
                     break;
@@ -328,9 +314,6 @@ public class EffectMC implements EffectExecutor {
                 case WORLD_SELECT:
                     nextScreen = new WorldSelectionScreen(new MainMenuScreen());
                     break;
-
-                default:
-                    nextScreen = new MainMenuScreen();
             }
 
             DisconnectedScreen screen = new DisconnectedScreen(nextScreen, new StringTextComponent(title), new StringTextComponent(message));
@@ -362,7 +345,7 @@ public class EffectMC implements EffectExecutor {
             double trueY = y;
             double trueZ = z;
 
-            if (relative && Minecraft.getInstance().world != null) {
+            if (relative && Minecraft.getInstance().world != null && Minecraft.getInstance().player != null) {
                 trueX += Minecraft.getInstance().player.getPosX();
                 trueY += Minecraft.getInstance().player.getPosY();
                 trueZ += Minecraft.getInstance().player.getPosZ();
@@ -405,15 +388,13 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean showToast(String title, String subtitle) {
-        Minecraft.getInstance().enqueue(() -> {
-            Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle)));
-        });
+        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle))));
         return true;
     }
 
     @Override
     public boolean openBook(JsonObject bookJSON) {
-        CompoundNBT nbt = null;
+        CompoundNBT nbt;
         try {
             nbt = JsonToNBT.getTagFromJson(bookJSON.toString());
         } catch (CommandSyntaxException e) {
@@ -433,17 +414,13 @@ public class EffectMC implements EffectExecutor {
 
         ReadBookScreen screen = new ReadBookScreen(bookInfo);
 
-        Minecraft.getInstance().enqueue(() -> {
-            Minecraft.getInstance().displayGuiScreen(screen);
-        });
+        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().displayGuiScreen(screen));
         return true;
     }
 
     @Override
     public boolean narrate(String message, boolean interrupt) {
-        Minecraft.getInstance().enqueue(() -> {
-            narrator.say(message, interrupt);
-        });
+        Minecraft.getInstance().enqueue(() -> narrator.say(message, interrupt));
         return true;
     }
 
@@ -487,80 +464,21 @@ public class EffectMC implements EffectExecutor {
 
             HttpResponse response = authedClient.execute(request);
 
-            //TODO remove repeated code
-
             if (response.getEntity() != null && response.getEntity().getContentLength() > 0) {
                 JsonObject responseJSON = core.fromJson(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
                 if (responseJSON.has("errorMessage")) {
-                    LOGGER.warn("Failed to update skin! " + responseJSON.toString());
+                    LOGGER.warn("Failed to update skin! " + responseJSON);
                     return false;
                 }
 
-                LOGGER.debug("Skin Update Response: " + responseJSON.toString());
+                LOGGER.debug("Skin Update Response: " + responseJSON);
             }
 
             LOGGER.info("Skin updated!");
-
-            // Update skin texture locally
-            //FIXME TEST ME
-            refreshSkin(Minecraft.getInstance().player.getUniqueID());
-
-            LOGGER.info("Skin refreshed!");
             return true;
         } catch (IOException e) {
             LOGGER.warn("Failed to update skin!", e);
             return false;
         }
-    }
-
-     @Override
-     public boolean refreshSkin(UUID uuid) {
-        if (Minecraft.getInstance().world == null) {
-            LOGGER.warn("Attempted to refresh skin, but no world!");
-            return false;
-        }
-
-        GameProfile profile;
-
-        if (uuid.equals(Minecraft.getInstance().player.getUniqueID())) {
-            profile = Minecraft.getInstance().player.getGameProfile();
-        } else {
-            PlayerEntity playerEntity = Minecraft.getInstance().world.getPlayerByUuid(uuid);
-            if (playerEntity == null) {
-                LOGGER.warn("Player not found!");
-                return false;
-            }
-
-            profile = playerEntity.getGameProfile();
-        }
-
-        //FIXME somehow refresh player skin.
-         Minecraft.getInstance().getSkinManager().loadProfileTextures(profile, null, true);
-        return true;
-        // Copied/Modified from net.minecraft.client.resources.SkinManager
-//        Minecraft.getInstance().execute(() -> {
-//            Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> map = Maps.newHashMap();
-//            profile.getProperties().clear();
-//            if (profile.getId().equals(Minecraft.getInstance().getSession().getProfile().getId())) {
-//                profile.getProperties().putAll(Minecraft.getInstance().getProfileProperties());
-//                map.putAll(Minecraft.getInstance().getSessionService().getTextures(profile, false));
-//            } else {
-//                Minecraft.getInstance().getSessionService().fillProfileProperties(profile, false);
-//
-//                try {
-//                    map.putAll(Minecraft.getInstance().getSessionService().getTextures(profile, false));
-//                } catch (InsecureTextureException insecuretextureexception) {
-//                }
-//            }
-//
-////            map.putAll(Minecraft.getInstance().getSessionService().getTextures(profile, false));
-//            RenderSystem.recordRenderCall(() -> {
-//                ImmutableList.of(MinecraftProfileTexture.Type.SKIN, MinecraftProfileTexture.Type.CAPE).forEach((textureType) -> {
-//                    if (map.containsKey(textureType)) {
-//                        Minecraft.getInstance().getSkinManager().loadSkin(map.get(textureType), textureType);
-//                    }
-//                });
-//            });
-//        });
     }
 }

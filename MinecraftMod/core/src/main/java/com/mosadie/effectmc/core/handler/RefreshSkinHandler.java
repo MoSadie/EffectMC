@@ -2,8 +2,6 @@ package com.mosadie.effectmc.core.handler;
 
 import com.mosadie.effectmc.core.EffectMCCore;
 
-import java.util.UUID;
-
 public class RefreshSkinHandler extends EffectRequestHandler {
 
     private final EffectMCCore core;
@@ -26,23 +24,24 @@ public class RefreshSkinHandler extends EffectRequestHandler {
 
     @Override
     String execute() {
-        if (getProperty("uuid") != null) {
-            try {
-                UUID uuid = UUID.fromString(getProperty("uuid").getAsString());
-
-                core.getExecutor().log("Attempting to refresh skin.");
-                if (core.getExecutor().refreshSkin(uuid))
-                    return "Refreshed skin.";
-                else
-                    return "Failed to refresh skin.";
-            } catch (IllegalArgumentException e) {
-                core.getExecutor().log("Malformed UUID! Aborting effect.");
-                e.printStackTrace();
-                return "Malformed UUID!";
-            }
-        }
-
-        return "Missing UUID";
+        return "Not implemented";
+//        if (getProperty("uuid") != null) {
+//            try {
+//                UUID uuid = UUID.fromString(getProperty("uuid").getAsString());
+//
+//                core.getExecutor().log("Attempting to refresh skin.");
+//                if (core.getExecutor().refreshSkin(uuid))
+//                    return "Refreshed skin.";
+//                else
+//                    return "Failed to refresh skin.";
+//            } catch (IllegalArgumentException e) {
+//                core.getExecutor().log("Malformed UUID! Aborting effect.");
+//                e.printStackTrace();
+//                return "Malformed UUID!";
+//            }
+//        }
+//
+//        return "Missing UUID";
     }
 
 }
