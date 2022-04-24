@@ -59,7 +59,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/setskinlayervisibility?section=all&visibility=true&device=postman-test",
+					"raw": "http://localhost:3000/setskinlayervisibility?section=all&visibility=TOGGLE&device=postman-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -72,12 +72,46 @@
 						{
 							"key": "section",
 							"value": "all",
-							"description": "Allowed values: all, all_body, cape, jacket, left_sleeve, right_sleeve, left_pants_leg, right_pants_leg, hat (case insensitive)"
+							"description": "Allowed values: ALL, ALL_BODY, CAPE, JACKET, LEFT_SLEEVE, RIGHT_SLEEVE, LEFT_PANTS_LEG, RIGHT_PANTS_LEG, HAT"
 						},
 						{
 							"key": "visibility",
-							"value": "true",
-							"description": "Optional. Allowed values: true, false (case insensitive)"
+							"value": "TOGGLE",
+							"description": "Allowed values: SHOW, HIDE, TOGGLE"
+						},
+						{
+							"key": "device",
+							"value": "postman-test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SetSkin",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/setskin?url=https://s.namemc.com/i/db1ec00845bb505b.png&skinType=CLASSIC&device=postman-test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"setskin"
+					],
+					"query": [
+						{
+							"key": "url",
+							"value": "https://s.namemc.com/i/db1ec00845bb505b.png"
+						},
+						{
+							"key": "skinType",
+							"value": "CLASSIC",
+							"description": "Allowed values: SLIM, CLASSIC"
 						},
 						{
 							"key": "device",
@@ -253,7 +287,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/triggerdisconnect?title=This is a §6title!&message=This is a §6test!&device=postman-test&nextscreen=main_menu",
+					"raw": "http://localhost:3000/triggerdisconnect?title=This is a §6title!&message=This is a §6test!&device=postman-test&nextscreen=MAIN_MENU",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -279,7 +313,7 @@
 						},
 						{
 							"key": "nextscreen",
-							"value": "main_menu",
+							"value": "MAIN_MENU",
 							"description": "main_menu, server_select, world_select"
 						}
 					]
@@ -293,7 +327,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/playsound?sound=music_disc.mellohi&category=master&volume=1.0&pitch=1.0&repeat=false&repeatDelay=1&attenuationType=linear&x=0&y=0&z=0&relative=false&global=true&device=postman-test",
+					"raw": "http://localhost:3000/playsound?sound=music_disc.mellohi&category=MASTER&volume=1.0&pitch=1.0&repeat=false&repeatDelay=1&attenuationType=LINEAR&x=0&y=0&z=0&relative=false&global=true&device=postman-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -309,8 +343,8 @@
 						},
 						{
 							"key": "category",
-							"value": "master",
-							"description": "Accepted values: master, music, record, weather, block, hostile, neutral, player, ambient, voice. (Default: master)"
+							"value": "MASTER",
+							"description": "Accepted values: MASTER, MUSIC, RECORD, WEATHER, BLOCK, HOSTILE, NEUTRAL, PLAYER, AMBIENT, VOICE. (Default: master)"
 						},
 						{
 							"key": "volume",
@@ -334,8 +368,8 @@
 						},
 						{
 							"key": "attenuationType",
-							"value": "linear",
-							"description": "Values: none, linear"
+							"value": "LINEAR",
+							"description": "Values: NONE, LINEAR"
 						},
 						{
 							"key": "x",
@@ -377,7 +411,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/stopsound?sound=music_disc.mellohi&category=music&device=postman-test",
+					"raw": "http://localhost:3000/stopsound?sound=music_disc.mellohi&device=postman-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -393,7 +427,8 @@
 						},
 						{
 							"key": "category",
-							"value": "music"
+							"value": "music",
+							"disabled": true
 						},
 						{
 							"key": "device",
@@ -411,8 +446,20 @@
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "raw",
-					"raw": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}"
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "bookJSON",
+							"value": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}",
+							"type": "text"
+						},
+						{
+							"key": "device",
+							"value": "postman-test",
+							"type": "text",
+							"disabled": true
+						}
+					]
 				},
 				"url": {
 					"raw": "http://localhost:3000/openbook?device=postman-test",
@@ -463,64 +510,6 @@
 							"key": "interrupt",
 							"value": "true",
 							"description": "(Optional) True/False, default False"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "PressInput",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/pressinput?key=key.the_vault.open_shard_trader_screen&holdtime=2000&device=postman-test",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"pressinput"
-					],
-					"query": [
-						{
-							"key": "key",
-							"value": "key.the_vault.open_shard_trader_screen"
-						},
-						{
-							"key": "holdtime",
-							"value": "2000"
-						},
-						{
-							"key": "device",
-							"value": "postman-test"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "ListInputs",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/listinputs?device=postman-test",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"listinputs"
-					],
-					"query": [
-						{
-							"key": "device",
-							"value": "postman-test"
 						}
 					]
 				}

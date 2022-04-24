@@ -36,9 +36,9 @@ public class SetSkinHandler extends EffectRequestHandler {
 
                 SKIN_TYPE skinType = SKIN_TYPE.getFromName(getProperty("skinType").getAsString());
 
-                core.getExecutor().log("Attempting to update & refresh skin.");
+                core.getExecutor().log("Attempting to update skin.");
                 if (core.getExecutor().setSkin(skinUrl, skinType))
-                    return "Updated and locally refreshed skin.";
+                    return "Updated skin.";
                 else
                     return "Failed update and refresh skin.";
             } catch (MalformedURLException e) {
