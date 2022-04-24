@@ -65,8 +65,8 @@ public class StreamDeckPluginGen {
             Map<String, String> replaceMap = new HashMap<>();
             StringBuilder propertiesBuilder = new StringBuilder();
 
-            for (String key : effect.getProperties().keySet()) {
-                propertiesBuilder.append(effect.getProperty(key).getSDHTMLInput()).append("\n");
+            for (EffectProperty prop : effect.getPropertiesList()) {
+                propertiesBuilder.append(prop.getSDHTMLInput()).append("\n");
             }
 
             replaceMap.put("properties", propertiesBuilder.toString());

@@ -37,6 +37,10 @@ public abstract class EffectRequestHandler implements HttpHandler {
         return properties;
     }
 
+    public List<EffectProperty> getPropertiesList() {
+        return propertiesList;
+    }
+
     public abstract String getEffectName();
     public String getEffectSlug() {
         return getEffectName().replaceAll(" ", "").toLowerCase();

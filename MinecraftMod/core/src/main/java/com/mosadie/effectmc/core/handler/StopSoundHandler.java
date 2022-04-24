@@ -6,7 +6,7 @@ public class StopSoundHandler extends EffectRequestHandler{
 
     public StopSoundHandler(EffectMCCore core) {
         super(core);
-        addStringProperty("sound", "minecraft:entity.ghast.ambient", false, "Sound", "minecraft:entity.ghast.ambient");
+        addStringProperty("sound", "minecraft:entity.ghast.ambient", false, "Sound", "Sound ID or 'all' to stop all sounds");
 //        addSelectionProperty("category", "", false, "Category", PlaySoundHandler.SOUND_CATEGORY.toStringArray());
     }
 
@@ -23,7 +23,7 @@ public class StopSoundHandler extends EffectRequestHandler{
     @Override
     String execute() {
         // Note for the future, to re-enable category specific sound searching update the stopSound calls as well as the commented out line in the constructor.
-        if (getProperty("sound").getAsString().equalsIgnoreCase("null") || getProperty("sound").getAsString().equalsIgnoreCase(" ") || getProperty("sound").getAsString().equalsIgnoreCase("")) {
+        if (getProperty("sound").getAsString().equalsIgnoreCase("null") || getProperty("sound").getAsString().equalsIgnoreCase("all") || getProperty("sound").getAsString().equalsIgnoreCase("")) {
             core.getExecutor().log("Stopping all sounds");
             if (core.getExecutor().stopSound(null, null))
                 return "Stopping all sounds.";

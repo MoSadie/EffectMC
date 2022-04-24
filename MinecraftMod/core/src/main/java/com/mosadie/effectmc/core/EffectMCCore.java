@@ -52,6 +52,7 @@ public class EffectMCCore {
         effects.add(new OpenBookHandler(this));
         effects.add(new NarrateHandler(this));
         effects.add(new LoadWorldHandler(this));
+        effects.add(new SetSkinHandler(this));
     }
 
     public boolean initServer() throws URISyntaxException {
@@ -125,6 +126,10 @@ public class EffectMCCore {
             executor.log("WARNING: Invalid Json attempted to be parsed.");
             return null;
         }
+    }
+
+    public String toJson(Object obj) {
+            return gson.toJson(obj);
     }
 
     public EffectExecutor getExecutor() {

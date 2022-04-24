@@ -1,11 +1,13 @@
 package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -31,11 +33,25 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EffectMC implements ModInitializer, ClientModInitializer, EffectExecutor {
 
@@ -46,6 +62,8 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	public static Logger LOGGER = LogManager.getLogger();
 
 	private static Narrator narrator = Narrator.getNarrator();
+
+	private HttpClient authedClient;
 
 	@Override
 	public void onInitialize() {
@@ -71,7 +89,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		LOGGER.info("Core Started");
 
 		LOGGER.info("Starting Server");
-		boolean result = false;
+		boolean result;
 		try {
 			result = core.initServer();
 		} catch (URISyntaxException e) {
@@ -81,36 +99,49 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		LOGGER.info("Server start result: " + result);
 
 		// Register command
-		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmctrust").executes((context -> {
-			MinecraftClient.getInstance().send(core::setTrustNextRequest);
-			receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
-			return 0;
-		})));
+		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmc")
+				.then(ClientCommandManager.literal("trust").executes((context -> {
+					MinecraftClient.getInstance().send(core::setTrustNextRequest);
+					receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
+					return 0;
+				})))
+				.then(ClientCommandManager.literal("exportbook").executes((context -> {
+					if (MinecraftClient.getInstance().player == null) {
+						return 0;
+					}
 
-		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmcexportbook").executes((context -> {
-			if (MinecraftClient.getInstance().player == null) {
-				return 0;
-			}
+					ItemStack mainHand = MinecraftClient.getInstance().player.getMainHandStack();
+					ItemStack offHand = MinecraftClient.getInstance().player.getOffHandStack();
 
-			ItemStack mainHand = MinecraftClient.getInstance().player.getMainHandStack();
-			ItemStack offHand = MinecraftClient.getInstance().player.getOffHandStack();
+					ItemStack bookStack = null;
+					if (mainHand.getItem().equals(Items.WRITTEN_BOOK)) {
+						bookStack = mainHand;
+					} else if (offHand.getItem().equals(Items.WRITTEN_BOOK)) {
+						bookStack = offHand;
+					}
 
-			ItemStack bookStack = null;
-			if (mainHand.getItem().equals(Items.WRITTEN_BOOK)) {
-				bookStack = mainHand;
-			} else if (offHand.getItem().equals(Items.WRITTEN_BOOK)) {
-				bookStack = offHand;
-			}
+					if (bookStack == null) {
+						receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
+						return 0;
+					}
 
-			if (bookStack == null) {
-				receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
-				return 0;
-			}
+					if (bookStack.getTag() == null) {
+						receiveChatMessage("[EffectMC] Failed to export book: Missing tag.");
+						return 0;
+					}
 
-			LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
-			receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
-			return 0;
-		})));
+					LOGGER.info("Exported Book JSON: " + bookStack.getTag());
+					receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
+					return 0;
+				}))).executes((context -> {
+					receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+					return 0;
+				})));
+
+		Header authHeader = new BasicHeader("Authorization", "Bearer " + MinecraftClient.getInstance().getSession().getAccessToken());
+		List<Header> headers = new ArrayList<>();
+		headers.add(authHeader);
+		authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
 	}
 
 	@Override
@@ -298,6 +329,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 			Screen nextScreen;
 
 			switch (nextScreenType) {
+				default:
 				case MAIN_MENU:
 					nextScreen = new TitleScreen();
 					break;
@@ -308,10 +340,6 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 				case WORLD_SELECT:
 					nextScreen = new SelectWorldScreen(new TitleScreen());
-					break;
-
-				default:
-					nextScreen = new TitleScreen();
 					break;
 			}
 
@@ -345,7 +373,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 			double trueY = y;
 			double trueZ = z;
 
-			if (relative && MinecraftClient.getInstance().world != null) {
+			if (relative && MinecraftClient.getInstance().world != null && MinecraftClient.getInstance().player != null) {
 				trueX += MinecraftClient.getInstance().player.getX();
 				trueY += MinecraftClient.getInstance().player.getY();
 				trueZ += MinecraftClient.getInstance().player.getZ();
@@ -382,9 +410,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 	@Override
 	public boolean showToast(String title, String subtitle) {
-		MinecraftClient.getInstance().send(() -> {
-			MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle)));
-		});
+		MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle))));
 
 		return true;
 	}
@@ -420,9 +446,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 	@Override
 	public boolean narrate(String message, boolean interrupt) {
-		MinecraftClient.getInstance().send(() -> {
-			narrator.say(message, interrupt);
-		});
+		MinecraftClient.getInstance().send(() -> narrator.say(message, interrupt));
 
 		return true;
 	}
@@ -446,5 +470,41 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		});
 
 		return true;
+	}
+
+	@Override
+	public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
+		if (skinUrl == null) {
+			LOGGER.warn("Skin URL is null!");
+			return false;
+		}
+
+		try {
+			JsonObject payload = new JsonObject();
+
+			payload.add("variant", new JsonPrimitive(skinType.getValue()));
+			payload.add("url", new JsonPrimitive(skinUrl.toString()));
+
+			HttpPost request = new HttpPost("https://api.minecraftservices.com/minecraft/profile/skins");
+			request.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
+
+			HttpResponse response = authedClient.execute(request);
+
+			if (response.getEntity() != null && response.getEntity().getContentLength() > 0) {
+				JsonObject responseJSON = core.fromJson(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
+				if (responseJSON.has("errorMessage")) {
+					LOGGER.warn("Failed to update skin! " + responseJSON);
+					return false;
+				}
+
+				LOGGER.debug("Skin Update Response: " + responseJSON);
+			}
+
+			LOGGER.info("Skin updated!");
+			return true;
+		} catch (IOException e) {
+			LOGGER.warn("Failed to update skin!", e);
+			return false;
+		}
 	}
 }

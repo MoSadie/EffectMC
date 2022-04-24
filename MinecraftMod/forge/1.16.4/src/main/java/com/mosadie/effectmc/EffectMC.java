@@ -1,11 +1,13 @@
 package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
@@ -26,16 +28,30 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
-import static net.minecraft.client.gui.screen.ReadBookScreen.*;
+import static net.minecraft.client.gui.screen.ReadBookScreen.IBookInfo;
 
 @Mod(EffectMC.MODID)
 public class EffectMC implements EffectExecutor {
@@ -47,8 +63,11 @@ public class EffectMC implements EffectExecutor {
 
     private static Narrator narrator = Narrator.getNarrator();
 
+    private final HttpClient authedClient;
+
     public EffectMC() throws IOException {
-        File configDir = ModList.get().getModFileById(MODID).getFile().getFilePath().resolve("../" + MODID + "/").toFile();
+        //File configDir = ModList.get().getModFileById(MODID).getFile().getFilePath().resolve("../" + MODID + "/").toFile();
+        File configDir = FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()).resolve("./" + MODID + "/").toFile();
         if (!configDir.exists()) {
             if (!configDir.mkdirs()) {
                 LOGGER.error("Something went wrong creating the config directory!");
@@ -65,7 +84,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Core Started");
 
         LOGGER.info("Starting Server");
-        boolean result = false;
+        boolean result;
         try {
             result = core.initServer();
         } catch (URISyntaxException e) {
@@ -75,15 +94,20 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Server start result: " + result);
 
         MinecraftForge.EVENT_BUS.addListener(this::onChat);
+
+        Header authHeader = new BasicHeader("Authorization", "Bearer " + Minecraft.getInstance().getSession().getToken());
+        List<Header> headers = new ArrayList<>();
+        headers.add(authHeader);
+        authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
     }
 
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if (event.getMessage().equalsIgnoreCase("/effectmctrust")) {
+        if (event.getMessage().equalsIgnoreCase("/effectmc trust")) {
             Minecraft.getInstance().enqueue(core::setTrustNextRequest);
             receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
             event.setCanceled(true);
-        } else if (event.getMessage().equalsIgnoreCase("/effectmcexportbook")) {
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportbook")) {
             event.setCanceled(true);
             Minecraft.getInstance().enqueue(() -> {
                 if (Minecraft.getInstance().player == null) {
@@ -102,6 +126,11 @@ public class EffectMC implements EffectExecutor {
 
                 if (bookStack == null) {
                     receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
+                    return;
+                }
+
+                if (bookStack.getTag() == null) {
+                    receiveChatMessage("[EffectMC] Failed to export book: Missing tag.");
                     return;
                 }
 
@@ -273,6 +302,7 @@ public class EffectMC implements EffectExecutor {
             Screen nextScreen;
 
             switch (nextScreenType) {
+                default:
                 case MAIN_MENU:
                     nextScreen = new MainMenuScreen();
                     break;
@@ -284,9 +314,6 @@ public class EffectMC implements EffectExecutor {
                 case WORLD_SELECT:
                     nextScreen = new WorldSelectionScreen(new MainMenuScreen());
                     break;
-
-                default:
-                    nextScreen = new MainMenuScreen();
             }
 
             DisconnectedScreen screen = new DisconnectedScreen(nextScreen, new StringTextComponent(title), new StringTextComponent(message));
@@ -318,7 +345,7 @@ public class EffectMC implements EffectExecutor {
             double trueY = y;
             double trueZ = z;
 
-            if (relative && Minecraft.getInstance().world != null) {
+            if (relative && Minecraft.getInstance().world != null && Minecraft.getInstance().player != null) {
                 trueX += Minecraft.getInstance().player.getPosX();
                 trueY += Minecraft.getInstance().player.getPosY();
                 trueZ += Minecraft.getInstance().player.getPosZ();
@@ -361,15 +388,13 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean showToast(String title, String subtitle) {
-        Minecraft.getInstance().enqueue(() -> {
-            Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle)));
-        });
+        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle))));
         return true;
     }
 
     @Override
     public boolean openBook(JsonObject bookJSON) {
-        CompoundNBT nbt = null;
+        CompoundNBT nbt;
         try {
             nbt = JsonToNBT.getTagFromJson(bookJSON.toString());
         } catch (CommandSyntaxException e) {
@@ -389,25 +414,21 @@ public class EffectMC implements EffectExecutor {
 
         ReadBookScreen screen = new ReadBookScreen(bookInfo);
 
-        Minecraft.getInstance().enqueue(() -> {
-            Minecraft.getInstance().displayGuiScreen(screen);
-        });
+        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().displayGuiScreen(screen));
         return true;
     }
 
     @Override
     public boolean narrate(String message, boolean interrupt) {
-        Minecraft.getInstance().enqueue(() -> {
-            narrator.say(message, interrupt);
-        });
+        Minecraft.getInstance().enqueue(() -> narrator.say(message, interrupt));
         return true;
     }
 
     @Override
     public boolean loadWorld(String worldName) {
 
-            if (Minecraft.getInstance().getSaveLoader().canLoadWorld(worldName)) {
-                Minecraft.getInstance().enqueue(() -> {
+        if (Minecraft.getInstance().getSaveLoader().canLoadWorld(worldName)) {
+            Minecraft.getInstance().enqueue(() -> {
                 if (Minecraft.getInstance().world != null) {
                     LOGGER.info("Disconnecting from world...");
 
@@ -417,11 +438,47 @@ public class EffectMC implements EffectExecutor {
 
                 LOGGER.info("Loading world...");
                 Minecraft.getInstance().loadWorld(worldName);
-                });
-                return true;
-            } else {
-                LOGGER.warn("World " + worldName + " does not exist!");
-                return false;
+            });
+            return true;
+        } else {
+            LOGGER.warn("World " + worldName + " does not exist!");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
+        if (skinUrl == null) {
+            LOGGER.warn("Skin URL is null!");
+            return false;
+        }
+
+        try {
+            JsonObject payload = new JsonObject();
+
+            payload.add("variant", new JsonPrimitive(skinType.getValue()));
+            payload.add("url", new JsonPrimitive(skinUrl.toString()));
+
+            HttpPost request = new HttpPost("https://api.minecraftservices.com/minecraft/profile/skins");
+            request.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
+
+            HttpResponse response = authedClient.execute(request);
+
+            if (response.getEntity() != null && response.getEntity().getContentLength() > 0) {
+                JsonObject responseJSON = core.fromJson(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
+                if (responseJSON.has("errorMessage")) {
+                    LOGGER.warn("Failed to update skin! " + responseJSON);
+                    return false;
+                }
+
+                LOGGER.debug("Skin Update Response: " + responseJSON);
             }
+
+            LOGGER.info("Skin updated!");
+            return true;
+        } catch (IOException e) {
+            LOGGER.warn("Failed to update skin!", e);
+            return false;
+        }
     }
 }
