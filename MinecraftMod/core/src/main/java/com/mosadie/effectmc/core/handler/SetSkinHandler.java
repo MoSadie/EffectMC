@@ -15,6 +15,7 @@ public class SetSkinHandler extends EffectRequestHandler {
         super(core);
         addStringProperty("url", "", true, "Skin URL", "");
         addSelectionProperty("skinType", SKIN_TYPE.CLASSIC.getValue(), true, "Skin Type", SKIN_TYPE.toStringArray());
+        addCommentProperty("NOTE: This does not refresh your skin in-game, rejoin the server to refresh your skin.");
         this.core = core;
     }
 
