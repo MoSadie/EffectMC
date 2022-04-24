@@ -105,7 +105,7 @@ jobs:
       fail-fast: false
       matrix:
         mod-loader: ['fabric', 'forge']
-        mc-version: ['1.18.1']
+        mc-version: ['1.18.1', `1.18.2`]
         #exclude:
         #  - mod-loader: 'forge'
         #    mc-version: '1.17'
