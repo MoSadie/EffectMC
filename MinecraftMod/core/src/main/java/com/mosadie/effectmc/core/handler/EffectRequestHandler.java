@@ -104,7 +104,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
             if (properties.get(propKey).getPropType() == EffectProperty.PropertyType.BODY) {
                 if (bodyParameters.containsKey(propKey)) {
                     if (!properties.get(propKey).setValue(bodyParameters.get(propKey))) {
-                        core.getExecutor().log(getEffectName() + "failed");
+                        core.getExecutor().log(getEffectName() + "failed: " + propKey + " in body is invalid.");
                         String response = propKey + " in body is invalid";
                         exchange.sendResponseHeaders(400, response.getBytes().length);
                         exchange.getResponseBody().write(response.getBytes());
@@ -112,7 +112,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
                         return;
                     }
                 } else if (properties.get(propKey).isRequired()) {
-                    core.getExecutor().log(getEffectName() + " failed");
+                    core.getExecutor().log(getEffectName() + " failed: " + propKey + " in body is missing.");
                     String response = propKey + " in body is missing";
                     exchange.sendResponseHeaders(400, response.getBytes().length);
                     exchange.getResponseBody().write(response.getBytes());
@@ -121,7 +121,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
                 }
             } else if (parameters.containsKey(propKey)) {
                 if (!properties.get(propKey).setValue(parameters.get(propKey)) && properties.get(propKey).isRequired()) {
-                    core.getExecutor().log(getEffectName() + " failed");
+                    core.getExecutor().log(getEffectName() + " failed: " + propKey + " is invalid.");
                     String response = propKey + " is invalid";
                     exchange.sendResponseHeaders(400, response.getBytes().length);
                     exchange.getResponseBody().write(response.getBytes());
@@ -129,7 +129,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
                     return;
                 }
             } else if (properties.get(propKey).isRequired()) {
-                core.getExecutor().log(getEffectName() + " failed");
+                core.getExecutor().log(getEffectName() + " failed: " + propKey + " is missing.");
                 String response = propKey + " is missing";
                 exchange.sendResponseHeaders(400, response.getBytes().length);
                 exchange.getResponseBody().write(response.getBytes());

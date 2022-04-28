@@ -104,11 +104,11 @@ public class StreamDeckPluginGen {
             StringBuilder settingsDefaultsBuilder = new StringBuilder();
             StringBuilder settingsIfCheckBuilder = new StringBuilder();
             StringBuilder setParamsBuilder = new StringBuilder();
-            boolean bodyProp = false;
+            String bodyProp = null;
             for (String key : props.keySet()) {
                 EffectProperty prop = effect.getProperty(key);
                 if (prop.getPropType().equals(EffectProperty.PropertyType.BODY)) {
-                    bodyProp = true;
+                    bodyProp = key;
                 }
                 if (prop.getPropType() != EffectProperty.PropertyType.COMMENT) {
                     settingsDefaultsBuilder.append("this.settings.").append(key).append("= '").append(prop.getAsString()).append("';\n");
@@ -126,7 +126,7 @@ public class StreamDeckPluginGen {
             actionReplaceMap.put("settingsIfCheck", settingsIfCheckBuilder.toString());
 
             // Create "sendRequest" replacement.
-            if (!bodyProp) {
+            if (bodyProp == null) {
                 actionReplaceMap.put("sendRequest", "fetch(url).then(response => {\n" +
                         "            console.log(\"DEBUG yay\", response);\n" +
                         "            if (response.status == 200) $SD.api.showOk(jsn.context);\n" +
@@ -140,7 +140,7 @@ public class StreamDeckPluginGen {
                         "        });");
             } else {
                 StringBuilder sendRequestBuilder = new StringBuilder();
-                sendRequestBuilder.append("fetch(url, {method: 'POST', body: encodeURIComponent(jsn.payload.settings ? jsn.payload.settings : '')}).then(response => {\n" +
+                sendRequestBuilder.append("fetch(url, {method: 'POST', body: jsn.payload.settings." + bodyProp +  " ? '" + bodyProp + "=' + jsn.payload.settings." + bodyProp + " : ''}).then(response => {\n" +
                         "            console.log(\"DEBUG yay\", response);\n" +
                         "            if (response.status == 200) $SD.api.showOk(jsn.context);\n" +
                         "            else {\n" +
