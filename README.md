@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/MoSadie/EffectMC/actions/workflows/ci.yml/badge.svg)](https://github.com/MoSadie/EffectMC/actions/workflows/ci.yml)
 [![CurseForge](https://cf.way2muchnoise.eu/full_466864_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/effectmc/)
+[![Modrinth](https://img.shields.io/modrinth/dt/9AELtAj4?color=green&label=Modrinth%20Downloads)](https://modrinth.com/mod/effectmc)
 
 Various effects triggered in Minecraft by devices like an Elgato Stream Deck.
 
