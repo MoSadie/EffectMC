@@ -9,7 +9,7 @@ Various effects triggered in Minecraft by devices like an Elgato Stream Deck.
 
 ## How to setup:
 
-Instructions on how to setup the Minecraft mod and Stream Deck plugin can be found on [the wiki](https://github.com/MoSadie/EffectMC/wiki/setup-guide). The latest downloads can be found [here](https://github.com/MoSadie/EffectMC/releases/latest) or on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/effectmc/files/all).
+Instructions on how to setup the Minecraft mod and Stream Deck plugin can be found on [the wiki](https://github.com/MoSadie/EffectMC/wiki/setup-guide). The latest downloads can be found [here](https://github.com/MoSadie/EffectMC/releases/latest), [CurseForge](https://www.curseforge.com/minecraft/mc-mods/effectmc/files/all) or [Modrinth](https://modrinth.com/mod/effectmc/versions).
 
 ## How to configure the port:
 
