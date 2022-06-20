@@ -26,6 +26,6 @@ public class NarrateHandler extends EffectRequestHandler {
         if (core.getExecutor().narrate(getProperty("message").getAsString(), getProperty("interrupt").getAsBoolean()))
             return "Narrating message: " + getProperty("message").getAsString();
         else
-            return "Failed to narrate message";
+            return "Failed to narrate message.";
     }
 }

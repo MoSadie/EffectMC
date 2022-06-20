@@ -7,6 +7,7 @@ import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.OpenScreenHandler;
 import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -31,6 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -64,6 +67,7 @@ public class EffectMC implements EffectExecutor {
     public static Logger LOGGER = LogManager.getLogger();
 
     private static Narrator narrator = Narrator.getNarrator();
+    private static ServerData serverData = new ServerData("", "", false); // Used to hold data during Open Screen
 
     private final HttpClient authedClient;
 
@@ -94,7 +98,7 @@ public class EffectMC implements EffectExecutor {
         }
         LOGGER.info("Server start result: " + result);
 
-        MinecraftForge.EVENT_BUS.addListener(this::onChat);
+        MinecraftForge.EVENT_BUS.addListener(this::registerClientCommand);
 
         Header authHeader = new BasicHeader("Authorization", "Bearer " + Minecraft.getInstance().getUser().getAccessToken());
         List<Header> headers = new ArrayList<>();
@@ -102,43 +106,47 @@ public class EffectMC implements EffectExecutor {
         authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
     }
 
-    @SubscribeEvent
-    public void onChat(ClientChatEvent event) {
-        if (event.getMessage().equalsIgnoreCase("/effectmc trust")) {
-            Minecraft.getInstance().execute(core::setTrustNextRequest);
-            receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
-            event.setCanceled(true);
-        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportbook")) {
-            event.setCanceled(true);
-            Minecraft.getInstance().execute(() -> {
-                if (Minecraft.getInstance().player == null) {
-                    return;
-                }
+    public void registerClientCommand(RegisterClientCommandsEvent event) {
+        LOGGER.info("Registering effectmc command.");
+        event.getDispatcher().register(Commands.literal("effectmc")
+                .then(Commands.literal("trust").executes((context -> {
+                    Minecraft.getInstance().execute(core::setTrustNextRequest);
+                    receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
+                    return 0;
+                })))
+                .then(Commands.literal("exportbook").executes((context -> {
+                    if (Minecraft.getInstance().player == null) {
+                        return 0;
+                    }
 
-                ItemStack mainHand = Minecraft.getInstance().player.getMainHandItem();
-                ItemStack offHand = Minecraft.getInstance().player.getOffhandItem();
+                    ItemStack mainHand = Minecraft.getInstance().player.getMainHandItem();
+                    ItemStack offHand = Minecraft.getInstance().player.getOffhandItem();
 
-                ItemStack bookStack = null;
-                if (mainHand.getItem().equals(Items.WRITTEN_BOOK)) {
-                    bookStack = mainHand;
-                } else if (offHand.getItem().equals(Items.WRITTEN_BOOK)) {
-                    bookStack = offHand;
-                }
+                    ItemStack bookStack = null;
+                    if (mainHand.getItem().equals(Items.WRITTEN_BOOK)) {
+                        bookStack = mainHand;
+                    } else if (offHand.getItem().equals(Items.WRITTEN_BOOK)) {
+                        bookStack = offHand;
+                    }
 
-                if (bookStack == null) {
-                    receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
-                    return;
-                }
+                    if (bookStack == null) {
+                        receiveChatMessage("[EffectMC] Failed to export book: Not holding a book!");
+                        return 0;
+                    }
 
-                if (bookStack.getTag() == null) {
-                    receiveChatMessage("[EffectMC] Failed to export book: Missing tag.");
-                    return;
-                }
+                    if (bookStack.getTag() == null) {
+                        receiveChatMessage("[EffectMC] Failed to export book: Missing tag.");
+                        return 0;
+                    }
 
-                LOGGER.info("Exported Book JSON: " + bookStack.getTag());
-                receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
-            });
-        }
+                    LOGGER.info("Exported Book JSON: " + bookStack.getTag());
+                    receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
+                    return 0;
+                }))).executes((context -> {
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+                    return 0;
+                })));
+        LOGGER.info("Registered effectmc command.");
     }
 
     @Override
@@ -149,12 +157,7 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean joinServer(String serverIp) {
         Minecraft.getInstance().execute(() -> {
-            if (Minecraft.getInstance().level != null) {
-                LOGGER.info("Disconnecting from world...");
-
-                Minecraft.getInstance().level.disconnect();
-                Minecraft.getInstance().clearLevel();
-            }
+            leaveIfNeeded();
 
             // Create ServerAddress
             if (!ServerAddress.isValidAddress(serverIp)) {
@@ -308,12 +311,7 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().execute(() -> {
-            if (Minecraft.getInstance().level != null) {
-                LOGGER.info("Disconnecting from world...");
-
-                Minecraft.getInstance().level.disconnect();
-                Minecraft.getInstance().clearLevel();
-            }
+            leaveIfNeeded();
 
             Screen nextScreen;
 
@@ -407,7 +405,7 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean showToast(String title, String subtitle) {
-        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new SystemToast(null, new TextComponent(title), new TextComponent(subtitle))));
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastIds.NARRATOR_TOGGLE, new TextComponent(title), new TextComponent(subtitle))));
 
         return true;
     }
@@ -443,9 +441,15 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean narrate(String message, boolean interrupt) {
-        Minecraft.getInstance().execute(() -> narrator.say(message, interrupt));
+        if (narrator.active()) {
+            Minecraft.getInstance().execute(() -> narrator.say(message, interrupt));
 
-        return true;
+            return true;
+        }
+
+        LOGGER.error("Narrator is unavailable!");
+
+        return false;
     }
 
     @Override
@@ -502,6 +506,50 @@ public class EffectMC implements EffectExecutor {
         } catch (IOException e) {
             LOGGER.warn("Failed to update skin!", e);
             return false;
+        }
+    }
+    public void leaveIfNeeded() {
+        if (Minecraft.getInstance().level != null) {
+            LOGGER.info("Disconnecting from world...");
+
+            Minecraft.getInstance().level.disconnect();
+            Minecraft.getInstance().clearLevel();
+        }
+    }
+
+    @Override
+    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+        Minecraft.getInstance().execute(() -> {
+            leaveIfNeeded();
+
+            switch (screen) {
+                case MAIN_MENU:
+                    Minecraft.getInstance().setScreen(new TitleScreen());
+                    break;
+                case SERVER_SELECT:
+                    Minecraft.getInstance().setScreen(new JoinMultiplayerScreen(new TitleScreen()));
+                    break;
+                case SERVER_DIRECT_CONNECT:
+                    Minecraft.getInstance().setScreen(new DirectJoinServerScreen(new JoinMultiplayerScreen(new TitleScreen()), this::connectIfTrue, serverData));
+                    break;
+                case WORLD_SELECT:
+                    Minecraft.getInstance().setScreen(new SelectWorldScreen(new TitleScreen()));
+                    break;
+                case WORLD_CREATE:
+                    Minecraft.getInstance().setScreen(CreateWorldScreen.createFresh(new SelectWorldScreen(new TitleScreen())));
+                    break;
+                default:
+                    LOGGER.error("Unknown screen.");
+            }
+        });
+        return true;
+    }
+
+    private void connectIfTrue(boolean connect) {
+        if (connect) {
+            joinServer(serverData.ip);
+        } else {
+            Minecraft.getInstance().setScreen(new JoinMultiplayerScreen(new TitleScreen()));
         }
     }
 }

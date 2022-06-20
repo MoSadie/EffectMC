@@ -2,6 +2,7 @@ package com.mosadie.effectmc.core;
 
 import com.google.gson.JsonObject;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.OpenScreenHandler;
 import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 
@@ -43,4 +44,6 @@ public interface EffectExecutor {
     //boolean refreshSkin(UUID uuid);
 
     boolean setSkin(URL url, SetSkinHandler.SKIN_TYPE skinType);
+
+    boolean openScreen(OpenScreenHandler.SCREEN screen);
 }

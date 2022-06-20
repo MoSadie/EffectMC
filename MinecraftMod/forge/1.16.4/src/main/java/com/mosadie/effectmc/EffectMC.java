@@ -7,6 +7,7 @@ import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.OpenScreenHandler;
 import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.minecraft.client.GameSettings;
@@ -62,6 +63,7 @@ public class EffectMC implements EffectExecutor {
     public static Logger LOGGER = LogManager.getLogger();
 
     private static Narrator narrator = Narrator.getNarrator();
+    private static ServerData serverData = new ServerData("", "", false); // Used to hold data during Open Screen
 
     private final HttpClient authedClient;
 
@@ -148,12 +150,7 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean joinServer(String serverIp) {
         Minecraft.getInstance().enqueue(() -> {
-            if (Minecraft.getInstance().world != null) {
-                LOGGER.info("Disconnecting from world...");
-
-                Minecraft.getInstance().world.sendQuittingDisconnectingPacket();
-                Minecraft.getInstance().unloadWorld();
-            }
+            leaveIfNeeded();
 
             // Create ServerData
             ServerData server = new ServerData("EffectMC", serverIp, false);
@@ -292,12 +289,7 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().enqueue(() -> {
-            if (Minecraft.getInstance().world != null) {
-                LOGGER.info("Disconnecting from world...");
-
-                Minecraft.getInstance().world.sendQuittingDisconnectingPacket();
-                Minecraft.getInstance().unloadWorld();
-            }
+            leaveIfNeeded();
 
             Screen nextScreen;
 
@@ -388,7 +380,7 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean showToast(String title, String subtitle) {
-        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().getToastGui().add(new SystemToast(null, new StringTextComponent(title), new StringTextComponent(subtitle))));
+        Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().getToastGui().add(new SystemToast(SystemToast.Type.NARRATOR_TOGGLE, new StringTextComponent(title), new StringTextComponent(subtitle))));
         return true;
     }
 
@@ -420,8 +412,12 @@ public class EffectMC implements EffectExecutor {
 
     @Override
     public boolean narrate(String message, boolean interrupt) {
-        Minecraft.getInstance().enqueue(() -> narrator.say(message, interrupt));
-        return true;
+        if (narrator.active()) {
+            Minecraft.getInstance().execute(() -> narrator.say(message, interrupt));
+            return true;
+        }
+        LOGGER.error("Narrator is unavailable!");
+        return false;
     }
 
     @Override
@@ -479,6 +475,51 @@ public class EffectMC implements EffectExecutor {
         } catch (IOException e) {
             LOGGER.warn("Failed to update skin!", e);
             return false;
+        }
+    }
+
+    public void leaveIfNeeded() {
+        if (Minecraft.getInstance().world != null) {
+            LOGGER.info("Disconnecting from world...");
+
+            Minecraft.getInstance().world.sendQuittingDisconnectingPacket();
+            Minecraft.getInstance().unloadWorld();
+        }
+    }
+
+    @Override
+    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+        Minecraft.getInstance().execute(() -> {
+            leaveIfNeeded();
+
+            switch (screen) {
+                case MAIN_MENU:
+                    Minecraft.getInstance().displayGuiScreen(new MainMenuScreen());
+                    break;
+                case SERVER_SELECT:
+                    Minecraft.getInstance().displayGuiScreen(new MultiplayerScreen(new MainMenuScreen()));
+                    break;
+                case SERVER_DIRECT_CONNECT:
+                    Minecraft.getInstance().displayGuiScreen(new ServerListScreen(new MultiplayerScreen(new MainMenuScreen()), this::connectIfTrue, serverData));
+                    break;
+                case WORLD_SELECT:
+                    Minecraft.getInstance().displayGuiScreen(new WorldSelectionScreen(new MainMenuScreen()));
+                    break;
+                case WORLD_CREATE:
+                    Minecraft.getInstance().displayGuiScreen(CreateWorldScreen.func_243425_a(new WorldSelectionScreen(new MainMenuScreen())));
+                    break;
+                default:
+                    LOGGER.error("Unknown screen.");
+            }
+        });
+        return true;
+    }
+
+    private void connectIfTrue(boolean connect) {
+        if (connect) {
+            joinServer(serverData.serverIP);
+        } else {
+            Minecraft.getInstance().displayGuiScreen(new MultiplayerScreen(new MainMenuScreen()));
         }
     }
 }

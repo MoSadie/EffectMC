@@ -53,6 +53,7 @@ public class EffectMCCore {
         effects.add(new NarrateHandler(this));
         effects.add(new LoadWorldHandler(this));
         effects.add(new SetSkinHandler(this));
+        effects.add(new OpenScreenHandler(this));
     }
 
     public boolean initServer() throws URISyntaxException {

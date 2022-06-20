@@ -1,7 +1,7 @@
 modLoader="javafml"
 loaderVersion="[35,)"
 issueTrackerURL="https://github.com/MoSadie/EffectMC/issues"
-license="GNU GPL v3"
+license="GNU LGPL v3"
 [[mods]]
 modId="effectmc"
 version="${file.jarVersion}"
@@ -10,7 +10,7 @@ updateJSONURL="https://raw.githubusercontent.com/MoSadie/EffectMC/main/Minecraft
 displayURL="https://github.com/MoSadie/EffectMC"
 authors="MoSadie"
 description='''
-      Various Effects that can be triggered by devices like an Elgato Stream Deck.
+      Various vanilla-themed live special effects for you to control!
       '''
 [[dependencies.effectmc]]
     modId="forge"

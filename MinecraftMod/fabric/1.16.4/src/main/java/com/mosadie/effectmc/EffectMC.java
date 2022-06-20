@@ -7,6 +7,7 @@ import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.handler.DisconnectHandler;
+import com.mosadie.effectmc.core.handler.OpenScreenHandler;
 import com.mosadie.effectmc.core.handler.SetSkinHandler;
 import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,6 +19,7 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.ingame.BookScreen;
 import net.minecraft.client.gui.screen.ingame.BookScreen.Contents;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.world.CreateWorldScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.options.GameOptions;
@@ -62,6 +64,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     public static Logger LOGGER = LogManager.getLogger();
 
     private static Narrator narrator = Narrator.getNarrator();
+    private static ServerInfo serverInfo = new ServerInfo("", "", false); // Used to hold data during Open Screen
 
     private HttpClient authedClient;
 
@@ -308,12 +311,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     @Override
     public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         MinecraftClient.getInstance().send(() -> {
-            if (MinecraftClient.getInstance().world != null) {
-                LOGGER.info("Disconnecting from world...");
-
-                MinecraftClient.getInstance().world.disconnect();
-                MinecraftClient.getInstance().disconnect();
-            }
+            leaveIfNeeded();
 
             Screen nextScreen;
 
@@ -396,7 +394,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
     @Override
     public boolean showToast(String title, String subtitle) {
-        MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new SystemToast(null, Text.of(title), Text.of(subtitle))));
+        MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new SystemToast(SystemToast.Type.NARRATOR_TOGGLE, Text.of(title), Text.of(subtitle))));
         return true;
     }
 
@@ -430,20 +428,21 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
     @Override
     public boolean narrate(String message, boolean interrupt) {
-        MinecraftClient.getInstance().send(() -> narrator.say(message, interrupt));
-        return true;
+        if (narrator.active()) {
+            MinecraftClient.getInstance().send(() -> narrator.say(message, interrupt));
+            return true;
+        }
+        
+        LOGGER.error("Narrator is unavailable!");
+
+        return false;
     }
 
     @Override
     public boolean loadWorld(String worldName) {
         MinecraftClient.getInstance().send(() -> {
             if (MinecraftClient.getInstance().getLevelStorage().levelExists(worldName)) {
-                if (MinecraftClient.getInstance().world != null) {
-                    LOGGER.info("Disconnecting from world...");
-
-                    MinecraftClient.getInstance().world.disconnect();
-                    MinecraftClient.getInstance().disconnect();
-                }
+                leaveIfNeeded();
 
                 LOGGER.info("Loading world...");
                 MinecraftClient.getInstance().startIntegratedServer(worldName);
@@ -489,4 +488,49 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
             return false;
         }
     }
+
+    public void leaveIfNeeded() {
+        if (MinecraftClient.getInstance().world != null) {
+            LOGGER.info("Disconnecting from world...");
+
+            MinecraftClient.getInstance().world.disconnect();
+            MinecraftClient.getInstance().disconnect();
+        }
+    }
+    @Override
+    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+        MinecraftClient.getInstance().execute(() -> {
+            leaveIfNeeded();
+
+            switch (screen) {
+                case MAIN_MENU:
+                    MinecraftClient.getInstance().openScreen(new TitleScreen());
+                    break;
+                case SERVER_SELECT:
+                    MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
+                    break;
+                case SERVER_DIRECT_CONNECT:
+                    MinecraftClient.getInstance().openScreen(new DirectConnectScreen(new MultiplayerScreen(new TitleScreen()), this::connectIfTrue, serverInfo));
+                    break;
+                case WORLD_SELECT:
+                    MinecraftClient.getInstance().openScreen(new SelectWorldScreen(new TitleScreen()));
+                    break;
+                case WORLD_CREATE:
+                    MinecraftClient.getInstance().openScreen(CreateWorldScreen.method_31130(new SelectWorldScreen(new TitleScreen())));
+                    break;
+                default:
+                    LOGGER.error("Unknown screen.");
+            }
+        });
+        return true;
+    }
+
+    private void connectIfTrue(boolean connect) {
+        if (connect) {
+            joinServer(serverInfo.address);
+        } else {
+            MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
+        }
+    }
+    
 }

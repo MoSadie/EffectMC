@@ -3,7 +3,7 @@
   "id": "effectmc",
   "version": "${version}",
   "name": "EffectMC",
-  "description": "Various Effects that can be triggered by devices like an Elgato Stream Deck.",
+  "description": "Various vanilla-themed live special effects for you to control!",
   "authors": [
     "MoSadie"
   ],
@@ -12,7 +12,7 @@
     "sources": "https://github.com/MoSadie/EffectMC"
   },
 
-  "license": "GNU GPL v3",
+  "license": "GNU LGPL v3",
   "icon": "assets/effectmc/icon.png",
 
   "environment": "client",
