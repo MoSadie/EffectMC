@@ -25,17 +25,17 @@ public class SkinLayerHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         if (getProperty("visibility").getAsString().equalsIgnoreCase(VISIBILITY.TOGGLE.name())) {
             if (core.getExecutor().toggleSkinLayer(SKIN_SECTION.getFromName(getProperty("section").getAsString())))
-                return "Toggled " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " skin section";
+                return new EffectResult("Toggled " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " skin section", true);
             else
-                return "Failed to toggle skin section.";
+                return new EffectResult("Failed to toggle skin section.", false);
         } else {
             if (core.getExecutor().setSkinLayer(SKIN_SECTION.getFromName(getProperty("section").getAsString()), getProperty("visibility").getAsString().equalsIgnoreCase(VISIBILITY.SHOW.name())))
-                return "Set " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " to " + getProperty("visibility").getAsString();
+                return new EffectResult("Set " + SKIN_SECTION.getFromName(getProperty("section").getAsString()) + " to " + getProperty("visibility").getAsString(), true);
             else
-                return "Failed to set skin section visibility.";
+                return new EffectResult("Failed to set skin section visibility.", false);
         }
     }
 

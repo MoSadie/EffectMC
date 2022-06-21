@@ -280,8 +280,13 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean sendChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
-            LOGGER.info("Sending chat message: " + message);
-            Minecraft.getInstance().player.chat(message);
+            if (message.startsWith("/")) {
+                LOGGER.info("Sending command message: " + message);
+                Minecraft.getInstance().player.command(message.substring(1));
+            } else {
+                LOGGER.info("Sending chat message: " + message);
+                Minecraft.getInstance().player.chat(message);
+            }
 
             return true;
         }

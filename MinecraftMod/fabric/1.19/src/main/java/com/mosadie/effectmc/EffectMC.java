@@ -2,6 +2,7 @@ package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
@@ -13,6 +14,8 @@ import com.mosadie.effectmc.core.handler.SkinLayerHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
@@ -27,6 +30,7 @@ import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.client.toast.SystemToast;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.WrittenBookItem;
@@ -104,7 +108,16 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		LOGGER.info("Server start result: " + result);
 
 		// Register command
-		ClientCommandManager.getActiveDispatcher().register(ClientCommandManager.literal("effectmc")
+		ClientCommandRegistrationCallback.EVENT.register(this::registerClientCommand);
+
+		Header authHeader = new BasicHeader("Authorization", "Bearer " + MinecraftClient.getInstance().getSession().getAccessToken());
+		List<Header> headers = new ArrayList<>();
+		headers.add(authHeader);
+		authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
+	}
+
+	private void registerClientCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+		dispatcher.register(ClientCommandManager.literal("effectmc")
 				.then(ClientCommandManager.literal("trust").executes((context -> {
 					MinecraftClient.getInstance().send(core::setTrustNextRequest);
 					receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
@@ -142,11 +155,6 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 					receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
 					return 0;
 				})));
-
-		Header authHeader = new BasicHeader("Authorization", "Bearer " + MinecraftClient.getInstance().getSession().getAccessToken());
-		List<Header> headers = new ArrayList<>();
-		headers.add(authHeader);
-		authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
 	}
 
 	@Override
@@ -268,8 +276,13 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	@Override
 	public boolean sendChatMessage(String message) {
 		if (MinecraftClient.getInstance().player != null) {
-			LOGGER.info("Sending chat message: " + message);
-			MinecraftClient.getInstance().player.sendChatMessage(message);
+			if (message.startsWith("/")) {
+				LOGGER.info("Sending command message: " + message);
+				MinecraftClient.getInstance().player.sendCommand(message.substring(1));
+			} else {
+				LOGGER.info("Sending chat message: " + message);
+				MinecraftClient.getInstance().player.sendChatMessage(message);
+			}
 
 			return true;
 		}

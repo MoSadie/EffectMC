@@ -23,8 +23,8 @@ public class RefreshSkinHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
-        return "Not implemented";
+    EffectResult execute() {
+        return new EffectResult("Not implemented", false);
 //        if (getProperty("uuid") != null) {
 //            try {
 //                UUID uuid = UUID.fromString(getProperty("uuid").getAsString());

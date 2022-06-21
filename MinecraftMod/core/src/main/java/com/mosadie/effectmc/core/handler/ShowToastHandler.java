@@ -23,12 +23,12 @@ public class ShowToastHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Showing toast with title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString());
         if (core.getExecutor().showToast(getProperty("title").getAsString(), getProperty("subtitle").getAsString()))
-            return "Showing toast with title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString();
+            return new EffectResult("Showing toast with title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString(), true);
         else
-            return "Failed to show toast.";
+            return new EffectResult("Failed to show toast.", false);
 
     }
 }

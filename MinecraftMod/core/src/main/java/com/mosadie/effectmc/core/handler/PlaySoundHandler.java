@@ -33,7 +33,7 @@ public class PlaySoundHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Play sound: " + getProperty("sound").getAsString());
         if (core.getExecutor().playSound(getProperty("sound").getAsString(),
                 getProperty("category").getAsString(), getProperty("volume").getAsFloat(),
@@ -46,9 +46,9 @@ public class PlaySoundHandler extends EffectRequestHandler {
                 getProperty("z").getAsDouble(),
                 getProperty("relative").getAsBoolean(),
                 getProperty("global").getAsBoolean()))
-            return "Played sound " + getProperty("sound").getAsString();
+            return new EffectResult("Played sound " + getProperty("sound").getAsString(), true);
         else
-            return "Failed to play sound.";
+            return new EffectResult("Failed to play sound.", false);
     }
 
     public enum SOUND_CATEGORY {

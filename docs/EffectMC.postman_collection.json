@@ -30,7 +30,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/joinserver?serverip=127.0.0.1:25577&device=postman-test",
+					"raw": "http://localhost:3000/joinserver?serverip=127.0.0.1:25565&device=postman-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -42,7 +42,7 @@
 					"query": [
 						{
 							"key": "serverip",
-							"value": "127.0.0.1:25577"
+							"value": "127.0.0.1:25565"
 						},
 						{
 							"key": "device",
@@ -59,7 +59,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/setskinlayervisibility?section=all&visibility=TOGGLE&device=postman-test",
+					"raw": "http://localhost:3000/setskinlayervisibility?device=postman-test&section=ALL&visibility=TOGGLE",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -70,18 +70,18 @@
 					],
 					"query": [
 						{
+							"key": "device",
+							"value": "postman-test"
+						},
+						{
 							"key": "section",
-							"value": "all",
+							"value": "ALL",
 							"description": "Allowed values: ALL, ALL_BODY, CAPE, JACKET, LEFT_SLEEVE, RIGHT_SLEEVE, LEFT_PANTS_LEG, RIGHT_PANTS_LEG, HAT"
 						},
 						{
 							"key": "visibility",
 							"value": "TOGGLE",
 							"description": "Allowed values: SHOW, HIDE, TOGGLE"
-						},
-						{
-							"key": "device",
-							"value": "postman-test"
 						}
 					]
 				}
@@ -106,7 +106,8 @@
 					"query": [
 						{
 							"key": "url",
-							"value": "https://s.namemc.com/i/db1ec00845bb505b.png"
+							"value": "https://s.namemc.com/i/db1ec00845bb505b.png",
+							"description": "Must be publically available"
 						},
 						{
 							"key": "skinType",
@@ -314,7 +315,7 @@
 						{
 							"key": "nextscreen",
 							"value": "MAIN_MENU",
-							"description": "main_menu, server_select, world_select"
+							"description": "Allowed Values: MAIN_MENU, SERVER_SELECT, WORLD_SELECT"
 						}
 					]
 				}
@@ -423,17 +424,12 @@
 					"query": [
 						{
 							"key": "sound",
-							"value": "music_disc.mellohi"
-						},
-						{
-							"key": "category",
-							"value": "music",
-							"disabled": true
+							"value": "music_disc.mellohi",
+							"description": "Sound ID or 'all' to stop all sounds."
 						},
 						{
 							"key": "device",
-							"value": "postman-test",
-							"description": "Float (0 - 1.0)"
+							"value": "postman-test"
 						}
 					]
 				}
@@ -446,20 +442,8 @@
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "bookJSON",
-							"value": "{pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}",
-							"type": "text"
-						},
-						{
-							"key": "device",
-							"value": "postman-test",
-							"type": "text",
-							"disabled": true
-						}
-					]
+					"mode": "raw",
+					"raw": "bookJSON={pages:['{\"text\":\"Hello!\\\\n\\\\nThis is a test.\"}','{\"text\":\"This is a second page!\"}','{\"text\":\"A THIRD PAGE!\"}','{\"text\":\"\"}','{\"text\":\"That was a blank page.\"}'],title:\"An Amazing Book\",author:\"MoSadie\",resolved:1b}"
 				},
 				"url": {
 					"raw": "http://localhost:3000/openbook?device=postman-test",
@@ -539,6 +523,36 @@
 						{
 							"key": "world",
 							"value": "Test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OpenScreen",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/openscreen?device=postman-test&screen=MAIN_MENU",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"openscreen"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman-test"
+						},
+						{
+							"key": "screen",
+							"value": "MAIN_MENU",
+							"description": "Allowed Values: MAIN_MENU, SERVER_SELECT, SERVER_DIRECT_CONNECT, WORLD_SELECT, WORLD_CREATE"
 						}
 					]
 				}

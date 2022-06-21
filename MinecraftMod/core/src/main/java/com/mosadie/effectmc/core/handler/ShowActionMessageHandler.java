@@ -22,11 +22,11 @@ public class ShowActionMessageHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Showing action bar message: " + getProperty("message").getAsString());
         if (core.getExecutor().showActionMessage(getProperty("message").getAsString()))
-            return "Showing action bar message: " + getProperty("message").getAsString();
+            return new EffectResult("Showing action bar message: " + getProperty("message").getAsString(), true);
         else
-            return "Failed to show action bar message.";
+            return new EffectResult("Failed to show action bar message.", false);
     }
 }

@@ -28,14 +28,11 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="delegatedBuild" value="true" />
-        <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/MinecraftMod/fabric/1.17" />
-        <option name="gradleJvm" value="17" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/MinecraftMod/fabric/1.17.1" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/MinecraftMod/fabric/1.17" />
+            <option value="$PROJECT_DIR$/MinecraftMod/fabric/1.17.1" />
           </set>
         </option>
       </GradleProjectSettings>

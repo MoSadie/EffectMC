@@ -30,7 +30,7 @@ public class SetSkinHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
             try {
                 URL skinUrl = new URL(getProperty("url").getAsString());
 
@@ -38,13 +38,13 @@ public class SetSkinHandler extends EffectRequestHandler {
 
                 core.getExecutor().log("Attempting to update skin.");
                 if (core.getExecutor().setSkin(skinUrl, skinType))
-                    return "Updated skin.";
+                    return new EffectResult("Updated skin.", true);
                 else
-                    return "Failed update and refresh skin.";
+                    return new EffectResult("Failed update and refresh skin.", false);
             } catch (MalformedURLException e) {
                 core.getExecutor().log("Malformed url! Aborting effect.");
                 e.printStackTrace();
-                return "Malformed url!";
+                return new EffectResult("Malformed url!", false);
             }
     }
 

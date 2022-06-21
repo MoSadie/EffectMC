@@ -13,6 +13,8 @@
       <module name="Fabric 1.17" target="16" />
       <module name="Fabric 1.18.1" target="16" />
       <module name="Fabric 1.18.2" target="17" />
+      <module name="fabric.1.17.main" target="16" />
+      <module name="fabric.1.17.test" target="16" />
       <module name="Forge 1.16.4" target="1.8" />
       <module name="Forge 1.17.1" target="16" />
       <module name="Forge 1.18.1" target="17" />

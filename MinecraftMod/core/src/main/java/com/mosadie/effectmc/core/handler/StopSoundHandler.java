@@ -21,20 +21,20 @@ public class StopSoundHandler extends EffectRequestHandler{
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         // Note for the future, to re-enable category specific sound searching update the stopSound calls as well as the commented out line in the constructor.
         if (getProperty("sound").getAsString().equalsIgnoreCase("null") || getProperty("sound").getAsString().equalsIgnoreCase("all") || getProperty("sound").getAsString().equalsIgnoreCase("")) {
             core.getExecutor().log("Stopping all sounds");
             if (core.getExecutor().stopSound(null, null))
-                return "Stopping all sounds.";
+                return new EffectResult("Stopping all sounds.", true);
             else
-                return "Failed to stop all sounds.";
+                return new EffectResult("Failed to stop all sounds.", false);
         } else {
             core.getExecutor().log("Stopping specific sound: " + getProperty("sound").getAsString());
             if (core.getExecutor().stopSound(getProperty("sound").getAsString(), null))
-                return "Stopping specific sound: " + getProperty("sound").getAsString();
+                return new EffectResult("Stopping specific sound: " + getProperty("sound").getAsString(), true);
             else
-                return "Failed to stop specific sound.";
+                return new EffectResult("Failed to stop specific sound.", false);
         }
     }
 }

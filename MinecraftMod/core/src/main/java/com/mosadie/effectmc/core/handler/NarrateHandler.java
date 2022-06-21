@@ -21,11 +21,11 @@ public class NarrateHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Narrating message: " + getProperty("message").getAsString());
         if (core.getExecutor().narrate(getProperty("message").getAsString(), getProperty("interrupt").getAsBoolean()))
-            return "Narrating message: " + getProperty("message").getAsString();
+            return new EffectResult("Narrating message: " + getProperty("message").getAsString(), true);
         else
-            return "Failed to narrate message.";
+            return new EffectResult("Failed to narrate message.", false);
     }
 }

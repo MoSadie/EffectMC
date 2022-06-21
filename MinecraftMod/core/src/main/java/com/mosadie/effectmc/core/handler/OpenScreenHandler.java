@@ -30,19 +30,19 @@ public class OpenScreenHandler extends EffectRequestHandler {
     }
 
     @Override
-    public String execute() {
+    public EffectResult execute() {
         SCREEN screen = SCREEN.getFromName(getProperty("screen").getAsString());
 
         if (screen == null) {
             core.getExecutor().log("Screen invalid");
-            return "Screen Invalid";
+            return new EffectResult("Screen Invalid", false);
         }
 
         core.getExecutor().log("Opening Screen");
         if (core.getExecutor().openScreen(screen)) {
-            return "Opened Screen.";
+            return new EffectResult("Opened Screen.", true);
         } else {
-            return "Failed to open screen.";
+            return new EffectResult("Failed to open screen.", false);
         }
     }
 

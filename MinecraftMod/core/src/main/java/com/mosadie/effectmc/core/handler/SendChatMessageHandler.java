@@ -20,11 +20,11 @@ public class SendChatMessageHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Sending chat message: " + getProperty("message").getAsString());
         if (core.getExecutor().sendChatMessage(getProperty("message").getAsString()))
-            return "Sending chat message " + getProperty("message").getAsString();
+            return new EffectResult("Sending chat message " + getProperty("message").getAsString(), true);
         else
-            return "Failed to send chat message.";
+            return new EffectResult("Failed to send chat message.", false);
     }
 }

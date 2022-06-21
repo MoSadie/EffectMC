@@ -22,23 +22,23 @@ public class OpenBookHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         if (!getProperty("bookJSON").getAsString().equalsIgnoreCase("")) {
             JsonObject book = core.fromJson(getProperty("bookJSON").getAsString());
 
             if (book == null) {
                 core.getExecutor().log("Book invalid");
-                return "Invalid Book";
+                return new EffectResult("Invalid Book", false);
             }
 
             core.getExecutor().log("Opening Book");
             if (core.getExecutor().openBook(book))
-                return "Opened Book";
+                return new EffectResult("Opened Book", true);
             else
-                return "Failed to open book.";
+                return new EffectResult("Failed to open book.", false);
 
         }
 
-        return "Book JSON not found!";
+        return new EffectResult("Book JSON not found!", false);
     }
 }

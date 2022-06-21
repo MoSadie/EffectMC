@@ -20,15 +20,15 @@ public class JoinServerHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         if (getProperty("serverip") != null) {
             core.getExecutor().log("Joining Server");
             if (core.getExecutor().joinServer(getProperty("serverip").getAsString()))
-                return "Joining Server";
+                return new EffectResult("Joining Server", true);
             else
-                return "Failed to join server.";
+                return new EffectResult("Failed to join server.", false);
         }
 
-        return "Something went wrong.";
+        return new EffectResult("Something went wrong.", false);
     }
 }

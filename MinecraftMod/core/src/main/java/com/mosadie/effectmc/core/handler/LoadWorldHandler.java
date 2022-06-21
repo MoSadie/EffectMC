@@ -20,11 +20,11 @@ public class LoadWorldHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Loading world");
         if (core.getExecutor().loadWorld(getProperty("world").getAsString()))
-            return "Loading world " + getProperty("world").getAsString();
+            return new EffectResult("Loading world " + getProperty("world").getAsString(), true);
         else
-            return "Failed to load world, check if using the folder name of the world.";
+            return new EffectResult("Failed to load world, check if using the folder name of the world.", false);
     }
 }

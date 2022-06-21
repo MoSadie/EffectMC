@@ -46,7 +46,7 @@ public abstract class EffectRequestHandler implements HttpHandler {
         return getEffectName().replaceAll(" ", "").toLowerCase();
     }
     public abstract String getEffectTooltip();
-    abstract String execute();
+    abstract EffectResult execute();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -139,11 +139,11 @@ public abstract class EffectRequestHandler implements HttpHandler {
         }
 
         // Execute effect
-        String response = execute();
+        EffectResult response = execute();
 
         // Send response
-        exchange.sendResponseHeaders(200, response.getBytes().length);
-        exchange.getResponseBody().write(response.getBytes());
+        exchange.sendResponseHeaders((response != null && response.success ? 200 : 500), response.message.getBytes().length);
+        exchange.getResponseBody().write(response.message.getBytes());
         exchange.getResponseBody().close();
     }
 
@@ -195,5 +195,15 @@ public abstract class EffectRequestHandler implements HttpHandler {
         exchange.sendResponseHeaders(200, response.toString().getBytes().length);
         exchange.getResponseBody().write(response.toString().getBytes());
         exchange.getResponseBody().close();
+    }
+
+    public static class EffectResult {
+        public final String message;
+        public final boolean success;
+
+        public EffectResult(String message, boolean success) {
+            this.message = message;
+            this.success = success;
+        }
     }
 }

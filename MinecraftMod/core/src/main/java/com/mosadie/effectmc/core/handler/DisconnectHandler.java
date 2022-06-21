@@ -34,19 +34,19 @@ public class DisconnectHandler extends EffectRequestHandler {
     }
 
     @Override
-    public String execute() {
+    public EffectResult execute() {
         NEXT_SCREEN nextScreen = NEXT_SCREEN.getFromName(getProperty("nextscreen").getAsString());
 
         if (nextScreen == null) {
             core.getExecutor().log("Next Screen invalid");
-            return "Next Screen Invalid";
+            return new EffectResult("Next Screen Invalid", false);
         }
 
         core.getExecutor().log("Triggering Disconnect");
         if (core.getExecutor().triggerDisconnect(nextScreen, getProperty("title").getAsString(), getProperty("message").getAsString())) {
-            return "Disconnected from world.";
+            return new EffectResult("Disconnected from world.", true);
         } else {
-            return "Failed to disconnect.";
+            return new EffectResult("Failed to disconnect.", false);
         }
     }
 

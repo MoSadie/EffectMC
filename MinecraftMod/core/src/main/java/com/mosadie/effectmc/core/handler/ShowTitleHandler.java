@@ -23,11 +23,11 @@ public class ShowTitleHandler extends EffectRequestHandler {
     }
 
     @Override
-    String execute() {
+    EffectResult execute() {
         core.getExecutor().log("Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString());
         if (core.getExecutor().showTitle(getProperty("title").getAsString(), getProperty("subtitle").getAsString()))
-            return "Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString();
+            return new EffectResult("Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString(), true);
         else
-            return "Failed to show title";
+            return new EffectResult("Failed to show title", true);
     }
 }
