@@ -183,6 +183,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+            maven
 
       # Generate Stream Deck Plugin
       - name: Generate Stream Deck Plugin
