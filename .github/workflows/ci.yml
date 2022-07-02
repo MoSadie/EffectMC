@@ -19,19 +19,17 @@ jobs:
           java-version: 8
           cache: 'gradle'
 
-      # Setup Maven Cache
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
-
       # Build Core
       - name: Build/Install Core
         working-directory: ./MinecraftMod/core
         run: './gradlew publishToMavenLocal'
+
+      # Upload Maven Local
+      - name: Upload 
+        uses: actions/upload-artifact@v3
+        with:
+          path: ~/.m2/repository
+          name: maven
 
   buildJava8:
     name: Build ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
@@ -60,14 +58,12 @@ jobs:
           java-version: 8
           cache: 'gradle'
 
-      # Setup Maven Cache
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
         with:
+          name: maven
           path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
           
       # Build Core
       # - name: Build/Install Core
@@ -125,14 +121,12 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      # Setup Maven Cache
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
         with:
+          name: maven
           path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
           
       # Build Minecraft Mod
       - name: Build Mod
@@ -175,15 +169,12 @@ jobs:
           java-version: 16
           cache: 'gradle'
 
-      # Setup Maven Cache
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
         with:
+          name: maven
           path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
-            maven
 
       # Generate Stream Deck Plugin
       - name: Generate Stream Deck Plugin
