@@ -73,6 +73,15 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/MinecraftMod/fabric/1.19.2" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/MinecraftMod/fabric/1.19.2" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
         <option name="delegatedBuild" value="true" />
         <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
@@ -129,6 +138,15 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/MinecraftMod/forge/1.19" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/MinecraftMod/forge/1.19.2" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/MinecraftMod/forge/1.19.2" />
           </set>
         </option>
       </GradleProjectSettings>

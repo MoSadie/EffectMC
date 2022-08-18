@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "effectmc",
+  "version": "${version}",
+  "name": "EffectMC",
+  "description": "Various vanilla-themed live special effects for you to control!",
+  "authors": [
+    "MoSadie"
+  ],
+  "contact": {
+    "homepage": "https://github.com/MoSadie/EffectMC",
+    "sources": "https://github.com/MoSadie/EffectMC"
+  },
+
+  "license": "GNU LGPL v3",
+  "icon": "assets/effectmc/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.mosadie.effectmc.EffectMC"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  }
+}
