@@ -12,15 +12,24 @@ jobs:
       - uses: actions/checkout@v2
 
       # Setup JDK
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1.4.3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
         with:
-          java-version: 1.8
-          
+          distribution: adopt
+          java-version: 8
+          cache: 'gradle'
+
       # Build Core
       - name: Build/Install Core
         working-directory: ./MinecraftMod/core
         run: './gradlew publishToMavenLocal'
+
+      # Upload Maven Local
+      - name: Upload 
+        uses: actions/upload-artifact@v3
+        with:
+          path: ~/.m2/repository
+          name: maven
 
   buildJava8:
     name: Build ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
@@ -42,15 +51,24 @@ jobs:
       - uses: actions/checkout@v2
 
       # Setup JDK
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1.4.3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
         with:
-          java-version: 1.8
+          distribution: adopt
+          java-version: 8
+          cache: 'gradle'
+
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven
+          path: ~/.m2/repository
           
       # Build Core
-      - name: Build/Install Core
-        working-directory: ./MinecraftMod/core
-        run: './gradlew publishToMavenLocal'
+      # - name: Build/Install Core
+      #   working-directory: ./MinecraftMod/core
+      #   run: './gradlew publishToMavenLocal'
           
       # Build Minecraft Mod
       - name: Build Mod
@@ -83,24 +101,32 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
       - uses: actions/checkout@v2
 
-      # Setup JDK
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: 8
+      # # Setup JDK
+      # - name: Set up JDK 1.8
+      #   uses: actions/setup-java@v2
+      #   with:
+      #     distribution: 'adopt'
+      #     java-version: 8
           
-      # Build Core
-      - name: Build/Install Core
-        working-directory: ./MinecraftMod/core
-        run: './gradlew publishToMavenLocal'
+      # # Build Core
+      # - name: Build/Install Core
+      #   working-directory: ./MinecraftMod/core
+      #   run: './gradlew publishToMavenLocal'
 
       # Setup JDK
       - name: Set up JDK 1.17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
           java-version: 17
+          cache: 'gradle'
+
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven
+          path: ~/.m2/repository
           
       # Build Minecraft Mod
       - name: Build Mod
@@ -123,29 +149,37 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
       - uses: actions/checkout@v2
 
-      # Setup JDK
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: 8
+      # # Setup JDK
+      # - name: Set up JDK 1.8
+      #   uses: actions/setup-java@v2
+      #   with:
+      #     distribution: 'adopt'
+      #     java-version: 8
           
-      # Build Core
-      - name: Build/Install Core
-        working-directory: ./MinecraftMod/core
-        run: './gradlew.bat publishToMavenLocal'
+      # # Build Core
+      # - name: Build/Install Core
+      #   working-directory: ./MinecraftMod/core
+      #   run: './gradlew.bat publishToMavenLocal'
 
       # Setup JDK
       - name: Set up JDK 16
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: microsoft
           java-version: 16
+          cache: 'gradle'
+
+      # Download Core
+      - name: Download Core Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven
+          path: ~/.m2/repository
 
       # Generate Stream Deck Plugin
       - name: Generate Stream Deck Plugin
         working-directory: ./StreamDeckPlugin
-        run: './gradlew.bat run'
+        run: './gradlew.bat run --no-daemon'
 
       # Download DistributionTool from Elgato
       - name: Download DistributionTool
