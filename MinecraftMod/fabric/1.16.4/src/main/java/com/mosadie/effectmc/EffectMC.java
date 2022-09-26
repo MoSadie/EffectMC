@@ -6,10 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.handler.DisconnectHandler;
-import com.mosadie.effectmc.core.handler.OpenScreenHandler;
-import com.mosadie.effectmc.core.handler.SetSkinHandler;
-import com.mosadie.effectmc.core.handler.SkinLayerHandler;
+import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
@@ -22,7 +19,10 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.world.CreateWorldScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.options.ChatVisibility;
 import net.minecraft.client.options.GameOptions;
+import net.minecraft.client.options.Option;
+import net.minecraft.client.options.Perspective;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
@@ -522,6 +522,88 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
                     LOGGER.error("Unknown screen.");
             }
         });
+        return true;
+    }
+
+    @Override
+    public boolean setFOV(int fov) {
+        MinecraftClient.getInstance().execute(() -> Option.FOV.set(MinecraftClient.getInstance().options, fov));
+        return true;
+    }
+
+    @Override
+    public boolean setPOV(SetPovHandler.POV pov) {
+        Perspective mcPov;
+
+        switch (pov) {
+            default:
+            case FIRST_PERSON:
+                mcPov = Perspective.FIRST_PERSON;
+                break;
+
+            case THIRD_PERSON_BACK:
+                mcPov = Perspective.THIRD_PERSON_BACK;
+                break;
+
+            case THIRD_PERSON_FRONT:
+                mcPov = Perspective.THIRD_PERSON_FRONT;
+                break;
+        }
+
+        MinecraftClient.getInstance().execute(() -> MinecraftClient.getInstance().options.setPerspective(mcPov));
+        return true;
+    }
+
+    @Override
+    public boolean setGuiScale(int scale) {
+        if (MinecraftClient.getInstance().options.guiScale == scale) {
+            return true;
+        }
+
+        MinecraftClient.getInstance().execute(() -> {
+            MinecraftClient.getInstance().options.guiScale = scale;
+            MinecraftClient.getInstance().options.write();
+            MinecraftClient.getInstance().onResolutionChanged();
+        });
+        return true;
+    }
+
+    @Override
+    public boolean setGamma(double gamma) {
+        Option.GAMMA.set(MinecraftClient.getInstance().options, gamma);
+        return true;
+    }
+
+    @Override
+    public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
+        ChatVisibility result;
+        switch (visibility) {
+            case SHOW:
+                result = ChatVisibility.FULL;
+                break;
+
+            case COMMANDS_ONLY:
+                result = ChatVisibility.SYSTEM;
+                break;
+
+            case HIDE:
+                result = ChatVisibility.HIDDEN;
+                break;
+
+            default:
+                return false;
+        }
+
+        MinecraftClient.getInstance().execute(() -> {
+            MinecraftClient.getInstance().options.chatVisibility = result;
+            MinecraftClient.getInstance().options.write();
+        });
+        return true;
+    }
+
+    @Override
+    public boolean setRenderDistance(int chunks) {
+        Option.RENDER_DISTANCE.set(MinecraftClient.getInstance().options, chunks);
         return true;
     }
 

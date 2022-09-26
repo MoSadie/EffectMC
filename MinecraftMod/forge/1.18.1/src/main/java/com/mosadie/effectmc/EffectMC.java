@@ -6,11 +6,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
-import com.mosadie.effectmc.core.handler.DisconnectHandler;
-import com.mosadie.effectmc.core.handler.OpenScreenHandler;
-import com.mosadie.effectmc.core.handler.SetSkinHandler;
-import com.mosadie.effectmc.core.handler.SkinLayerHandler;
+import com.mosadie.effectmc.core.handler.*;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Option;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.*;
@@ -27,6 +26,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -534,6 +534,88 @@ public class EffectMC implements EffectExecutor {
                     LOGGER.error("Unknown screen.");
             }
         });
+        return true;
+    }
+
+    @Override
+    public boolean setFOV(int fov) {
+        Minecraft.getInstance().execute(() -> Option.FOV.set(Minecraft.getInstance().options, fov));
+        return true;
+    }
+
+    @Override
+    public boolean setPOV(SetPovHandler.POV pov) {
+        CameraType mcPov;
+
+        switch (pov) {
+            default:
+            case FIRST_PERSON:
+                mcPov = CameraType.FIRST_PERSON;
+                break;
+
+            case THIRD_PERSON_BACK:
+                mcPov = CameraType.THIRD_PERSON_BACK;
+                break;
+
+            case THIRD_PERSON_FRONT:
+                mcPov = CameraType.THIRD_PERSON_FRONT;
+                break;
+        }
+
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().options.setCameraType(mcPov));
+        return true;
+    }
+
+    @Override
+    public boolean setGuiScale(int scale) {
+        if (Minecraft.getInstance().options.guiScale == scale) {
+            return true;
+        }
+
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().options.guiScale = scale;
+            Minecraft.getInstance().options.save();
+            Minecraft.getInstance().resizeDisplay();
+        });
+        return true;
+    }
+
+    @Override
+    public boolean setGamma(double gamma) {
+        Option.GAMMA.set(Minecraft.getInstance().options, gamma);
+        return true;
+    }
+
+    @Override
+    public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
+        ChatVisiblity result;
+        switch (visibility) {
+            case SHOW:
+                result = ChatVisiblity.FULL;
+                break;
+
+            case COMMANDS_ONLY:
+                result = ChatVisiblity.SYSTEM;
+                break;
+
+            case HIDE:
+                result = ChatVisiblity.HIDDEN;
+                break;
+
+            default:
+                return false;
+        }
+
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().options.chatVisibility = result;
+            Minecraft.getInstance().options.save();
+        });
+        return true;
+    }
+
+    @Override
+    public boolean setRenderDistance(int chunks) {
+        Option.RENDER_DISTANCE.set(Minecraft.getInstance().options, chunks);
         return true;
     }
 

@@ -28,6 +28,6 @@ public class ShowTitleHandler extends EffectRequestHandler {
         if (core.getExecutor().showTitle(getProperty("title").getAsString(), getProperty("subtitle").getAsString()))
             return new EffectResult("Showing title: " + getProperty("title").getAsString() + " Subtitle: " + getProperty("subtitle").getAsString(), true);
         else
-            return new EffectResult("Failed to show title", true);
+            return new EffectResult("Failed to show title", false);
     }
 }
