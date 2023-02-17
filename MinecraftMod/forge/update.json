@@ -1,5 +1,8 @@
 {
     "homepage": "https://github.com/MoSadie/EffectMC",
+    "1.19.3": {
+        "2.2.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v2.2.0"
+    },
     "1.19.2": {
         "2.2.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v2.2.0",
         "2.1.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v2.1.0"
@@ -44,6 +47,10 @@
         "1.0.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v1.0.0"
     },
     "promos": {
+        "1.19.3-latest": "2.2.0",
+        "1.19.3-recommended": "2.2.0",
+        "1.19.2-latest": "2.2.0",
+        "1.19.2-recommended": "2.2.0",
         "1.19-latest": "2.2.0",
         "1.19-recommended": "2.2.0",
         "1.18.2-latest": "2.2.0",
