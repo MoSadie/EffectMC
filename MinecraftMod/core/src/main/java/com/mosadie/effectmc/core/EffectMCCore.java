@@ -54,8 +54,16 @@ public class EffectMCCore {
         effects.add(new LoadWorldHandler(this));
         effects.add(new SetSkinHandler(this));
         effects.add(new OpenScreenHandler(this));
+        effects.add(new SetFovHandler(this));
+        effects.add(new SetPovHandler(this));
+        effects.add(new SetGUIScaleHandler(this));
+        effects.add(new SetGammaHandler(this));
+        effects.add(new SetGameModeHandler(this));
+        effects.add(new ChatVisibilityHandler(this));
+        effects.add(new SetRenderDistanceHandler(this));
     }
 
+    @SuppressWarnings("unused")
     public boolean initServer() throws URISyntaxException {
         int port = DEFAULT_PORT;
         if (configFile.exists()) {

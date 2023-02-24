@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[44,)"
+issueTrackerURL="https://github.com/MoSadie/EffectMC/issues"
+license="GNU LGPL v3"
+[[mods]]
+modId="effectmc"
+version="${file.jarVersion}"
+displayName="EffectMC"
+updateJSONURL="https://raw.githubusercontent.com/MoSadie/EffectMC/main/MinecraftMod/forge/update.json"
+displayURL="https://github.com/MoSadie/EffectMC"
+authors="MoSadie"
+description='''
+      Various vanilla-themed live special effects for you to control!
+      '''
+[[dependencies.effectmc]]
+    modId="forge"
+    mandatory=true
+    versionRange="[44,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.effectmc]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.19.3,1.20)"
+    ordering="NONE"
+    side="BOTH"

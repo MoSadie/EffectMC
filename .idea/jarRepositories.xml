@@ -74,12 +74,12 @@
     <remote-repository>
       <option name="id" value="UserLocalRemappedMods" />
       <option name="name" value="UserLocalRemappedMods" />
-      <option name="url" value="file:/$PROJECT_DIR$/MinecraftMod/fabric/1.17.1/.gradle/loom-cache/remapped_mods/" />
+      <option name="url" value="file:/$PROJECT_DIR$/MinecraftMod/fabric/1.19.2/.gradle/loom-cache/remapped_mods/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="UserLocalRemappedMods" />
       <option name="name" value="UserLocalRemappedMods" />
-      <option name="url" value="file:/$PROJECT_DIR$/MinecraftMod/fabric/1.19.2/.gradle/loom-cache/remapped_mods/" />
+      <option name="url" value="file:/$PROJECT_DIR$/MinecraftMod/fabric/1.17.1/.gradle/loom-cache/remapped_mods/" />
     </remote-repository>
   </component>
 </project>

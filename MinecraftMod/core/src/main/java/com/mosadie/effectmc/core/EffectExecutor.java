@@ -1,10 +1,7 @@
 package com.mosadie.effectmc.core;
 
 import com.google.gson.JsonObject;
-import com.mosadie.effectmc.core.handler.DisconnectHandler;
-import com.mosadie.effectmc.core.handler.OpenScreenHandler;
-import com.mosadie.effectmc.core.handler.SetSkinHandler;
-import com.mosadie.effectmc.core.handler.SkinLayerHandler;
+import com.mosadie.effectmc.core.handler.*;
 
 import java.net.URL;
 
@@ -46,4 +43,18 @@ public interface EffectExecutor {
     boolean setSkin(URL url, SetSkinHandler.SKIN_TYPE skinType);
 
     boolean openScreen(OpenScreenHandler.SCREEN screen);
+
+    boolean setFOV(int fov);
+
+    boolean setPOV(SetPovHandler.POV pov);
+
+    boolean setGuiScale(int scale);
+
+    boolean setGamma(double gamma);
+
+    boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility);
+
+    boolean setRenderDistance(int chunks);
+
+//    boolean setGamemode(SetGamemodeHandler.GAMEMODE gamemode);
 }
