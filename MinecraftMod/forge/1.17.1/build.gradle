@@ -130,7 +130,9 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
 
     implementation 'com.mosadie.effectmc:core:2.2'
-    jarJar(group: 'com.mosadie', name: 'effectmc', version: '[2.2,3.0)')
+    jarJar(group: 'com.mosadie', name: 'effectmc', version: '2.2') {
+        jarJar.ranged(it, '[2.2,3.0)')
+    }
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
