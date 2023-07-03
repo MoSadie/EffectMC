@@ -175,7 +175,7 @@ public class EffectMC implements EffectExecutor {
 						return;
 					}
 
-					LOGGER.info("Exported Book JSON: " + bookStack.getTagCompound().toString());
+					LOGGER.info("Exported Book JSON (this is likely in need of fixing): " + bookStack.getTagCompound().toString());
 					sender.addChatMessage(
 							new ChatComponentText("[EffectMC] Exported the held book to the current log file."));
 					return;
@@ -346,7 +346,7 @@ public class EffectMC implements EffectExecutor {
 	@Override
 	public boolean showActionMessage(String message) {
 		LOGGER.info("Showing ActionBar message: " + message);
-		Minecraft.getMinecraft().ingameGUI.setRecordPlayingMessage(message); // Closest thing in this version.
+		Minecraft.getMinecraft().ingameGUI.setRecordPlaying(message, true); // Closest thing in this version.
 		return true;
 	}
 
@@ -521,7 +521,7 @@ public class EffectMC implements EffectExecutor {
 	public boolean showToast(String title, String subtitle) {
 		Achievement ach = new ToastAchievement(title, subtitle);
 		Minecraft.getMinecraft()
-				.addScheduledTask(() -> Minecraft.getMinecraft().guiAchievement.displayUnformattedAchievement(ach));
+				.addScheduledTask(() -> Minecraft.getMinecraft().guiAchievement.displayAchievement(ach));
 		return true;
 	}
 
@@ -538,6 +538,16 @@ public class EffectMC implements EffectExecutor {
 			LOGGER.error("Invalid JSON");
 			return false;
 		}
+		
+		LOGGER.info("Is null? " + (nbt == null));
+		LOGGER.info("Has Pages? " + nbt.hasKey("pages", 8));
+		String keys = "";
+		for (String key : nbt.getKeySet()) {
+			keys += key + " ";
+		}
+		LOGGER.info("Keys? " + keys);
+		LOGGER.info("Has Pages? " + nbt.hasKey("pages"));
+		LOGGER.info("Pages type? " + nbt.getTagId("pages"));
 
 		if (!ItemWritableBook.isNBTValid(nbt)) {
 			LOGGER.error("Invalid Book JSON");
@@ -732,7 +742,7 @@ public class EffectMC implements EffectExecutor {
 
 	@Override
 	public boolean setRenderDistance(int chunks) {
-		Minecraft.getMinecraft().gameSettings.setOptionValue(Options.RENDER_DISTANCE, chunks);
+		Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.RENDER_DISTANCE, chunks);
 //    	Minecraft.getMinecraft().gameSettings.renderDistanceChunks = chunks;
 //    	Minecraft.getMinecraft().gameSettings.saveOptions();
 		return true;

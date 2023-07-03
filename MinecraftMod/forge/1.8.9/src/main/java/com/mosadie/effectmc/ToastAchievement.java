@@ -13,12 +13,12 @@ public class ToastAchievement extends Achievement {
 	public ToastAchievement(String title, String description) {
 		super(title, description, 0, 0, Blocks.air, null);
 		this.title = title;
-		this.description = description;
+		this.description = title + " " + description;
 	}
 
 	@Override
 	public IChatComponent getStatName() {
-		return new ChatComponentText(title);
+		return new ChatComponentText(description);
 	}
 
 	@Override
