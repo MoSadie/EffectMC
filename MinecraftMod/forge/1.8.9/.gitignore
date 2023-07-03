@@ -20,3 +20,6 @@ build
 # other
 eclipse
 run
+
+# gradle8
+gradle8.bat

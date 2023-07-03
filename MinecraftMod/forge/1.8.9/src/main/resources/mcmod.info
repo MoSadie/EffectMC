@@ -1,15 +1,15 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "effectmc",
+  "name": "EffectMC",
+  "description": "Various vanilla-themed live special effects for you to control!",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
-  "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
-  "logoFile": "",
+  "updateUrl": "https://github.com/MoSadie/EffectMC",
+  "authorList": ["MoSadie"],
+  "credits": "Elgato for making the Stream Deck SDK",
+  "logoFile": "assets/effectmc/icon.png",
   "screenshots": [],
   "dependencies": []
 }
