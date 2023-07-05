@@ -1,0 +1,16 @@
+[
+{
+  "modid": "effectmc",
+  "name": "EffectMC",
+  "description": "Various vanilla-themed live special effects for you to control!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "https://github.com/MoSadie/EffectMC",
+  "authorList": ["MoSadie"],
+  "credits": "Elgato for making the Stream Deck SDK",
+  "logoFile": "assets/effectmc/icon.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
