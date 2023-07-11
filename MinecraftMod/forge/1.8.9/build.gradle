@@ -79,7 +79,7 @@ dependencies {
 jar {
     configurations.shade.each { dep ->
         from(project.zipTree(dep)){
-            exclude 'META-INF', 'META-INF/**', 'com/google/gson/**', 'it/unimi/dsi/fastutil/**' // Hacky solution to the extra dependencies being included.
+            exclude 'META-INF', 'META-INF/**'
         }
     }
 }
