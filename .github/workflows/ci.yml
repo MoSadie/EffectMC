@@ -183,10 +183,10 @@ jobs:
           
       # Run DistributionTool
       - name: Run DistributionTool
-        uses: AdamCarballo/streamdeck-distribution-tool@v1.0.1
+        uses: MoSadie/streamdeck-distribution-tool@4c3ba323c5ad7ef45acb772e1f4833468ce204fa
         with:
-          input: 'StreamDeckPlugin/com.mosadie.effectmc.sdPlugin'
-          output: 'StreamDeckPlugin'
+          input: 'com.mosadie.effectmc.sdPlugin'
+          working-directory: 'StreamDeckPlugin'
         
       # Upload Artifact
       - name: Upload Artifact
