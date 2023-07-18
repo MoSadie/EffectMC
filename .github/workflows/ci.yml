@@ -180,24 +180,13 @@ jobs:
       - name: Generate Stream Deck Plugin
         working-directory: ./StreamDeckPlugin
         run: './gradlew.bat run --no-daemon'
-
-      # Download DistributionTool from Elgato
-      - name: Download DistributionTool
-        uses: carlosperate/download-file-action@v1.0.3
-        with:
-          file-url: 'https://developer.elgato.com/documentation/stream-deck/distributiontool/DistributionToolWindows.zip'
-        
-      # Unzip DistributionTool
-      - name: Unzip DistributionTool
-        uses: DuckSoft/extract-7z-action@v1.0
-        with:
-          pathSource: './DistributionToolWindows.zip'
-          pathTarget: './StreamDeckPlugin'
           
       # Run DistributionTool
       - name: Run DistributionTool
-        working-directory: './StreamDeckPlugin'
-        run: './DistributionTool.exe -b -i com.mosadie.effectmc.sdPlugin -o .'
+        uses: MoSadie/streamdeck-distribution-tool@22472fe2a1ae677822b11328d0df0f98dc7febab
+        with:
+          input: 'com.mosadie.effectmc.sdPlugin'
+          working-directory: 'StreamDeckPlugin'
         
       # Upload Artifact
       - name: Upload Artifact
