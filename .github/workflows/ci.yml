@@ -183,7 +183,7 @@ jobs:
           
       # Run DistributionTool
       - name: Run DistributionTool
-        uses: MoSadie/streamdeck-distribution-tool@4c3ba323c5ad7ef45acb772e1f4833468ce204fa
+        uses: MoSadie/streamdeck-distribution-tool@22472fe2a1ae677822b11328d0df0f98dc7febab
         with:
           input: 'com.mosadie.effectmc.sdPlugin'
           working-directory: 'StreamDeckPlugin'
