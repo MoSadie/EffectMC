@@ -61,6 +61,7 @@ public class EffectMCCore {
         effects.add(new SetGameModeHandler(this));
         effects.add(new ChatVisibilityHandler(this));
         effects.add(new SetRenderDistanceHandler(this));
+        effects.add(new RejoinHandler(this));
     }
 
     @SuppressWarnings("unused")

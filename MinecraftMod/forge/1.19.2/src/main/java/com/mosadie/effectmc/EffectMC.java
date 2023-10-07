@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -649,6 +651,45 @@ public class EffectMC implements EffectExecutor {
             Minecraft.getInstance().options.save();
         });
         return true;
+    }
+
+    @Override
+    public WorldState getWorldState() {
+        if (Minecraft.getInstance().level == null) {
+            return WorldState.OTHER;
+        }
+
+        return Minecraft.getInstance().isLocalServer() ? WorldState.SINGLEPLAYER : WorldState.MULTIPLAYER;
+    }
+
+    @Override
+    public String getSPWorldName() {
+        if (getWorldState() != WorldState.SINGLEPLAYER) {
+            return null;
+        }
+
+        IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
+
+        if (server != null) {
+            return server.getWorldData().getLevelName();
+        }
+
+        LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+        return null;
+    }
+
+    @Override
+    public String getServerIP() {
+        if (getWorldState() != WorldState.MULTIPLAYER) {
+            return null;
+        }
+
+        if (Minecraft.getInstance().getCurrentServer() != null) {
+            return Minecraft.getInstance().getCurrentServer().ip;
+        }
+
+        LOGGER.info("Failed to get Server IP!");
+        return null;
     }
 
     private void connectIfTrue(boolean connect) {

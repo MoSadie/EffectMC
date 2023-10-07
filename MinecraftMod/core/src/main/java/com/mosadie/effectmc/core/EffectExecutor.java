@@ -56,5 +56,9 @@ public interface EffectExecutor {
 
     boolean setRenderDistance(int chunks);
 
-//    boolean setGamemode(SetGamemodeHandler.GAMEMODE gamemode);
+    WorldState getWorldState();
+
+    String getSPWorldName();
+
+    String getServerIP();
 }
