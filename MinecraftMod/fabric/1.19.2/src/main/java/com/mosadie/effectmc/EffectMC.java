@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -35,6 +36,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -639,6 +641,45 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 			MinecraftClient.getInstance().options.write();
 		});
 		return true;
+	}
+
+	@Override
+	public WorldState getWorldState() {
+		if (MinecraftClient.getInstance().world == null) {
+			return WorldState.OTHER;
+		}
+
+		return MinecraftClient.getInstance().isIntegratedServerRunning() ? WorldState.SINGLEPLAYER : WorldState.MULTIPLAYER;
+	}
+
+	@Override
+	public String getSPWorldName() {
+		if (getWorldState() != WorldState.SINGLEPLAYER) {
+			return null;
+		}
+
+		IntegratedServer server = MinecraftClient.getInstance().getServer();
+
+		if (server != null) {
+			return server.getSaveProperties().getLevelName();
+		}
+
+		LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+		return null;
+	}
+
+	@Override
+	public String getServerIP() {
+		if (getWorldState() != WorldState.MULTIPLAYER) {
+			return null;
+		}
+
+		if (MinecraftClient.getInstance().getCurrentServerEntry() != null) {
+			return MinecraftClient.getInstance().getCurrentServerEntry().address;
+		}
+
+		LOGGER.info("Failed to get Server IP!");
+		return null;
 	}
 
 	private void connectIfTrue(boolean connect) {
