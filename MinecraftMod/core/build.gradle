@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-version = 2.2
+version = 2.3
 group = 'com.mosadie.effectmc'
 archivesBaseName = "EffectMC-Core"
 

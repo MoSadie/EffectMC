@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.AbstractOption;
 import net.minecraft.client.GameSettings;
@@ -23,6 +24,8 @@ import net.minecraft.item.Items;
 import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTUtil;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.StringTextComponent;
@@ -139,6 +142,22 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
                 receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportitem")) {
+            event.setCanceled(true);
+            Minecraft.getInstance().enqueue(() -> {
+                if (Minecraft.getInstance().player == null) {
+                    LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                    return;
+                }
+
+                CompoundNBT tag = new CompoundNBT();
+                Minecraft.getInstance().player.getHeldItemMainhand().write(tag);
+                LOGGER.info("Held Item Tag: " + tag);
+                showItemToast(tag.toString(), "Exported", Minecraft.getInstance().player.getHeldItemMainhand().getDisplayName().getString());
+            });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc")) {
+            event.setCanceled(true);
+            receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
         }
     }
 
@@ -385,6 +404,13 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToastGui().add(new ItemToast(itemData, new StringTextComponent(title), new StringTextComponent(subtitle))));
+
+        return true;
+    }
+
+    @Override
     public boolean openBook(JsonObject bookJSON) {
         CompoundNBT nbt;
         try {
@@ -595,6 +621,45 @@ public class EffectMC implements EffectExecutor {
     public boolean setRenderDistance(int chunks) {
         AbstractOption.RENDER_DISTANCE.set(Minecraft.getInstance().gameSettings, chunks);
         return true;
+    }
+
+    @Override
+    public WorldState getWorldState() {
+        if (Minecraft.getInstance().world == null) {
+            return WorldState.OTHER;
+        }
+
+        return Minecraft.getInstance().isIntegratedServerRunning() ? WorldState.SINGLEPLAYER : WorldState.MULTIPLAYER;
+    }
+
+    @Override
+    public String getSPWorldName() {
+        if (getWorldState() != WorldState.SINGLEPLAYER) {
+            return null;
+        }
+
+        IntegratedServer server = Minecraft.getInstance().getIntegratedServer();
+
+        if (server != null) {
+            return server.getName();
+        }
+
+        LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+        return null;
+    }
+
+    @Override
+    public String getServerIP() {
+        if (getWorldState() != WorldState.MULTIPLAYER) {
+            return null;
+        }
+
+        if (Minecraft.getInstance().getCurrentServerData() != null) {
+            return Minecraft.getInstance().getCurrentServerData().serverIP;
+        }
+
+        LOGGER.info("Failed to get Server IP!");
+        return null;
     }
 
     private void connectIfTrue(boolean connect) {

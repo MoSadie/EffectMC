@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -21,8 +22,10 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -147,8 +150,19 @@ public class EffectMC implements EffectExecutor {
                     LOGGER.info("Exported Book JSON: " + bookStack.getTag());
                     receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
                     return 0;
+                }))).then(Commands.literal("exportitem").executes((context -> {
+                    if (Minecraft.getInstance().player == null) {
+                        LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                        return 0;
+                    }
+                    CompoundTag tag = new CompoundTag();
+                    Minecraft.getInstance().player.getMainHandItem().save(tag);
+                    LOGGER.info("Held Item Tag: " + NbtUtils.prettyPrint(tag));
+                    showItemToast(NbtUtils.prettyPrint(tag), "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
+                    receiveChatMessage("[EffectMC] Exported held item data to log file!");
+                    return 0;
                 }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
@@ -431,6 +445,13 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new ItemToast(itemData, Component.literal(title), Component.literal(subtitle))));
+
+        return true;
+    }
+
+    @Override
     public boolean openBook(JsonObject bookJSON) {
         Minecraft.getInstance().execute(() -> {
             CompoundTag tag;
@@ -649,6 +670,45 @@ public class EffectMC implements EffectExecutor {
             Minecraft.getInstance().options.save();
         });
         return true;
+    }
+
+    @Override
+    public WorldState getWorldState() {
+        if (Minecraft.getInstance().level == null) {
+            return WorldState.OTHER;
+        }
+
+        return Minecraft.getInstance().isLocalServer() ? WorldState.SINGLEPLAYER : WorldState.MULTIPLAYER;
+    }
+
+    @Override
+    public String getSPWorldName() {
+        if (getWorldState() != WorldState.SINGLEPLAYER) {
+            return null;
+        }
+
+        IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
+
+        if (server != null) {
+            return server.getWorldData().getLevelName();
+        }
+
+        LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+        return null;
+    }
+
+    @Override
+    public String getServerIP() {
+        if (getWorldState() != WorldState.MULTIPLAYER) {
+            return null;
+        }
+
+        if (Minecraft.getInstance().getCurrentServer() != null) {
+            return Minecraft.getInstance().getCurrentServer().ip;
+        }
+
+        LOGGER.info("Failed to get Server IP!");
+        return null;
     }
 
     private void connectIfTrue(boolean connect) {

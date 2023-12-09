@@ -15,7 +15,7 @@ plugins {
 }
 apply plugin: 'net.minecraftforge.gradle'
 
-version = '2.2.0'
+version = '2.3.0'
 group = 'com.mosadie.effectmc' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'effectmc-forge-1.18.2'
 
@@ -147,9 +147,9 @@ dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
 
-    implementation 'com.mosadie.effectmc:core:2.2'
+    implementation 'com.mosadie.effectmc:core:2.3'
     jarJar(group: 'com.mosadie.effectmc', name: 'core', version: '[2.2,3.0)')
 }
 

@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -32,6 +33,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -136,8 +138,19 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
                     LOGGER.info("Exported Book JSON: " + bookStack.getTag());
                     receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
                     return 0;
+                }))).then(ClientCommandManager.literal("exportitem").executes((context -> {
+                    if (MinecraftClient.getInstance().player == null) {
+                        LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                        return 0;
+                    }
+                    CompoundTag tag = new CompoundTag();
+                    MinecraftClient.getInstance().player.getMainHandStack().toTag(tag);
+                    LOGGER.info("Held Item Tag: " + tag);
+                    showItemToast(tag.toString(), "Exported", MinecraftClient.getInstance().player.getMainHandStack().getName().getString());
+                    receiveChatMessage("[EffectMC] Exported held item data to log file!");
+                    return 0;
                 }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
                     return 0;
                 })));
 
@@ -399,6 +412,13 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new ItemToast(itemData, Text.of(title), Text.of(subtitle))));
+
+        return true;
+    }
+
+    @Override
     public boolean openBook(JsonObject bookJSON) {
         MinecraftClient.getInstance().send(() -> {
             CompoundTag tag;
@@ -605,6 +625,45 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     public boolean setRenderDistance(int chunks) {
         Option.RENDER_DISTANCE.set(MinecraftClient.getInstance().options, chunks);
         return true;
+    }
+
+    @Override
+    public WorldState getWorldState() {
+        if (MinecraftClient.getInstance().world == null) {
+            return WorldState.OTHER;
+        }
+
+        return MinecraftClient.getInstance().isIntegratedServerRunning() ? WorldState.SINGLEPLAYER : WorldState.MULTIPLAYER;
+    }
+
+    @Override
+    public String getSPWorldName() {
+        if (getWorldState() != WorldState.SINGLEPLAYER) {
+            return null;
+        }
+
+        IntegratedServer server = MinecraftClient.getInstance().getServer();
+
+        if (server != null) {
+            return server.getName();
+        }
+
+        LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+        return null;
+    }
+
+    @Override
+    public String getServerIP() {
+        if (getWorldState() != WorldState.MULTIPLAYER) {
+            return null;
+        }
+
+        if (MinecraftClient.getInstance().getCurrentServerEntry() != null) {
+            return MinecraftClient.getInstance().getCurrentServerEntry().address;
+        }
+
+        LOGGER.info("Failed to get Server IP!");
+        return null;
     }
 
     private void connectIfTrue(boolean connect) {

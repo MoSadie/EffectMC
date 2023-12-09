@@ -69,9 +69,15 @@ $SD.on('connected', (jsn) => {
      */
 
     settings = Utils.getProp(jsn, 'actionInfo.payload.settings', false);
-    if (settings) {
-        updateUI(settings);
-    }
+        console.log(settings);
+        if (settings) {
+            if (!settings.minecraftip) {
+                settings.minecraftip = 'http://localhost:3000';
+                console.log('set default minecraftip', settings.minecraftip);
+                saveSettings({key: 'minecraftip', value: settings.minecraftip});
+            }
+            updateUI(settings);
+        }
 });
 
 /**
