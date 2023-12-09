@@ -81,7 +81,7 @@ jobs:
 
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
           path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
@@ -151,7 +151,7 @@ jobs:
 
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # # Setup JDK
       # - name: Set up JDK 1.8
