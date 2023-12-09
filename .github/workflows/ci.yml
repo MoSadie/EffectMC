@@ -9,15 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup JDK
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: adopt
           java-version: 8
-          cache: 'gradle'
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
 
       # Build Core
       - name: Build/Install Core
@@ -48,15 +50,17 @@ jobs:
         
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup JDK
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: adopt
           java-version: 8
-          cache: 'gradle'
+      
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
 
       # Download Core
       - name: Download Core Artifact
@@ -99,7 +103,7 @@ jobs:
         
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # # Setup JDK
       # - name: Set up JDK 1.8
@@ -115,7 +119,7 @@ jobs:
 
       # Setup JDK
       - name: Set up JDK 1.17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: 17
@@ -135,7 +139,7 @@ jobs:
 
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
           path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
@@ -163,11 +167,13 @@ jobs:
 
       # Setup JDK
       - name: Set up JDK 16
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: 16
-          cache: 'gradle'
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
 
       # Download Core
       - name: Download Core Artifact
@@ -190,7 +196,7 @@ jobs:
         
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Stream Deck Plugin
           path: ./StreamDeckPlugin/*.streamDeckPlugin
