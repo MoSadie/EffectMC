@@ -14,13 +14,19 @@ const ${constName} = {
     settings:{},
     onDidReceiveSettings: function(jsn) {
         this.settings = Utils.getProp(jsn, 'payload.settings', {});
+
+        // If no settings, fill in some default settings.
+        if (!this.settings || Object.keys(this.settings).length === 0 || !this.settings.minecraftip) {
+            this.settings.minecraftip = 'http://localhost:3000';
+            ${settingsDefaults}
+        }
     },
 
     onWillAppear: function (jsn) {
         this.settings = jsn.payload.settings;
 
         // If no settings, fill in some default settings.
-        if (!this.settings || Object.keys(this.settings).length === 0) {
+        if (!this.settings || Object.keys(this.settings).length === 0 || !this.settings.minecraftip) {
            this.settings.minecraftip = 'http://localhost:3000';
            ${settingsDefaults}
         }

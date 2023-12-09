@@ -17,7 +17,6 @@ import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
-import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -29,8 +28,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.WorldStem;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -534,7 +531,8 @@ public class EffectMC implements EffectExecutor {
             LOGGER.info("Disconnecting from world...");
 
             Minecraft.getInstance().level.disconnect();
-            Minecraft.getInstance().clearClientLevel(new ProgressScreen(true));
+            Minecraft.getInstance().disconnect();
+//            Minecraft.getInstance().clearClientLevel(new ProgressScreen(true));
         }
     }
 
