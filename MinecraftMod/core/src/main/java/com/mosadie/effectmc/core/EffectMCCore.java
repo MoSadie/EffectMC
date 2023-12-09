@@ -62,6 +62,7 @@ public class EffectMCCore {
         effects.add(new ChatVisibilityHandler(this));
         effects.add(new SetRenderDistanceHandler(this));
         effects.add(new RejoinHandler(this));
+        effects.add(new ShowItemToastHandler(this));
     }
 
     @SuppressWarnings("unused")

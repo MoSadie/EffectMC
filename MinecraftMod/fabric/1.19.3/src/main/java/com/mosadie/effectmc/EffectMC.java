@@ -164,8 +164,19 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 					LOGGER.info("Exported Book JSON: " + bookStack.getNbt());
 					receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
 					return 0;
+				}))).then(ClientCommandManager.literal("exportitem").executes((context -> {
+					if (MinecraftClient.getInstance().player == null) {
+						LOGGER.info("Null player running exportitem, this shouldn't happen!");
+						return 0;
+					}
+					NbtCompound tag = new NbtCompound();
+					MinecraftClient.getInstance().player.getMainHandStack().writeNbt(tag);
+					LOGGER.info("Held Item Tag: " + tag);
+					showItemToast(tag.toString(), "Exported", MinecraftClient.getInstance().player.getMainHandStack().getName().getString());
+					receiveChatMessage("[EffectMC] Exported held item data to log file!");
+					return 0;
 				}))).executes((context -> {
-					receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+					receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
 					return 0;
 				})));
 	}
@@ -428,6 +439,13 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	@Override
 	public boolean showToast(String title, String subtitle) {
 		MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new SystemToast(SystemToast.Type.NARRATOR_TOGGLE, Text.of(title), Text.of(subtitle))));
+
+		return true;
+	}
+
+	@Override
+	public boolean showItemToast(String itemData, String title, String subtitle) {
+		MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().getToastManager().add(new ItemToast(itemData, Text.of(title), Text.of(subtitle))));
 
 		return true;
 	}

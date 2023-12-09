@@ -17,7 +17,6 @@ import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
-import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -25,11 +24,10 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.WorldStem;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -37,11 +35,8 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.io.IOUtils;
@@ -149,8 +144,20 @@ public class EffectMC implements EffectExecutor {
                     LOGGER.info("Exported Book JSON: " + bookStack.getTag());
                     receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
                     return 0;
+                })))
+                .then(Commands.literal("exportitem").executes((context -> {
+                    if (Minecraft.getInstance().player == null) {
+                        LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                        return 0;
+                    }
+                    CompoundTag tag = new CompoundTag();
+                    Minecraft.getInstance().player.getMainHandItem().save(tag);
+                    LOGGER.info("Held Item Tag: " + NbtUtils.prettyPrint(tag));
+                    showItemToast(NbtUtils.prettyPrint(tag), "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
+                    receiveChatMessage("[EffectMC] Exported held item data to log file!");
+                    return 0;
                 }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, trust");
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
@@ -428,6 +435,13 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean showToast(String title, String subtitle) {
         Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastIds.NARRATOR_TOGGLE, Component.literal(title), Component.literal(subtitle))));
+
+        return true;
+    }
+
+    @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new ItemToast(itemData, Component.literal(title), Component.literal(subtitle))));
 
         return true;
     }

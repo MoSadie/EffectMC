@@ -142,6 +142,22 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.info("Exported Book JSON: " + bookStack.getTag());
                 receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportitem")) {
+            event.setCanceled(true);
+            Minecraft.getInstance().execute(() -> {
+                if (Minecraft.getInstance().player == null) {
+                    LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                    return;
+                }
+
+                CompoundTag tag = new CompoundTag();
+                Minecraft.getInstance().player.getMainHandItem().save(tag);
+                LOGGER.info("Held Item Tag: " + tag);
+                showItemToast(tag.toString(), "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
+            });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc")) {
+            event.setCanceled(true);
+            receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
         }
     }
 
@@ -402,6 +418,13 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean showToast(String title, String subtitle) {
         Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastIds.NARRATOR_TOGGLE, new TextComponent(title), new TextComponent(subtitle))));
+
+        return true;
+    }
+
+    @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToasts().addToast(new ItemToast(itemData, new TextComponent(title), new TextComponent(subtitle))));
 
         return true;
     }

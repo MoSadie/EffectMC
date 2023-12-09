@@ -24,6 +24,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -141,6 +142,22 @@ public class EffectMC implements EffectExecutor {
                 LOGGER.info("Exported Book JSON: " + bookStack.getTag().toString());
                 receiveChatMessage("[EffectMC] Exported the held book to the current log file.");
             });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc exportitem")) {
+            event.setCanceled(true);
+            Minecraft.getInstance().enqueue(() -> {
+                if (Minecraft.getInstance().player == null) {
+                    LOGGER.info("Null player running exportitem, this shouldn't happen!");
+                    return;
+                }
+
+                CompoundNBT tag = new CompoundNBT();
+                Minecraft.getInstance().player.getHeldItemMainhand().write(tag);
+                LOGGER.info("Held Item Tag: " + tag);
+                showItemToast(tag.toString(), "Exported", Minecraft.getInstance().player.getHeldItemMainhand().getDisplayName().getString());
+            });
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc")) {
+            event.setCanceled(true);
+            receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
         }
     }
 
@@ -383,6 +400,13 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean showToast(String title, String subtitle) {
         Minecraft.getInstance().enqueue(() -> Minecraft.getInstance().getToastGui().add(new SystemToast(SystemToast.Type.NARRATOR_TOGGLE, new StringTextComponent(title), new StringTextComponent(subtitle))));
+        return true;
+    }
+
+    @Override
+    public boolean showItemToast(String itemData, String title, String subtitle) {
+        Minecraft.getInstance().execute(() -> Minecraft.getInstance().getToastGui().add(new ItemToast(itemData, new StringTextComponent(title), new StringTextComponent(subtitle))));
+
         return true;
     }
 

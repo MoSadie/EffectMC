@@ -32,6 +32,8 @@ public interface EffectExecutor {
 
     boolean showToast(String title, String subtitle);
 
+    boolean showItemToast(String itemData, String title, String subtitle);
+
     boolean openBook(JsonObject bookJSON);
 
     boolean narrate(String message, boolean interrupt);
