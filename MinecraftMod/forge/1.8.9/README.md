@@ -4,7 +4,7 @@
 
 This is not going to get updated often because the tools are extremely out of date & hard to use compared to modern tools. 1.8.9 has been unsupported for years as a modding version at this point. There are no plans to backport to any other version of Minecraft.
 
-This was a "I wonder if I could" situation. You'll also notice I did not add this to the CI build system, this version will only be manually built.
+This was a "I wonder if I could" situation.
 
 For the Stream Deck plugin, use the version from [this release (v2.2.0)](https://github.com/MoSadie/EffectMC/releases/tag/v2.2.0). It still has the built-in web dashboard and accepts the same http requests, if alternate methods are needed.
 

@@ -1,0 +1,48 @@
+name: Build and Upload Artifact
+
+on:
+    push:
+        paths:
+            - 'MinecraftMod/forge/1.8.9/**'
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+    
+        steps:
+          - uses: actions/checkout@v4
+    
+          # Setup JDK
+          - name: Set up JDK 8
+            uses: actions/setup-java@v4
+            with:
+              distribution: adopt
+              java-version: 8
+    
+          - name: Set up Gradle
+            uses: gradle/gradle-build-action@v2
+    
+          # Build Core
+          - name: Build/Install Core
+            working-directory: ./MinecraftMod/core
+            run: './gradlew publishToMavenLocal'
+    
+          # Upload Maven Local
+          - name: Upload 
+            uses: actions/upload-artifact@v3
+            with:
+              path: ~/.m2/repository
+              name: maven
+
+            # Build Minecraft Mod
+          - name: Build Mod
+            working-directory: ./MinecraftMod/forge/1.8.9
+            run: './gradlew build --no-daemon'
+
+            # Upload Artifact
+          - name: Upload Artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: forge 1.8.9
+                path: ./MinecraftMod/forge/1.8.9/build/libs/*.jar
