@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
+import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
@@ -33,6 +34,7 @@ import net.minecraft.item.ItemWritableBook;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.stats.Achievement;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
@@ -65,7 +67,7 @@ import java.util.List;
 @Mod(modid = EffectMC.MODID, version = EffectMC.VERSION)
 public class EffectMC implements EffectExecutor {
 	public static final String MODID = "effectmc";
-	public static final String VERSION = "2.2";
+	public static final String VERSION = "2.3";
 
 	public static EffectMCCore core;
 
@@ -317,6 +319,9 @@ public class EffectMC implements EffectExecutor {
 	public boolean sendChatMessage(String message) {
 		if (Minecraft.getMinecraft().thePlayer != null) {
 			LOGGER.info("Sending chat message: " + message);
+			if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, message) != 0) {
+				return true; // Client Command Handler handled it.
+			}
 			Minecraft.getMinecraft().thePlayer.sendChatMessage(message);
 			return true;
 		}
@@ -746,5 +751,54 @@ public class EffectMC implements EffectExecutor {
 //    	Minecraft.getMinecraft().gameSettings.renderDistanceChunks = chunks;
 //    	Minecraft.getMinecraft().gameSettings.saveOptions();
 		return true;
+	}
+
+	@Override
+	public boolean showItemToast(String itemData, String title, String subtitle) {
+		LOGGER.warn("Item Toasts are not supported in this version!");
+		return false;
+	}
+	
+	@Override
+	public WorldState getWorldState() {
+		if (Minecraft.getMinecraft().theWorld == null) {
+			return WorldState.OTHER;
+		}
+		
+		if (Minecraft.getMinecraft().isSingleplayer()) {
+			return WorldState.SINGLEPLAYER;
+		}
+		
+		return WorldState.MULTIPLAYER;
+	}
+
+	@Override
+	public String getSPWorldName() {
+		if (getWorldState() != WorldState.SINGLEPLAYER) {
+			return null;
+		}
+
+		IntegratedServer server = Minecraft.getMinecraft().getIntegratedServer();
+
+		if (server != null) {
+			return server.getName();
+		}
+
+		LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+        return null;
+	}
+
+	@Override
+	public String getServerIP() {
+		if (getWorldState() != WorldState.MULTIPLAYER) {
+			return null;
+		}
+
+		if (Minecraft.getMinecraft().getCurrentServerData() != null) {
+			return Minecraft.getMinecraft().getCurrentServerData().serverIP;
+		}
+
+		LOGGER.info("Attempted to get Server IP, but no server data was found!");
+		return null;
 	}
 }

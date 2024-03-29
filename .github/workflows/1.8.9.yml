@@ -27,13 +27,6 @@ jobs:
           - name: Build/Install Core
             working-directory: ./MinecraftMod/core
             run: './gradlew publishToMavenLocal'
-    
-          # Upload Maven Local
-          - name: Upload 
-            uses: actions/upload-artifact@v3
-            with:
-              path: ~/.m2/repository
-              name: maven
 
             # Build Minecraft Mod
           - name: Build Mod
