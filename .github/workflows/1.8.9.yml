@@ -28,6 +28,11 @@ jobs:
             working-directory: ./MinecraftMod/core
             run: './gradlew publishToMavenLocal'
 
+          # Setup Minecraft Forge Workspace
+          - name: Setup Forge Workspace
+            working-directory: ./MinecraftMod/forge/1.8.9
+            run: './gradlew setupCiWorkspace --no-daemon'
+
             # Build Minecraft Mod
           - name: Build Mod
             working-directory: ./MinecraftMod/forge/1.8.9
