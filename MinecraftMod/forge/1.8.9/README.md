@@ -18,3 +18,4 @@ Due to the large Minecraft version difference, some effects do not work in the u
 - [Open Book](https://github.com/MoSadie/EffectMC/wiki/open-book) does not work.
 - [Narrate](https://github.com/MoSadie/EffectMC/wiki/narrate) does not work.
 - [Open Screen](https://github.com/MoSadie/EffectMC/wiki/open-screen) may crash your game. Sorry.
+- [Show Item Toast](https://github.com/MoSadie/EffectMC/wiki/show-item-toast) does not work.
