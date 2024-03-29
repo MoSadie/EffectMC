@@ -6,7 +6,7 @@ This is not going to get updated often because the tools are extremely out of da
 
 This was a "I wonder if I could" situation.
 
-For the Stream Deck plugin, use the version from [this release (v2.2.0)](https://github.com/MoSadie/EffectMC/releases/tag/v2.2.0). It still has the built-in web dashboard and accepts the same http requests, if alternate methods are needed.
+For the Stream Deck plugin, use the version from [this release (v2.3.0)](https://github.com/MoSadie/EffectMC/releases/tag/v2.3.0). It still has the built-in web dashboard and accepts the same http requests, if alternate methods are needed.
 
 ## Effect Changes
 
