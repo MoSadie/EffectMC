@@ -19,7 +19,7 @@ jobs:
           java-version: 8
 
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       # Build Core
       - name: Build/Install Core
@@ -28,7 +28,7 @@ jobs:
 
       # Upload Maven Local
       - name: Upload 
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ~/.m2/repository
           name: maven
@@ -60,11 +60,11 @@ jobs:
           java-version: 8
       
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       # Download Core
       - name: Download Core Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: maven
           path: ~/.m2/repository
@@ -81,7 +81,7 @@ jobs:
 
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
           path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
@@ -125,11 +125,11 @@ jobs:
           java-version: 17
 
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       # Download Core
       - name: Download Core Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: maven
           path: ~/.m2/repository
@@ -141,7 +141,7 @@ jobs:
 
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.mod-loader }} ${{ matrix.mc-version }}
           path: ./MinecraftMod/${{ matrix.mod-loader }}/${{ matrix.mc-version }}/build/libs/*.jar
@@ -175,11 +175,11 @@ jobs:
           java-version: 16
 
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       # Download Core
       - name: Download Core Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: maven
           path: ~/.m2/repository
@@ -198,7 +198,7 @@ jobs:
         
       # Upload Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Stream Deck Plugin
           path: ./StreamDeckPlugin/*.streamDeckPlugin

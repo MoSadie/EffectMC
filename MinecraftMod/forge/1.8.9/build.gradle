@@ -20,7 +20,7 @@ plugins {
     id "net.minecraftforge.gradle.forge" version "2.0.2"
 }
 */
-version = "2.2.0"
+version = "2.3.0"
 group= "com.mosadie.effectmc" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "effectmc-forge-1.8.9"
 
@@ -72,7 +72,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    shade 'com.mosadie.effectmc:core:2.2'
+    shade 'com.mosadie.effectmc:core:2.3'
 
 }
 
