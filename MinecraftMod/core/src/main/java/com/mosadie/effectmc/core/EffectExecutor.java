@@ -20,7 +20,7 @@ public interface EffectExecutor {
 
     boolean showActionMessage(String message);
 
-    void showTrustPrompt(String device);
+    void showTrustPrompt(String device, DeviceType type);
 
     boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreen, String title, String message);
 

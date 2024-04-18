@@ -26,14 +26,19 @@ public class EffectMCCore {
 
     private HttpServer server;
 
-    private Set<String> trustedDevices;
+    private Map<DeviceType, Set<String>> trustedDevices;
     private boolean trustNextRequest;
 
     public EffectMCCore(File configFile, File trustFile, EffectExecutor executor) {
         this.configFile = configFile;
         this.trustFile = trustFile;
         this.executor = executor;
-        trustedDevices = new HashSet<>();
+        trustedDevices = new HashMap<>();
+
+        for (DeviceType type : DeviceType.values()) {
+            trustedDevices.put(type, new HashSet<>());
+        }
+
         trustNextRequest = false;
 
         gson = new Gson();
@@ -99,10 +104,28 @@ public class EffectMCCore {
                 writer.close();
             } else {
                 FileReader reader = new FileReader(trustFile);
-                trustedDevices = gson.fromJson(reader, new TypeToken<Set<String>>() {}.getType());
+                trustedDevices = gson.fromJson(reader, new TypeToken<Map<DeviceType, Set<String>>>() {}.getType());
                 reader.close();
             }
-        } catch (IOException | JsonSyntaxException e) {
+        } catch (JsonSyntaxException e) {
+
+            // Check if the old syntax is being used and convert if possible.
+            try {
+                FileReader reader = new FileReader(trustFile);
+                Set<String> devices = gson.fromJson(reader, new TypeToken<Set<String>>() {}.getType());
+                trustedDevices.put(DeviceType.OTHER, devices);
+                reader.close();
+
+                FileWriter writer = new FileWriter(trustFile);
+                writer.write(gson.toJson(trustedDevices));
+                writer.close();
+
+                getExecutor().log("Converted old trust file to new format.");
+            } catch (IOException ex) {
+                e.printStackTrace();
+                return false;
+            }
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -151,17 +174,25 @@ public class EffectMCCore {
         trustNextRequest = true;
     }
 
-    boolean checkTrust(String device) {
+    boolean checkTrust(String device, DeviceType type) {
+        if (device == null || device.isEmpty() || type == null) {
+            return false;
+        }
+
         if (trustNextRequest) {
             trustNextRequest = false;
-            executor.log("Prompting to trust device with id " + device);
-            executor.showTrustPrompt(device);
+            executor.log("Prompting to trust device of type " + type + " with id " + device);
+            executor.showTrustPrompt(device, type);
         }
-        return trustedDevices.contains(device);
+        return trustedDevices.get(type).contains(device);
     }
 
-    public void addTrustedDevice(String device) {
-        trustedDevices.add(device);
+    public void addTrustedDevice(String device, DeviceType type) {
+        if (device == null || device.isEmpty() || type == null) {
+            return;
+        }
+
+        trustedDevices.get(type).add(device);
 
         try {
             FileWriter writer = new FileWriter(trustFile);
@@ -178,20 +209,35 @@ public class EffectMCCore {
 
     public static class TrustBooleanConsumer implements BooleanConsumer {
         private final String device;
+
+        private final DeviceType type;
         private final EffectMCCore core;
 
-        public TrustBooleanConsumer(String device, EffectMCCore core) {
+        public TrustBooleanConsumer(String device, DeviceType type, EffectMCCore core) {
             this.device = device;
+            this.type = type;
             this.core = core;
         }
 
         @Override
         public void accept(boolean t) {
             if (t) {
-                core.addTrustedDevice(device);
+                core.addTrustedDevice(device, type);
             }
 
             core.getExecutor().resetScreen();
         }
+    }
+
+    public boolean executeFromChatMessage(String effectSlug, String worldId, List<String> args) {
+        if (!checkTrust(worldId, DeviceType.fromWorldState(executor.getWorldState()))) {
+            return false;
+        }
+        for (EffectRequestHandler effect : effects) {
+            if (effect.getEffectSlug().equals(effectSlug)) {
+                return effect.executeFromArgs(worldId, args);
+            }
+        }
+        return false;
     }
 }

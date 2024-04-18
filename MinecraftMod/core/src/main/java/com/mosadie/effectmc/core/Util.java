@@ -49,10 +49,10 @@ public class Util {
 
     public static boolean trustCheck(Map<String, Object> parameters, Map<String, Object> bodyParameters, HttpExchange exchange, EffectMCCore core) {
         if (parameters != null && parameters.containsKey("device")) {
-            if (core.checkTrust(parameters.get("device").toString()))
+            if (core.checkTrust(parameters.get("device").toString(), DeviceType.OTHER))
                 return true;
         } else if (bodyParameters != null && bodyParameters.containsKey("device")) {
-            if (core.checkTrust(bodyParameters.get("device").toString()))
+            if (core.checkTrust(bodyParameters.get("device").toString(),  DeviceType.OTHER))
                 return true;
         }
 

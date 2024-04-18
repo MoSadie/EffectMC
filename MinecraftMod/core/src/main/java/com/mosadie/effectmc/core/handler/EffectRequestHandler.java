@@ -197,6 +197,32 @@ public abstract class EffectRequestHandler implements HttpHandler {
         exchange.getResponseBody().close();
     }
 
+    public boolean executeFromArgs(String worldId, List<String> args) {
+        // Set all properties, returning false if there are not enough args to fill, skipping any Comment properties.
+        int i = 0;
+        for (EffectProperty property : propertiesList) {
+            if (property.getPropType() == EffectProperty.PropertyType.COMMENT) {
+                continue;
+            }
+            if (i >= args.size()) {
+                core.getExecutor().log(getEffectName() + " failed: Not enough arguments provided.");
+                return false;
+            }
+            if (!property.setValue(args.get(i))) {
+                core.getExecutor().log(getEffectName() + " failed: " + property.getLabel() + "'s value is invalid.");
+                return false;
+            }
+            i++;
+        }
+
+        // Execute effect
+        EffectResult result = execute();
+        if (result != null && result.message != null) {
+            core.getExecutor().log(result.message);
+        }
+        return result != null && result.success;
+    }
+
     public static class EffectResult {
         public final String message;
         public final boolean success;

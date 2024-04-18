@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
+import com.mosadie.effectmc.core.DeviceType;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
@@ -27,6 +28,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -37,6 +40,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.io.IOUtils;
@@ -101,6 +105,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Server start result: " + result);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommand);
+        NeoForge.EVENT_BUS.addListener(this::listenForTranslation);
 
         Header authHeader = new BasicHeader("Authorization", "Bearer " + Minecraft.getInstance().getUser().getAccessToken());
         List<Header> headers = new ArrayList<>();
@@ -160,6 +165,26 @@ public class EffectMC implements EffectExecutor {
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
+    }
+
+    private static final String translationPrefix = "com.mosadie.effectmc.trigger.";
+    private void listenForTranslation(ClientChatReceivedEvent event) {
+        Component component = event.getMessage();
+
+        ComponentContents contents = component.getContents();
+        if (contents instanceof TranslatableContents translatableContents && translatableContents.getKey().startsWith(translationPrefix)) {
+            event.setCanceled(true);
+            String slug = translatableContents.getKey().substring(translationPrefix.length());
+            String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+            List<String> args = new ArrayList<>();
+
+            for (Object arg : translatableContents.getArgs()) {
+                args.add(arg.toString());
+            }
+
+            core.executeFromChatMessage(slug, worldId, args);
+
+        }
     }
 
     @Override
@@ -391,9 +416,9 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void showTrustPrompt(String device) {
+    public void showTrustPrompt(String device, DeviceType type) {
         Minecraft.getInstance().execute(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, type, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device?\n(Type: " + type + (type == DeviceType.OTHER ? " Device Id:" + device : "") + ")"));
             Minecraft.getInstance().setScreen(screen);
         });
     }
