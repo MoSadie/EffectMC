@@ -44,6 +44,7 @@ import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.message.ChatVisibility;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
@@ -187,7 +188,12 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 						return 0;
 					}
 
-					DataResult<JsonElement> dataResult = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, MinecraftClient.getInstance().player.getMainHandStack());
+					if (MinecraftClient.getInstance().world == null) {
+						LOGGER.info("Null world running exportitem, this shouldn't happen!");
+						return 0;
+					}
+
+					DataResult<JsonElement> dataResult = ItemStack.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, MinecraftClient.getInstance().world.getRegistryManager()), MinecraftClient.getInstance().player.getMainHandStack());
 
 					if (dataResult.isError()) {
 						receiveChatMessage("[EffectMC] Failed to export held item data: Error encoding JSON.");

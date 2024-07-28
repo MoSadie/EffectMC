@@ -27,12 +27,17 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -42,6 +47,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
@@ -65,6 +71,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Mod(EffectMC.MODID)
 public class EffectMC implements EffectExecutor {
@@ -175,30 +182,40 @@ public class EffectMC implements EffectExecutor {
                         LOGGER.info("Null player running exportitem, this shouldn't happen!");
                         return 0;
                     }
+                    if (Minecraft.getInstance().level == null) {
+                        LOGGER.info("Null level running exportitem, this shouldn't happen!");
+                        return 0;
+                    }
 
-                    DataResult<JsonElement> dataResult = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, Minecraft.getInstance().player.getMainHandItem());
+                    try {
+                        DataResult<JsonElement> dataResult = ItemStack.CODEC.encodeStart(RegistryOps.create(JsonOps.INSTANCE, Minecraft.getInstance().level.registryAccess()), Minecraft.getInstance().player.getMainHandItem());
 
-                    if (dataResult.isError()) {
-                        receiveChatMessage("[EffectMC] Failed to export held item data: Error encoding JSON.");
-                        if (dataResult.error().isPresent()) {
-                            LOGGER.warn("Error encoding JSON: " + dataResult.error().get().message());
-                        } else {
-                            LOGGER.warn("Error encoding JSON: Unknown error.");
+                        if (dataResult.isError()) {
+                            receiveChatMessage("[EffectMC] Failed to export held item data: Error encoding JSON.");
+                            if (dataResult.error().isPresent()) {
+                                LOGGER.warn("Error encoding JSON: " + dataResult.error().get().message());
+                            } else {
+                                LOGGER.warn("Error encoding JSON: Unknown error.");
+                            }
+                            return 0;
                         }
+
+                        if (dataResult.result().isEmpty()) {
+                            receiveChatMessage("[EffectMC] Failed to export held item data: No JSON result.");
+                            return 0;
+                        }
+
+                        String json = dataResult.result().get().toString();
+
+                        LOGGER.info("Held Item JSON: " + json);
+                        showItemToast(json, "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
+                        receiveChatMessage("[EffectMC] Exported held item data to log file!");
+                        return 0;
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to export item data!", e);
+                        receiveChatMessage("[EffectMC] Failed to export held item data: Internal error.");
                         return 0;
                     }
-
-                    if (dataResult.result().isEmpty()) {
-                        receiveChatMessage("[EffectMC] Failed to export held item data: No JSON result.");
-                        return 0;
-                    }
-
-                    String json = dataResult.result().get().toString();
-
-                    LOGGER.info("Held Item JSON: " + json);
-                    showItemToast(json, "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
-                    receiveChatMessage("[EffectMC] Exported held item data to log file!");
-                    return 0;
                 }))).executes((context -> {
                     receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
                     return 0;

@@ -5,11 +5,13 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mosadie.effectmc.core.EffectMCCore;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -24,7 +26,14 @@ public class ItemToast implements Toast {
     private boolean changed = true;
 
     public ItemToast(String itemData, Text title, Text body, EffectMCCore core) {
-        DataResult<Pair<ItemStack, JsonElement>> dataResult = ItemStack.CODEC.decode(JsonOps.INSTANCE, core.fromJson(itemData));
+        if (MinecraftClient.getInstance().world == null) {
+            EffectMC.LOGGER.warn("Error decoding item data: No level");
+            item = new ItemStack(Items.AIR);
+            this.title = title;
+            this.body = body;
+            return;
+        }
+        DataResult<Pair<ItemStack, JsonElement>> dataResult = ItemStack.CODEC.decode(RegistryOps.of(JsonOps.INSTANCE, MinecraftClient.getInstance().world.getRegistryManager()), core.fromJson(itemData));
 
         if (dataResult.error().isPresent()) {
             EffectMC.LOGGER.warn("Error decoding item data: " + dataResult.error().get());
