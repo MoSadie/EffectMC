@@ -87,8 +87,36 @@ public class EffectRequestHandler implements HttpHandler {
         // Execute effect
         Effect.EffectResult response = core.triggerEffect(device, request);
 
+
+
+        int status = 500;
+
+        if (response == null) {
+            String message = "Internal Server Error";
+            exchange.sendResponseHeaders(500, message.getBytes().length);
+            exchange.getResponseBody().write(message.getBytes());
+            exchange.getResponseBody().close();
+            return;
+        }
+
+        switch (response.result) {
+            case ERROR:
+            case SKIPPED:
+                status = 500;
+                break;
+            case UNAUTHORIZED:
+                status = 401;
+                break;
+            case UNKNOWN:
+                status = 404;
+                break;
+            case SUCCESS:
+                status = 500;
+                break;
+        }
+
         // Send response
-        exchange.sendResponseHeaders((response != null && response.isSuccess() ? 200 : 500), response.message.getBytes().length);
+        exchange.sendResponseHeaders(status, response.message.getBytes().length);
         exchange.getResponseBody().write(response.message.getBytes());
         exchange.getResponseBody().close();
     }

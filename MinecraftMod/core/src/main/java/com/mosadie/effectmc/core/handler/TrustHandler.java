@@ -1,15 +1,18 @@
 package com.mosadie.effectmc.core.handler;
 
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.mosadie.effectmc.core.EffectMCCore;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class TrustHandler {
     private final EffectMCCore core;
@@ -48,9 +51,34 @@ public class TrustHandler {
         try {
              trustedDevices = core.getGson().fromJson(new FileReader(trustFile), new TypeToken<List<Device>>() {}.getType());
              return true;
+        } catch (JsonSyntaxException e) {
+            // Check if the old syntax is being used and convert if possible.
+            try {
+                FileReader reader = new FileReader(trustFile);
+                Set<String> devices = core.getGson().fromJson(reader, new TypeToken<Set<String>>() {}.getType());
+
+                reader.close();
+
+                trustedDevices = new ArrayList<>();
+
+                for (String device : devices) {
+                    trustedDevices.add(new Device(device, DeviceType.OTHER));
+                }
+
+                writeTrustFile();
+
+                core.getExecutor().log("Converted old trust file to new format.");
+                return true;
+            } catch (IOException ex) {
+                // Log the error
+                core.getExecutor().log("Failed to parse trust file. Exception: " + e.getMessage());
+                e.printStackTrace();
+                trustedDevices = null;
+                return false;
+            }
         } catch (Exception e) {
-            // Log the error
             core.getExecutor().log("Failed to read trust file. Exception: " + e.getMessage());
+            e.printStackTrace();
             trustedDevices = null;
             return false;
         }

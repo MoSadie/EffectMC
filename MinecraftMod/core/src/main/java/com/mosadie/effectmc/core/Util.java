@@ -47,28 +47,4 @@ public class Util {
             }
         }
     }
-
-    public static boolean trustCheck(Map<String, Object> parameters, Map<String, Object> bodyParameters, HttpExchange exchange, EffectMCCore core) {
-        if (parameters != null && parameters.containsKey("device")) {
-            if (core.checkTrust(parameters.get("device").toString(), DeviceType.OTHER))
-                return true;
-        } else if (bodyParameters != null && bodyParameters.containsKey("device")) {
-            if (core.checkTrust(bodyParameters.get("device").toString(),  DeviceType.OTHER))
-                return true;
-        }
-
-        unauthenticatedResponse(exchange);
-        return false;
-    }
-
-    private static void unauthenticatedResponse(HttpExchange exchange) {
-        try {
-            String response = "Unauthenticated";
-            exchange.sendResponseHeaders(401, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -18,6 +18,14 @@ public class EffectHandler {
         this.effects = effects;
     }
 
+    public void setExportFlag() {
+        exportFlag = true;
+    }
+
+    public void setTrustFlag() {
+        trustFlag = true;
+    }
+
     public Effect.EffectResult handleRequest(Device device, EffectRequest request) {
         // Check for null device or request
         if (device == null) {
@@ -29,7 +37,7 @@ public class EffectHandler {
         // Get the effect from the map
         Effect effect = effects.get(request.getEffectId());
         if (effect == null) {
-            return new Effect.EffectResult("Effect not found", Effect.EffectResult.Result.ERROR);
+            return new Effect.EffectResult("Effect not found", Effect.EffectResult.Result.UNKNOWN);
         }
 
         // If the trust flag, begin the device trust process
@@ -47,10 +55,18 @@ public class EffectHandler {
         }
 
         // Validate request contains all required properties
+        if (!effect.getPropertyManager().argumentCheck(request.getArgs())) {
+            core.getExecutor().log("A required property is missing or invalid.");
+            return new Effect.EffectResult("A required property is missing or invalid.", Effect.EffectResult.Result.ERROR);
+        }
 
         // If there is an export flag set, export the effect request as a json string in the log
+        if (exportFlag) {
+            exportFlag = false;
+            core.getExecutor().log("Exported Effect Request: " + core.toJson(request));
+        }
 
         // Execute the effect
-        return effect.execute();
+        return effect.execute(core, request.getArgs());
     }
 }

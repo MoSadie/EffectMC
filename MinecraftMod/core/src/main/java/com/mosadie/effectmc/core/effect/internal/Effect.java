@@ -26,7 +26,8 @@ public abstract class Effect {
             SUCCESS,
             SKIPPED,
             UNAUTHORIZED,
-            ERROR
+            ERROR,
+            UNKNOWN
         }
 
         public final Result result;
