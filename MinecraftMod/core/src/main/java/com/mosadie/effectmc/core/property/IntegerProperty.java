@@ -1,19 +1,29 @@
 package com.mosadie.effectmc.core.property;
 
 public class IntegerProperty extends EffectProperty{
-    private int value;
     private final String placeholder;
 
-    public IntegerProperty(String id, int value, boolean required, String label, String placeholder) {
+    private final int defaultValue;
+
+    public IntegerProperty(String id, int defaultValue, boolean required, String label, String placeholder) {
         super(PropertyType.INTEGER, id, required, label);
-        this.value = value;
         this.placeholder = placeholder;
+        this.defaultValue = defaultValue;
     }
 
     @Override
-    public boolean setValue(Object newValue) {
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public boolean isValidInput(Object input) {
+        if (input instanceof Integer) {
+            return true;
+        }
+
         try {
-            this.value = Integer.parseInt(String.valueOf(newValue));
+            Integer.parseInt(String.valueOf(input));
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -21,8 +31,16 @@ public class IntegerProperty extends EffectProperty{
     }
 
     @Override
-    public String getAsString() {
-        return Integer.toString(value);
+    public String getAsString(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return String.valueOf(input);
+            }
+
+            return String.valueOf(Integer.parseInt(String.valueOf(input)));
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -36,22 +54,63 @@ public class IntegerProperty extends EffectProperty{
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return Boolean.parseBoolean(getAsString());
+    public boolean getAsBoolean(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input != 0;
+            }
+
+            return Integer.parseInt(getAsString(input)) != 0;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public float getAsFloat() {
-        return value;
+    public float getAsFloat(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input;
+            }
+            try {
+                return Float.parseFloat(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 
     @Override
-    public int getAsInt() {
-        return value;
+    public int getAsInt(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input;
+            }
+            try {
+                return Integer.parseInt(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 
     @Override
-    public double getAsDouble() {
-        return value;
+    public double getAsDouble(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input;
+            }
+            try {
+                return Double.parseDouble(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 }

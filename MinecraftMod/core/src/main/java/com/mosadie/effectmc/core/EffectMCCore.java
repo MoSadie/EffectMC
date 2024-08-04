@@ -4,7 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.mosadie.effectmc.core.handler.*;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
+import com.mosadie.effectmc.core.effect.internal.EffectRequest;
+import com.mosadie.effectmc.core.handler.Device;
+import com.mosadie.effectmc.core.handler.DeviceType;
+import com.mosadie.effectmc.core.handler.TrustHandler;
+import com.mosadie.effectmc.core.handler.http.*;
 import com.sun.net.httpserver.HttpServer;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
@@ -22,18 +28,22 @@ public class EffectMCCore {
     private final EffectExecutor executor;
     private final Gson gson;
 
-    private final List<EffectRequestHandler> effects;
+    public Gson getGson() {
+        return gson;
+    }
+
+    private final List<Effect> effects;
 
     private HttpServer server;
 
-    private Map<DeviceType, Set<String>> trustedDevices;
+    private TrustHandler trustHandler;
     private boolean trustNextRequest;
 
     public EffectMCCore(File configFile, File trustFile, EffectExecutor executor) {
         this.configFile = configFile;
         this.trustFile = trustFile;
         this.executor = executor;
-        trustedDevices = new HashMap<>();
+        trustedDevices = new HashMap<>(); // This is where I left off
 
         for (DeviceType type : DeviceType.values()) {
             trustedDevices.put(type, new HashSet<>());
@@ -44,30 +54,30 @@ public class EffectMCCore {
         gson = new Gson();
 
         effects = new ArrayList<>();
-        effects.add(new JoinServerHandler(this));
-        effects.add(new SkinLayerHandler(this));
-        effects.add(new SendChatMessageHandler(this));
-        effects.add(new ReceiveChatMessageHandler(this));
-        effects.add(new ShowTitleHandler(this));
-        effects.add(new ShowActionMessageHandler(this));
-        effects.add(new DisconnectHandler(this));
-        effects.add(new PlaySoundHandler(this));
-        effects.add(new StopSoundHandler(this));
-        effects.add(new ShowToastHandler(this));
-        effects.add(new OpenBookHandler(this));
-        effects.add(new NarrateHandler(this));
-        effects.add(new LoadWorldHandler(this));
-        effects.add(new SetSkinHandler(this));
-        effects.add(new OpenScreenHandler(this));
-        effects.add(new SetFovHandler(this));
-        effects.add(new SetPovHandler(this));
-        effects.add(new SetGUIScaleHandler(this));
-        effects.add(new SetGammaHandler(this));
-        effects.add(new SetGameModeHandler(this));
-        effects.add(new ChatVisibilityHandler(this));
-        effects.add(new SetRenderDistanceHandler(this));
-        effects.add(new RejoinHandler(this));
-        effects.add(new ShowItemToastHandler(this));
+        effects.add(new JoinServerEffect());
+        effects.add(new SkinLayerEffect());
+        effects.add(new SendChatMessageEffect());
+        effects.add(new ReceiveChatMessageEffect());
+        effects.add(new ShowTitleEffect());
+        effects.add(new ShowActionMessageEffect());
+        effects.add(new DisconnectEffect());
+        effects.add(new PlaySoundEffect());
+        effects.add(new StopSoundEffect());
+        effects.add(new ShowToastEffect());
+        effects.add(new OpenBookEffect());
+        effects.add(new NarrateEffect());
+        effects.add(new LoadWorldEffect());
+        effects.add(new SetSkinEffect());
+        effects.add(new OpenScreenEffect());
+        effects.add(new SetFovEffect());
+        effects.add(new SetPovEffect());
+        effects.add(new SetGUIScaleEffect());
+        effects.add(new SetGammaEffect());
+        effects.add(new SetGameModeEffect());
+        effects.add(new ChatVisibilityEffect());
+        effects.add(new SetRenderDistanceEffect());
+        effects.add(new RejoinEffect());
+        effects.add(new ShowItemToastEffect());
     }
 
     @SuppressWarnings("unused")
@@ -142,8 +152,8 @@ public class EffectMCCore {
 
         server.createContext("/style.css", new CSSRequestHandler());
 
-        for(EffectRequestHandler effect : effects) {
-            server.createContext("/" + effect.getEffectSlug(), effect);
+        for(Effect effect : effects) {
+            server.createContext("/" + effect.getEffectId(), new EffectRequestHandler(this, effect));
         }
 
         server.setExecutor(null);
@@ -203,7 +213,7 @@ public class EffectMCCore {
         }
     }
 
-    public List<EffectRequestHandler> getEffects() {
+    public List<Effect> getEffects() {
         return effects;
     }
 
@@ -229,15 +239,13 @@ public class EffectMCCore {
         }
     }
 
-    public boolean executeFromChatMessage(String effectSlug, String worldId, List<String> args) {
-        if (!checkTrust(worldId, DeviceType.fromWorldState(executor.getWorldState()))) {
-            return false;
-        }
-        for (EffectRequestHandler effect : effects) {
-            if (effect.getEffectSlug().equals(effectSlug)) {
-                return effect.executeFromArgs(worldId, args);
+    public Effect.EffectResult triggerEffect(Device device, EffectRequest request) {
+        for (Effect effect : effects) {
+            if (effect.getEffectId().equals(request.getEffectId())) {
+                return effect.execute(this, request.getArgs(), device);
             }
         }
-        return false;
+
+        return new Effect.EffectResult("Effect not found.", Effect.EffectResult.Result.ERROR);
     }
 }

@@ -1,24 +1,34 @@
 package com.mosadie.effectmc.core.property;
 
 public class StringProperty extends EffectProperty{
-    private String value;
     private final String placeholder;
 
-    public StringProperty(String id, String value, boolean required, String label, String placeholder) {
+    private final String defaultValue;
+
+    public StringProperty(String id, String defaultValue, boolean required, String label, String placeholder) {
         super(PropertyType.STRING, id, required, label);
-        this.value = value;
         this.placeholder = placeholder;
+        this.defaultValue = defaultValue;
     }
 
     @Override
-    public boolean setValue(Object newValue) {
-        this.value = String.valueOf(newValue);
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public boolean isValidInput(Object input) {
+        // String.valueOf will always return a value, so this will always return true
         return true;
     }
 
     @Override
-    public String getAsString() {
-        return value;
+    public String getAsString(Object input) {
+        if (isValidInput(input)) {
+            return String.valueOf(input);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -32,33 +42,64 @@ public class StringProperty extends EffectProperty{
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return Boolean.parseBoolean(getAsString());
+    public boolean getAsBoolean(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Boolean) {
+                return (Boolean) input;
+            }
+
+            return Boolean.parseBoolean(getAsString(input));
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public float getAsFloat() {
-        try {
-            return Float.parseFloat(getAsString());
-        } catch (NumberFormatException e) {
+    public float getAsFloat(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Float) {
+                return (Float) input;
+            }
+
+            try {
+                return Float.parseFloat(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
 
     @Override
-    public int getAsInt() {
-        try {
-            return Integer.parseInt(getAsString());
-        } catch (NumberFormatException e) {
+    public int getAsInt(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input;
+            }
+            try {
+                return Integer.parseInt(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
 
     @Override
-    public double getAsDouble() {
-        try {
-            return Double.parseDouble(getAsString());
-        } catch (NumberFormatException e) {
+    public double getAsDouble(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Double) {
+                return (Double) input;
+            }
+
+            try {
+                return Double.parseDouble(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }

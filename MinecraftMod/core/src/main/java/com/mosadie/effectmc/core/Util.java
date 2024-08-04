@@ -1,5 +1,6 @@
 package com.mosadie.effectmc.core;
 
+import com.mosadie.effectmc.core.handler.DeviceType;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

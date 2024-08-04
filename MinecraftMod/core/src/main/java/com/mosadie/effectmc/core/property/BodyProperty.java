@@ -1,24 +1,29 @@
 package com.mosadie.effectmc.core.property;
 
 public class BodyProperty extends EffectProperty{
-    private String value;
+    private final String defaultValue;
     private final String placeholder;
 
-    public BodyProperty(String id, String value, boolean required, String label, String placeholder) {
+    public BodyProperty(String id, String defaultValue, boolean required, String label, String placeholder) {
         super(PropertyType.BODY, id, required, label);
-        this.value = value;
         this.placeholder = placeholder;
+        this.defaultValue = defaultValue;
     }
 
     @Override
-    public boolean setValue(Object newValue) {
-        this.value = String.valueOf(newValue);
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public boolean isValidInput(Object input) {
+        // String.valueOf will always return a value, so this will always return true
         return true;
     }
 
     @Override
-    public String getAsString() {
-        return value;
+    public String getAsString(Object input) {
+        return String.valueOf(input);
     }
 
     @Override
@@ -32,32 +37,32 @@ public class BodyProperty extends EffectProperty{
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return Boolean.parseBoolean(getAsString());
+    public boolean getAsBoolean(Object input) {
+        return Boolean.parseBoolean(getAsString(input));
     }
 
     @Override
-    public float getAsFloat() {
+    public float getAsFloat(Object input) {
         try {
-            return Float.parseFloat(getAsString());
+            return Float.parseFloat(getAsString(input));
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
     @Override
-    public int getAsInt() {
+    public int getAsInt(Object input) {
         try {
-            return Integer.parseInt(getAsString());
+            return Integer.parseInt(getAsString(input));
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
     @Override
-    public double getAsDouble() {
+    public double getAsDouble(Object input) {
         try {
-            return Double.parseDouble(getAsString());
+            return Double.parseDouble(getAsString(input));
         } catch (NumberFormatException e) {
             return 0;
         }
