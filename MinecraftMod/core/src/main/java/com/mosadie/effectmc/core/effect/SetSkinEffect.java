@@ -14,7 +14,7 @@ public class SetSkinEffect extends Effect {
     public SetSkinEffect() {
         super();
         getPropertyManager().addStringProperty("url", "", true, "Skin URL", "");
-        getPropertyManager().addSelectionProperty("skinType", SKIN_TYPE.CLASSIC.getValue(), true, "Skin Type", SKIN_TYPE.toStringArray());
+        getPropertyManager().addSelectionProperty("skinType", SKIN_TYPE.CLASSIC.name(), true, "Skin Type", SKIN_TYPE.toStringArray());
         getPropertyManager().addCommentProperty("NOTE: This does not refresh your skin in-game, rejoin the server to refresh your skin.");
         getPropertyManager().lock();
     }

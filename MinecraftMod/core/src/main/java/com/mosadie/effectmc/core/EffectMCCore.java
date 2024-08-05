@@ -12,17 +12,17 @@ import com.mosadie.effectmc.core.handler.DeviceType;
 import com.mosadie.effectmc.core.handler.EffectHandler;
 import com.mosadie.effectmc.core.handler.TrustHandler;
 import com.mosadie.effectmc.core.handler.http.*;
-import com.sun.net.httpserver.HttpServer;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.*;
 
 public class EffectMCCore {
 
     private final static int DEFAULT_PORT = 3000;
+
+    public static final String TRANSLATION_TRIGGER_KEY = "com.mosadie.effectmc.trigger";
 
     private final File configFile;
     private final File trustFile;
@@ -98,7 +98,7 @@ public class EffectMCCore {
                 }
             } catch (FileNotFoundException | NumberFormatException e) {
                 e.printStackTrace();
-
+                return false;
             }
         } else {
             try {
@@ -110,10 +110,12 @@ public class EffectMCCore {
                 writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
         }
 
         if (!trustHandler.readTrustFile()) {
+            getExecutor().log("Failed to read trust file.");
             return false;
         }
 
@@ -122,10 +124,23 @@ public class EffectMCCore {
         httpServer = new EffectHttpServer(port, this);
 
         if (!httpServer.initServer()) {
+            getExecutor().log("Failed to start http server.");
             return false;
         }
 
         return true;
+    }
+
+    public EffectRequest requestFromJson(String json) {
+        try {
+            return gson.fromJson(json, new TypeToken<EffectRequest>() {}.getType());
+        } catch (JsonSyntaxException e) {
+            executor.log("Invalid Request JSON! " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            executor.log("Exception parsin Request JSON: " + e.getMessage());
+            return null;
+        }
     }
 
     public JsonObject fromJson(String json) {

@@ -84,6 +84,8 @@ public class EffectRequestHandler implements HttpHandler {
 
         Device device = new Device(isBody ? bodyParameters.get("device").toString() : parameters.get("device").toString(), DeviceType.OTHER);
 
+        request.getArgs().remove("device");
+
         // Execute effect
         Effect.EffectResult response = core.triggerEffect(device, request);
 

@@ -63,10 +63,24 @@ public class EffectHandler {
         // If there is an export flag set, export the effect request as a json string in the log
         if (exportFlag) {
             exportFlag = false;
-            core.getExecutor().log("Exported Effect Request: " + core.toJson(request));
+            String json = core.toJson(request);
+            core.getExecutor().log("Exported Effect Request JSON: " + json);
+            core.getExecutor().log("/TellRaw Command for Exported Effect: /tellraw @p " + core.toJson(new EffectTranslatableComponent(json)));
         }
 
         // Execute the effect
         return effect.execute(core, request.getArgs());
+    }
+
+    public static class EffectTranslatableComponent {
+        public final String type = "translatable";
+        public final String translate = EffectMCCore.TRANSLATION_TRIGGER_KEY;
+        public final String fallback = "";
+
+        public final String[] with;
+
+        public EffectTranslatableComponent(String requestJson) {
+            with = new String[] { requestJson };
+        }
     }
 }
