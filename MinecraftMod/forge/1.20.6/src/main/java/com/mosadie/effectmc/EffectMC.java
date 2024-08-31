@@ -11,6 +11,8 @@ import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -33,6 +35,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -44,6 +47,7 @@ import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.io.IOUtils;
@@ -108,6 +112,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Server start result: " + result);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommand);
+        NeoForge.EVENT_BUS.addListener(this::listenForTranslation);
 
         Header authHeader = new BasicHeader("Authorization", "Bearer " + Minecraft.getInstance().getUser().getAccessToken());
         List<Header> headers = new ArrayList<>();
@@ -119,7 +124,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Registering effectmc command.");
         event.getDispatcher().register(Commands.literal("effectmc")
                 .then(Commands.literal("trust").executes((context -> {
-                    Minecraft.getInstance().execute(core::setTrustNextRequest);
+                    Minecraft.getInstance().execute(core::setTrustFlag);
                     receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
                     return 0;
                 })))
@@ -199,11 +204,46 @@ public class EffectMC implements EffectExecutor {
                     showItemToast(json, "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
                     receiveChatMessage("[EffectMC] Exported held item data to log file!");
                     return 0;
+                }))).then(Commands.literal("exporteffect").executes((context -> {
+                    core.setExportFlag();
+                    receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
+                    return 0;
                 }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
+    }
+
+    public void listenForTranslation(ClientChatReceivedEvent event) {
+        Component component = event.getMessage();
+
+        if (component.getContents() instanceof TranslatableContents translationTextComponent) {
+
+            if (translationTextComponent.getKey().equals(EffectMCCore.TRANSLATION_TRIGGER_KEY)) {
+                event.setCanceled(true);
+
+                if (translationTextComponent.getArgs().length != 1) {
+                    log("Invalid length of args for translation trigger!");
+                    return;
+                }
+
+                String data = String.valueOf(translationTextComponent.getArgs()[0]);
+
+                EffectRequest request = core.requestFromJson(data);
+
+                if (request == null) {
+                    log("Invalid request json for translation trigger!");
+                    return;
+                }
+
+                String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+                Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+                core.triggerEffect(device, request);
+            }
+        }
     }
 
     @Override
@@ -239,7 +279,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+    public boolean setSkinLayer(SkinLayerEffect.SKIN_SECTION section, boolean visibility) {
         Options options = Minecraft.getInstance().options;
 
         switch (section) {
@@ -282,7 +322,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+    public boolean toggleSkinLayer(SkinLayerEffect.SKIN_SECTION section) {
         Options options = Minecraft.getInstance().options;
         switch (section) {
 
@@ -371,7 +411,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+    public boolean triggerDisconnect(DisconnectEffect.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().execute(() -> {
             leaveIfNeeded();
 
@@ -435,9 +475,9 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void showTrustPrompt(String device) {
+    public void showTrustPrompt(Device device) {
         Minecraft.getInstance().execute(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
             Minecraft.getInstance().setScreen(screen);
         });
     }
@@ -541,7 +581,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
+    public boolean setSkin(URL skinUrl, SetSkinEffect.SKIN_TYPE skinType) {
         if (skinUrl == null) {
             LOGGER.warn("Skin URL is null!");
             return false;
@@ -587,7 +627,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+    public boolean openScreen(OpenScreenEffect.SCREEN screen) {
         Minecraft.getInstance().execute(() -> {
             leaveIfNeeded();
 
@@ -621,7 +661,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setPOV(SetPovHandler.POV pov) {
+    public boolean setPOV(SetPovEffect.POV pov) {
         CameraType mcPov;
 
         switch (pov) {
@@ -667,7 +707,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
+    public boolean setChatVisibility(ChatVisibilityEffect.VISIBILITY visibility) {
         ChatVisiblity result;
         switch (visibility) {
             case SHOW:

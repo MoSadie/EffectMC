@@ -13,11 +13,15 @@ public abstract class EffectProperty {
         this.label = label;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public PropertyType getPropType() {
         return TYPE;
     }
 
-    public abstract boolean setValue(Object newValue);
+    public abstract boolean isValidInput(Object input);
 
     public boolean isRequired() {
         return required;
@@ -27,14 +31,16 @@ public abstract class EffectProperty {
         return label;
     }
 
-    public abstract String getAsString();
+    public abstract Object getDefaultValue();
+
+    public abstract String getAsString(Object input);
     public abstract String getHTMLInput();
     public abstract String getSDHTMLInput();
 
-    public abstract boolean getAsBoolean();
-    public abstract float getAsFloat();
-    public abstract int getAsInt();
-    public abstract double getAsDouble();
+    public abstract boolean getAsBoolean(Object input);
+    public abstract float getAsFloat(Object input);
+    public abstract int getAsInt(Object input);
+    public abstract double getAsDouble(Object input);
 
     public enum PropertyType {
         STRING,

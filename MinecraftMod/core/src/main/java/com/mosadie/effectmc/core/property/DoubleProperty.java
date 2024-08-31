@@ -1,17 +1,26 @@
 package com.mosadie.effectmc.core.property;
 
 public class DoubleProperty extends EffectProperty{
-    private double value;
 
-    public DoubleProperty(String id, double value, boolean required, String label) {
+    private final double defaultValue;
+    public DoubleProperty(String id, double defaultValue, boolean required, String label) {
         super(PropertyType.DOUBLE, id, required, label);
-        this.value = value;
+        this.defaultValue = defaultValue;
     }
 
     @Override
-    public boolean setValue(Object newValue) {
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public boolean isValidInput(Object input) {
+        if (input instanceof Double) {
+            return true;
+        }
+
         try {
-            value = Double.parseDouble(String.valueOf(newValue));
+            Double.parseDouble(String.valueOf(input));
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -19,13 +28,21 @@ public class DoubleProperty extends EffectProperty{
     }
 
     @Override
-    public String getAsString() {
-        return Double.toString(value);
+    public String getAsString(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Double) {
+                return String.valueOf(input);
+            }
+
+            return String.valueOf(Double.parseDouble(String.valueOf(input)));
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getHTMLInput() {
-        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString() + "\" step=\"0.001\">";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><input type=\"number\" id=\"" + id + "\" name=\"" + id + "\" value=\"" + getAsString(getDefaultValue()) + "\" step=\"0.001\">";
     }
 
     @Override
@@ -34,26 +51,58 @@ public class DoubleProperty extends EffectProperty{
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return Boolean.parseBoolean(getAsString());
+    public boolean getAsBoolean(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Double) {
+                return (Double) input != 0;
+            }
+
+            return Double.parseDouble(getAsString(input)) != 0;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public float getAsFloat() {
-        return Float.parseFloat(getAsString());
-    }
-
-    @Override
-    public int getAsInt() {
-        try {
-            return Integer.parseInt(getAsString());
-        } catch (NumberFormatException e) {
+    public float getAsFloat(Object input) {
+        if (isValidInput(input)) {
+            try {
+                return Float.parseFloat(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
 
     @Override
-    public double getAsDouble() {
-        return value;
+    public int getAsInt(Object input) {
+        if (isValidInput(input)) {
+            try {
+                return Integer.parseInt(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public double getAsDouble(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Double) {
+                return (Double) input;
+            }
+
+            try {
+                return Double.parseDouble(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 }

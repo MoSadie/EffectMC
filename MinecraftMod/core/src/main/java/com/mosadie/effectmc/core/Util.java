@@ -1,5 +1,6 @@
 package com.mosadie.effectmc.core;
 
+import com.mosadie.effectmc.core.handler.DeviceType;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -44,30 +45,6 @@ public class Util {
                     parameters.put(key, value);
                 }
             }
-        }
-    }
-
-    public static boolean trustCheck(Map<String, Object> parameters, Map<String, Object> bodyParameters, HttpExchange exchange, EffectMCCore core) {
-        if (parameters != null && parameters.containsKey("device")) {
-            if (core.checkTrust(parameters.get("device").toString()))
-                return true;
-        } else if (bodyParameters != null && bodyParameters.containsKey("device")) {
-            if (core.checkTrust(bodyParameters.get("device").toString()))
-                return true;
-        }
-
-        unauthenticatedResponse(exchange);
-        return false;
-    }
-
-    private static void unauthenticatedResponse(HttpExchange exchange) {
-        try {
-            String response = "Unauthenticated";
-            exchange.sendResponseHeaders(401, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

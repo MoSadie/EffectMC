@@ -5,39 +5,44 @@ import java.util.List;
 
 public class SelectionProperty extends EffectProperty{
     private final List<String> options;
-    private String selected;
 
-    public SelectionProperty(String id, String selected, boolean required, String label, String... options) {
+    private String defaultValue;
+
+    public SelectionProperty(String id, String defaultValue, boolean required, String label, String... options) {
         super(PropertyType.SELECTION, id, required, label);
         this.options = Arrays.asList(options);
 
-        if (this.options.contains(selected)) {
-            this.selected = selected;
+        if (!this.options.contains(defaultValue)) {
+            throw new IllegalArgumentException("Default value must be one of the options");
+        }
+
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public boolean isValidInput(Object input) {
+        return options.contains(String.valueOf(input));
+    }
+
+    @Override
+    public String getAsString(Object input) {
+        if (isValidInput(input)) {
+            return String.valueOf(input);
         } else {
-            this.selected = "";
+            return null;
         }
-    }
-
-    @Override
-    public boolean setValue(Object newValue) {
-        String newValueString = String.valueOf(newValue);
-        if (!options.contains(newValueString)) {
-            return false;
-        }
-        this.selected = newValueString;
-        return true;
-    }
-
-    @Override
-    public String getAsString() {
-        return selected;
     }
 
     @Override
     public String getHTMLInput() {
         String result = "<label for=\""+ id + "\">" + getLabel() + "</label><select id=\"" + id + "\" name=\"" + id + "\" " + (isRequired() ? "required" : "") + ">";
         for (String option : options) {
-            result += "<option value=\"" + option + "\"" + (option == selected ? "selected" : "") + ">" + option + "</option>";
+            result += "<option value=\"" + option + "\"" + (option.equalsIgnoreCase(defaultValue) ? "selected" : "") + ">" + option + "</option>";
         }
         result += "</select>";
         return result;
@@ -55,33 +60,65 @@ public class SelectionProperty extends EffectProperty{
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return Boolean.parseBoolean(getAsString());
+    public boolean getAsBoolean(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Boolean) {
+                return (Boolean) input;
+            }
+
+            return Boolean.parseBoolean(getAsString(input));
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public float getAsFloat() {
-        try {
-            return Float.parseFloat(getAsString());
-        } catch (NumberFormatException e) {
+    public float getAsFloat(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Float) {
+                return (Float) input;
+            }
+
+            try {
+                return Float.parseFloat(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
 
     @Override
-    public int getAsInt() {
-        try {
-            return Integer.parseInt(getAsString());
-        } catch (NumberFormatException e) {
+    public int getAsInt(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Integer) {
+                return (Integer) input;
+            }
+
+            try {
+                return Integer.parseInt(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
 
     @Override
-    public double getAsDouble() {
-        try {
-            return Double.parseDouble(getAsString());
-        } catch (NumberFormatException e) {
+    public double getAsDouble(Object input) {
+        if (isValidInput(input)) {
+            if (input instanceof Double) {
+                return (Double) input;
+            }
+
+            try {
+                return Double.parseDouble(getAsString(input));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }

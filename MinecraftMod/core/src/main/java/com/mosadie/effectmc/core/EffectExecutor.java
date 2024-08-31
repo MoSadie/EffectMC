@@ -1,7 +1,9 @@
 package com.mosadie.effectmc.core;
 
 import com.google.gson.JsonObject;
-import com.mosadie.effectmc.core.handler.*;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.handler.Device;
+import com.mosadie.effectmc.core.handler.DeviceType;
 
 import java.net.URL;
 
@@ -10,8 +12,8 @@ public interface EffectExecutor {
 
     boolean joinServer(String serverIp);
 
-    boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility);
-    boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section);
+    boolean setSkinLayer(SkinLayerEffect.SKIN_SECTION section, boolean visibility);
+    boolean toggleSkinLayer(SkinLayerEffect.SKIN_SECTION section);
 
     boolean sendChatMessage(String message);
     boolean receiveChatMessage(String message);
@@ -20,9 +22,9 @@ public interface EffectExecutor {
 
     boolean showActionMessage(String message);
 
-    void showTrustPrompt(String device);
+    void showTrustPrompt(Device device);
 
-    boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreen, String title, String message);
+    boolean triggerDisconnect(DisconnectEffect.NEXT_SCREEN nextScreen, String title, String message);
 
     boolean playSound(String soundID, String categoryName, float volume, float pitch, boolean repeat, int repeatDelay, String attenuationType, double x, double y, double z, boolean relative, boolean global);
 
@@ -42,19 +44,19 @@ public interface EffectExecutor {
 
     //boolean refreshSkin(UUID uuid);
 
-    boolean setSkin(URL url, SetSkinHandler.SKIN_TYPE skinType);
+    boolean setSkin(URL url, SetSkinEffect.SKIN_TYPE skinType);
 
-    boolean openScreen(OpenScreenHandler.SCREEN screen);
+    boolean openScreen(OpenScreenEffect.SCREEN screen);
 
     boolean setFOV(int fov);
 
-    boolean setPOV(SetPovHandler.POV pov);
+    boolean setPOV(SetPovEffect.POV pov);
 
     boolean setGuiScale(int scale);
 
     boolean setGamma(double gamma);
 
-    boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility);
+    boolean setChatVisibility(ChatVisibilityEffect.VISIBILITY visibility);
 
     boolean setRenderDistance(int chunks);
 

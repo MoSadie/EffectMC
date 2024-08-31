@@ -4,12 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.mosadie.effectmc.core.handler.*;
-import com.sun.net.httpserver.HttpServer;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
+import com.mosadie.effectmc.core.effect.internal.EffectRequest;
+import com.mosadie.effectmc.core.handler.Device;
+import com.mosadie.effectmc.core.handler.DeviceType;
+import com.mosadie.effectmc.core.handler.EffectHandler;
+import com.mosadie.effectmc.core.handler.TrustHandler;
+import com.mosadie.effectmc.core.handler.http.*;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -17,52 +22,69 @@ public class EffectMCCore {
 
     private final static int DEFAULT_PORT = 3000;
 
+    public static final String TRANSLATION_TRIGGER_KEY = "com.mosadie.effectmc.trigger";
+
     private final File configFile;
     private final File trustFile;
     private final EffectExecutor executor;
     private final Gson gson;
 
-    private final List<EffectRequestHandler> effects;
+    public Gson getGson() {
+        return gson;
+    }
 
-    private HttpServer server;
+    private final List<Effect> effects;
+    private final Map<String, Effect> effectMap;
 
-    private Set<String> trustedDevices;
-    private boolean trustNextRequest;
+    private EffectHttpServer httpServer;
+
+    private EffectHandler effectHandler;
+
+    private TrustHandler trustHandler;
 
     public EffectMCCore(File configFile, File trustFile, EffectExecutor executor) {
         this.configFile = configFile;
         this.trustFile = trustFile;
         this.executor = executor;
-        trustedDevices = new HashSet<>();
-        trustNextRequest = false;
+
+
+        trustHandler = new TrustHandler(this, trustFile);
 
         gson = new Gson();
 
         effects = new ArrayList<>();
-        effects.add(new JoinServerHandler(this));
-        effects.add(new SkinLayerHandler(this));
-        effects.add(new SendChatMessageHandler(this));
-        effects.add(new ReceiveChatMessageHandler(this));
-        effects.add(new ShowTitleHandler(this));
-        effects.add(new ShowActionMessageHandler(this));
-        effects.add(new DisconnectHandler(this));
-        effects.add(new PlaySoundHandler(this));
-        effects.add(new StopSoundHandler(this));
-        effects.add(new ShowToastHandler(this));
-        effects.add(new OpenBookHandler(this));
-        effects.add(new NarrateHandler(this));
-        effects.add(new LoadWorldHandler(this));
-        effects.add(new SetSkinHandler(this));
-        effects.add(new OpenScreenHandler(this));
-        effects.add(new SetFovHandler(this));
-        effects.add(new SetPovHandler(this));
-        effects.add(new SetGUIScaleHandler(this));
-        effects.add(new SetGammaHandler(this));
-        effects.add(new SetGameModeHandler(this));
-        effects.add(new ChatVisibilityHandler(this));
-        effects.add(new SetRenderDistanceHandler(this));
-        effects.add(new RejoinHandler(this));
-        effects.add(new ShowItemToastHandler(this));
+        effectMap = new HashMap<>();
+        registerEffect(new JoinServerEffect());
+        registerEffect(new SkinLayerEffect());
+        registerEffect(new SendChatMessageEffect());
+        registerEffect(new ReceiveChatMessageEffect());
+        registerEffect(new ShowTitleEffect());
+        registerEffect(new ShowActionMessageEffect());
+        registerEffect(new DisconnectEffect());
+        registerEffect(new PlaySoundEffect());
+        registerEffect(new StopSoundEffect());
+        registerEffect(new ShowToastEffect());
+        registerEffect(new OpenBookEffect());
+        registerEffect(new NarrateEffect());
+        registerEffect(new LoadWorldEffect());
+        registerEffect(new SetSkinEffect());
+        registerEffect(new OpenScreenEffect());
+        registerEffect(new SetFovEffect());
+        registerEffect(new SetPovEffect());
+        registerEffect(new SetGUIScaleEffect());
+        registerEffect(new SetGammaEffect());
+        registerEffect(new SetGameModeEffect());
+        registerEffect(new ChatVisibilityEffect());
+        registerEffect(new SetRenderDistanceEffect());
+        registerEffect(new RejoinEffect());
+        registerEffect(new ShowItemToastEffect());
+
+        effectHandler = new EffectHandler(this, effectMap);
+    }
+
+    private void registerEffect(Effect effect) {
+        effects.add(effect);
+        effectMap.put(effect.getEffectId(), effect);
     }
 
     @SuppressWarnings("unused")
@@ -76,7 +98,7 @@ public class EffectMCCore {
                 }
             } catch (FileNotFoundException | NumberFormatException e) {
                 e.printStackTrace();
-
+                return false;
             }
         } else {
             try {
@@ -88,46 +110,37 @@ public class EffectMCCore {
                 writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
         }
 
-        try {
-            if (!trustFile.exists()) {
-                // Create blank trust file
-                FileWriter writer = new FileWriter(trustFile);
-                writer.write(gson.toJson(trustedDevices));
-                writer.close();
-            } else {
-                FileReader reader = new FileReader(trustFile);
-                trustedDevices = gson.fromJson(reader, new TypeToken<Set<String>>() {}.getType());
-                reader.close();
-            }
-        } catch (IOException | JsonSyntaxException e) {
-            e.printStackTrace();
+        if (!trustHandler.readTrustFile()) {
+            getExecutor().log("Failed to read trust file.");
             return false;
         }
 
 
-        try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Start server
+        httpServer = new EffectHttpServer(port, this);
+
+        if (!httpServer.initServer()) {
+            getExecutor().log("Failed to start http server.");
             return false;
         }
-
-        server.createContext("/", new RootHandler(this));
-
-        server.createContext("/style.css", new CSSRequestHandler());
-
-        for(EffectRequestHandler effect : effects) {
-            server.createContext("/" + effect.getEffectSlug(), effect);
-        }
-
-        server.setExecutor(null);
-
-        server.start();
 
         return true;
+    }
+
+    public EffectRequest requestFromJson(String json) {
+        try {
+            return gson.fromJson(json, new TypeToken<EffectRequest>() {}.getType());
+        } catch (JsonSyntaxException e) {
+            executor.log("Invalid Request JSON! " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            executor.log("Exception parsing Request JSON: " + e.getMessage());
+            return null;
+        }
     }
 
     public JsonObject fromJson(String json) {
@@ -147,40 +160,15 @@ public class EffectMCCore {
         return executor;
     }
 
-    public void setTrustNextRequest() {
-        trustNextRequest = true;
-    }
-
-    boolean checkTrust(String device) {
-        if (trustNextRequest) {
-            trustNextRequest = false;
-            executor.log("Prompting to trust device with id " + device);
-            executor.showTrustPrompt(device);
-        }
-        return trustedDevices.contains(device);
-    }
-
-    public void addTrustedDevice(String device) {
-        trustedDevices.add(device);
-
-        try {
-            FileWriter writer = new FileWriter(trustFile);
-            writer.write(gson.toJson(trustedDevices));
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<EffectRequestHandler> getEffects() {
+    public List<Effect> getEffects() {
         return effects;
     }
 
     public static class TrustBooleanConsumer implements BooleanConsumer {
-        private final String device;
+        private final Device device;
         private final EffectMCCore core;
 
-        public TrustBooleanConsumer(String device, EffectMCCore core) {
+        public TrustBooleanConsumer(Device device, EffectMCCore core) {
             this.device = device;
             this.core = core;
         }
@@ -188,10 +176,26 @@ public class EffectMCCore {
         @Override
         public void accept(boolean t) {
             if (t) {
-                core.addTrustedDevice(device);
+                core.trustHandler.addDevice(device);
             }
 
             core.getExecutor().resetScreen();
         }
+    }
+
+    public Effect.EffectResult triggerEffect(Device device, EffectRequest request) {
+        return effectHandler.handleRequest(device, request);
+    }
+
+    public void setExportFlag() {
+        effectHandler.setExportFlag();
+    }
+
+    public void setTrustFlag() {
+        effectHandler.setTrustFlag();
+    }
+
+    public boolean checkTrust(Device device) {
+        return trustHandler.checkTrust(device);
     }
 }

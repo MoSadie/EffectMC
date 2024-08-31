@@ -7,10 +7,14 @@ import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
+import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
@@ -36,7 +40,10 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+import net.minecraft.world.level.ServerWorldProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -72,7 +79,6 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
     @Override
     public void onInitialize() {
-        LOGGER.info("hello!"); //TODO Remove me!
     }
 
     @Override
@@ -106,7 +112,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
         // Register command
         ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmc")
                 .then(ClientCommandManager.literal("trust").executes((context -> {
-                    MinecraftClient.getInstance().send(core::setTrustNextRequest);
+                    MinecraftClient.getInstance().send(core::setTrustFlag);
                     receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
                     return 0;
                 })))
@@ -149,8 +155,12 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
                     showItemToast(tag.toString(), "Exported", MinecraftClient.getInstance().player.getMainHandStack().getName().getString());
                     receiveChatMessage("[EffectMC] Exported held item data to log file!");
                     return 0;
+                }))).then(ClientCommandManager.literal("exporteffect").executes((context -> {
+                    core.setExportFlag();
+                    receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
+                    return 0;
                 }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trust");
                     return 0;
                 })));
 
@@ -190,7 +200,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+    public boolean setSkinLayer(SkinLayerEffect.SKIN_SECTION section, boolean visibility) {
         GameOptions options = MinecraftClient.getInstance().options;
         
         switch (section) {
@@ -232,7 +242,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+    public boolean toggleSkinLayer(SkinLayerEffect.SKIN_SECTION section) {
         GameOptions options = MinecraftClient.getInstance().options;
         
         switch (section) {
@@ -314,15 +324,15 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public void showTrustPrompt(String device) {
+    public void showTrustPrompt(Device device) {
         MinecraftClient.getInstance().send(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device? (" + device + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
             MinecraftClient.getInstance().openScreen(screen);
         });
     }
 
     @Override
-    public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+    public boolean triggerDisconnect(DisconnectEffect.NEXT_SCREEN nextScreenType, String title, String message) {
         MinecraftClient.getInstance().send(() -> {
             leaveIfNeeded();
 
@@ -474,7 +484,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
+    public boolean setSkin(URL skinUrl, SetSkinEffect.SKIN_TYPE skinType) {
         if (skinUrl == null) {
             LOGGER.warn("Skin URL is null!");
             return false;
@@ -518,7 +528,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
         }
     }
     @Override
-    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+    public boolean openScreen(OpenScreenEffect.SCREEN screen) {
         MinecraftClient.getInstance().execute(() -> {
             leaveIfNeeded();
 
@@ -552,7 +562,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public boolean setPOV(SetPovHandler.POV pov) {
+    public boolean setPOV(SetPovEffect.POV pov) {
         Perspective mcPov;
 
         switch (pov) {
@@ -595,7 +605,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
     }
 
     @Override
-    public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
+    public boolean setChatVisibility(ChatVisibilityEffect.VISIBILITY visibility) {
         ChatVisibility result;
         switch (visibility) {
             case SHOW:
@@ -642,14 +652,19 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
             return null;
         }
 
-        IntegratedServer server = MinecraftClient.getInstance().getServer();
+        try {
+            IntegratedServer server = MinecraftClient.getInstance().getServer();
 
-        if (server != null) {
-            return server.getName();
+            if (server != null && server.getWorld(World.OVERWORLD) != null && server.getWorld(World.OVERWORLD).getLevelProperties() instanceof ServerWorldProperties) {
+                return ((ServerWorldProperties) server.getWorld(World.OVERWORLD).getLevelProperties()).getLevelName();
+            }
+
+            LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
+            return null;
+        } catch (NullPointerException e) {
+            LOGGER.error("Failed to get SP World Name! Nullpointer");
+            return null;
         }
-
-        LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
-        return null;
     }
 
     @Override
@@ -673,5 +688,29 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
             MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
         }
     }
-    
+
+    public void handleTranslationTrigger(TranslatableText text) {
+        if (!text.getKey().equals(EffectMCCore.TRANSLATION_TRIGGER_KEY)) {
+            LOGGER.error("Received non-trigger message!");
+            return;
+        }
+
+        if (text.getArgs().length == 0) {
+            LOGGER.error("Received trigger message with no arguments!");
+            return;
+        }
+
+        EffectRequest request = core.requestFromJson(String.valueOf(text.getArgs()[0]));
+
+        if (request == null) {
+            LOGGER.error("Failed to parse request!");
+            return;
+        }
+
+        String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+        Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+        core.triggerEffect(device, request);
+    }
 }

@@ -1,51 +1,76 @@
 package com.mosadie.effectmc.core.property;
 
 public class BooleanProperty extends EffectProperty{
-    private boolean value;
     private final String trueLabel;
     private final String falseLabel;
 
-    public BooleanProperty(String id, boolean value, boolean required, String label, String trueLabel, String falseLabel) {
+    private boolean defaultValue;
+
+    public BooleanProperty(String id, boolean defaultValue, boolean required, String label, String trueLabel, String falseLabel) {
         super(PropertyType.BOOLEAN, id, required, label);
-        this.value = value;
+        this.defaultValue = defaultValue;
         this.trueLabel = trueLabel;
         this.falseLabel = falseLabel;
     }
 
     @Override
-    public boolean setValue(Object newValue) {
-        this.value = Boolean.parseBoolean(String.valueOf(newValue));
-        return true;
+    public Object getDefaultValue() {
+        return defaultValue;
     }
 
     @Override
-    public String getAsString() {
-        return Boolean.toString(value);
+    public boolean isValidInput(Object input) {
+        // Check if the input is a boolean or a string that can be directly parsed as a boolean
+        if (input instanceof Boolean) {
+            return true;
+        }
+
+        if (input instanceof String) {
+            String str = (String) input;
+            return str.equalsIgnoreCase("true") || str.equalsIgnoreCase("false");
+        }
+
+        return false;
     }
 
     @Override
-    public boolean getAsBoolean() {
-        return value;
+    public String getAsString(Object input) {
+        if (isValidInput(input)) {
+            // Parse the input as a boolean
+            return String.valueOf(Boolean.parseBoolean(String.valueOf(input)));
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public float getAsFloat() {
-        return value ? 1 : 0;
+    public boolean getAsBoolean(Object input) {
+        if (isValidInput(input)) {
+            // Parse the input as a boolean
+            return Boolean.parseBoolean(String.valueOf(input));
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public int getAsInt() {
-        return value ? 1 : 0;
+    public float getAsFloat(Object input) {
+        return getAsBoolean(input) ? 1 : 0;
     }
 
     @Override
-    public double getAsDouble() {
-        return value ? 1 : 0;
+    public int getAsInt(Object input) {
+        return getAsBoolean(input) ? 1 : 0;
+    }
+
+    @Override
+    public double getAsDouble(Object input) {
+        return getAsBoolean(input) ? 1 : 0;
     }
 
     @Override
     public String getHTMLInput() {
-        return "<label for=\""+ id + "\">" + getLabel() + "</label><select id=\"" + id + "\" name=\"" + id + "\"><option value=\"true\" " + (value ? "selected" : "") + ">" + trueLabel + "</option><option value=\"false\" " + (!value ? "selected" : "") + ">" + falseLabel + "</option></select>";
+        return "<label for=\""+ id + "\">" + getLabel() + "</label><select id=\"" + id + "\" name=\"" + id + "\"><option value=\"true\" " + (defaultValue ? "selected" : "") + ">" + trueLabel + "</option><option value=\"false\" " + (!defaultValue ? "selected" : "") + ">" + falseLabel + "</option></select>";
     }
 
     @Override

@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mosadie.effectmc.mixin",
+  "client": [
+    "OnGameMessageMixin"
+  ],
+  "mixins": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
