@@ -6,7 +6,7 @@ import com.mosadie.effectmc.core.effect.internal.Effect;
 import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.Device;
 import com.mosadie.effectmc.core.handler.DeviceType;
-import com.mosadie.effectmc.core.property.*;
+import com.mosadie.effectmc.core.property.EffectProperty;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,21 +14,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class EffectRequestHandler implements HttpHandler {
+/**
+ * Handles requests to trigger effects using raw JSON instead of a specific effect handler.
+ */
+public class EffectRawRequestHandler implements HttpHandler {
 
     final EffectMCCore core;
-    final Effect effect;
 
-    public EffectRequestHandler(EffectMCCore core, Effect effect) {
+    public EffectRawRequestHandler(EffectMCCore core) {
         this.core = core;
-        this.effect = effect;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        core.getExecutor().log(effect.getEffectName() + " Started");
+        core.getExecutor().log("Raw Request Started");
 
         // Process params
         Map<String, Object> parameters = new HashMap<>();
@@ -75,9 +77,12 @@ public class EffectRequestHandler implements HttpHandler {
             return;
         }
 
-        // Handle no device (send to web interface)
+        // Handle no device (send unauthorized)
         if (!parameters.containsKey("device") && !bodyParameters.containsKey("device")) {
-            sendToWebInterface(exchange);
+            String message = "Missing device property";
+            exchange.sendResponseHeaders(401, message.getBytes().length);
+            exchange.getResponseBody().write(message.getBytes());
+            exchange.getResponseBody().close();
             return;
         }
 
@@ -86,8 +91,25 @@ public class EffectRequestHandler implements HttpHandler {
             parameters.put(key, bodyParameters.get(key));
         }
 
+        // Check for request parameter, if not present, send 400
+        if (!parameters.containsKey("request")) {
+            String message = "Missing request property";
+            exchange.sendResponseHeaders(400, message.getBytes().length);
+            exchange.getResponseBody().write(message.getBytes());
+            exchange.getResponseBody().close();
+            return;
+        }
+
         // Create EffectRequest
-        EffectRequest request = new EffectRequest(effect.getEffectId(), parameters);
+        EffectRequest request = core.requestFromJson(parameters.get("request").toString());
+
+        if (request == null) {
+            String message = "Invalid request JSON, check game logs for more information";
+            exchange.sendResponseHeaders(400, message.getBytes().length);
+            exchange.getResponseBody().write(message.getBytes());
+            exchange.getResponseBody().close();
+            return;
+        }
 
         Device device = new Device(parameters.get("device").toString(), DeviceType.OTHER);
 
@@ -96,10 +118,6 @@ public class EffectRequestHandler implements HttpHandler {
         // Execute effect
         Effect.EffectResult response = core.triggerEffect(device, request);
 
-
-
-        int status = 500;
-
         if (response == null) {
             String message = "Internal Server Error";
             exchange.sendResponseHeaders(500, message.getBytes().length);
@@ -107,6 +125,8 @@ public class EffectRequestHandler implements HttpHandler {
             exchange.getResponseBody().close();
             return;
         }
+
+        int status = 500;
 
         switch (response.result) {
             case ERROR:
@@ -127,27 +147,6 @@ public class EffectRequestHandler implements HttpHandler {
         // Send response
         exchange.sendResponseHeaders(status, response.message.getBytes().length);
         exchange.getResponseBody().write(response.message.getBytes());
-        exchange.getResponseBody().close();
-    }
-
-    private void sendToWebInterface(HttpExchange exchange) throws IOException {
-        StringBuilder response = new StringBuilder("<html><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>" + effect.getEffectName() + " - EffectMC</title><link rel=\"stylesheet\" href=\"/style.css\"><body><div class=\"wrapper\"><h1>" + effect.getEffectName() + "</h1>");
-        boolean needsPost = false;
-        for (EffectProperty property : effect.getPropertyManager().getPropertiesList()) {
-            if (property.getPropType().equals(EffectProperty.PropertyType.BODY)) {
-                needsPost = true;
-                break;
-            }
-        }
-        response.append("<form method=\"").append(needsPost ? "post" : "get").append("\" target=\"result\"><input type=\"hidden\" name=\"device\" value=\"browser\"/>");
-
-        for(EffectProperty property : effect.getPropertyManager().getPropertiesList()) {
-            response.append(property.getHTMLInput()).append("</br>");
-        }
-
-        response.append("<input type=\"submit\" value=\"Trigger Effect\"></form><br/><iframe name=\"result\"></iframe></br></br><a href=\"/\">Back to effect list</a></div></body></html>");
-        exchange.sendResponseHeaders(200, response.toString().getBytes().length);
-        exchange.getResponseBody().write(response.toString().getBytes());
         exchange.getResponseBody().close();
     }
 }

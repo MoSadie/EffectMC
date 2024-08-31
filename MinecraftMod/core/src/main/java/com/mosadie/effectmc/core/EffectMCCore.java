@@ -138,7 +138,7 @@ public class EffectMCCore {
             executor.log("Invalid Request JSON! " + e.getMessage());
             return null;
         } catch (Exception e) {
-            executor.log("Exception parsin Request JSON: " + e.getMessage());
+            executor.log("Exception parsing Request JSON: " + e.getMessage());
             return null;
         }
     }
@@ -165,21 +165,18 @@ public class EffectMCCore {
     }
 
     public static class TrustBooleanConsumer implements BooleanConsumer {
-        private final String device;
-
-        private final DeviceType type;
+        private final Device device;
         private final EffectMCCore core;
 
-        public TrustBooleanConsumer(String device, DeviceType type, EffectMCCore core) {
+        public TrustBooleanConsumer(Device device, EffectMCCore core) {
             this.device = device;
-            this.type = type;
             this.core = core;
         }
 
         @Override
         public void accept(boolean t) {
             if (t) {
-                core.trustHandler.addDevice(new Device(device, type));
+                core.trustHandler.addDevice(device);
             }
 
             core.getExecutor().resetScreen();

@@ -31,6 +31,8 @@ public class EffectHttpServer {
 
         server.createContext("/style.css", new CSSRequestHandler());
 
+        server.createContext("/raw", new EffectRawRequestHandler(core));
+
         for(Effect effect : core.getEffects()) {
             server.createContext("/" + effect.getEffectId(), new EffectRequestHandler(core, effect));
         }

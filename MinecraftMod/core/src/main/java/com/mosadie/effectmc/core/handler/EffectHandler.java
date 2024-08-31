@@ -66,6 +66,7 @@ public class EffectHandler {
             String json = core.toJson(request);
             core.getExecutor().log("Exported Effect Request JSON: " + json);
             core.getExecutor().log("/TellRaw Command for Exported Effect: /tellraw @p " + core.toJson(new EffectTranslatableComponent(json)));
+            core.getExecutor().receiveChatMessage("[EffectMC] Exported Effect Request to log file.");
         }
 
         // Execute the effect

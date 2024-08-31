@@ -434,7 +434,7 @@ public class EffectMC implements EffectExecutor {
     @Override
     public void showTrustPrompt(Device device) {
         Minecraft.getInstance().execute(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device.getId(), device.getType(), core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
             Minecraft.getInstance().setScreen(screen);
         });
     }

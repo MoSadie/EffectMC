@@ -1,5 +1,6 @@
 package com.mosadie.effectmc.core.effect.internal;
 
+import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.property.*;
 
 import java.util.*;
@@ -56,12 +57,14 @@ public class EffectPropertyManager {
         for (EffectProperty property : propertiesList) {
             boolean isRequired = property.isRequired() || strict;
             if (isRequired && !args.containsKey(property.getId())) {
+                System.out.println("Missing required property: " + property.getId());
                 return false;
             }
 
             // Actually validate the input
             if (args.containsKey(property.getId())) {
                 if (!property.isValidInput(args.get(property.getId()))) {
+                    System.out.println("Invalid input for property: " + property.getId());
                     return false;
                 }
             }
