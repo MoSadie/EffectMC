@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.mosadie.effectmc:core:2.3'
+    implementation 'com.mosadie.effectmc:core:3.0'
     implementation 'commons-io:commons-io:2.11.0'
     implementation group: 'org.apache.commons', name: 'commons-text', version: '1.9'
 }
