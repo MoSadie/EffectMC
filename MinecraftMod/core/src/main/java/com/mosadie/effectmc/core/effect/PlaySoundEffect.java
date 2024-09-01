@@ -14,7 +14,7 @@ public class PlaySoundEffect extends Effect {
         getPropertyManager().addFloatProperty("volume", 1.0f, true, "Volume", 0.0f, 1.0f);
         getPropertyManager().addFloatProperty("pitch", 1.0f, true, "Pitch", 0.0f, 2.0f);
         getPropertyManager().addBooleanProperty("repeat", false, true, "Repeat", "Enabled", "Disabled");
-        getPropertyManager().addIntegerProperty("repeatDelay", 0, false, "Repeat Delay", "0");
+        getPropertyManager().addIntegerProperty("repeatDelay", 5, false, "Repeat Delay", "0");
         getPropertyManager().addSelectionProperty("attenuationType", ATTENUATION_TYPE.NONE.toString(), true, "Attenuation Type", ATTENUATION_TYPE.toStringArray());
         getPropertyManager().addIntegerProperty("x", 0, true, "X", "0");
         getPropertyManager().addIntegerProperty("y", 0, true, "Y", "0");

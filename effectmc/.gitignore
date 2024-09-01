@@ -1,0 +1,13 @@
+# Node.js
+node_modules/
+
+# Stream Deck files
+*.sdPlugin/bin
+*.sdPlugin/logs
+
+# Generated files
+src
+com.mosadie.effectmc.sdPlugin/ui
+com.mosadie.effectmc.sdPlugin/manifest.json
+effects.json
+*.streamDeckPlugin

@@ -12,7 +12,6 @@ public class ShowToastEffect extends Effect {
         getPropertyManager().addCommentProperty("Set color using &sect; color codes.");
         getPropertyManager().addStringProperty("title", "", true, "Title", "Hello");
         getPropertyManager().addStringProperty("subtitle", "", true, "Subtitle", "World!");
-        getPropertyManager().addCommentProperty("For a blank subtitle, use a single space.");
         getPropertyManager().lock();
     }
 

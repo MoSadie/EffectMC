@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <title>{{effectName}} Settings</title>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/gh/geekyeggo/sdpi-components@v3/dist/sdpi-components.js"></script>        
+</head>
+
+<body>
+<sdpi-item label="Minecraft IP">
+    <sdpi-textfield
+        setting="minecraftIp"
+        placeholder="localhost:3000"
+        value="localhost:3000"
+        required>
+    </sdpi-textfield>
+</sdpi-item>
+{{properties}}
+</body>
+
+</html>

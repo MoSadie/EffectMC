@@ -1,0 +1,64 @@
+import streamDeck, { action, KeyDownEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+
+/**
+ * Triggers the {{effectName}} effect in Minecraft. Sends an HTTP request to Minecraft IP to trigger the effect.
+ */
+@action({ UUID: "com.mosadie.effectmc.{{effectId}}" })
+export class Effect{{effectId}} extends SingletonAction<EffectSettings> {
+	
+	async onWillAppear(ev: WillAppearEvent<EffectSettings>): Promise<void> {
+		// Set default settings if they are not provided.
+		if (!ev.payload.settings.minecraftIp) {
+			streamDeck.logger.info("No settings, setting defaults.");
+			ev.payload.settings.minecraftIp = "localhost:3000";
+{{defaults}}
+			streamDeck.logger.info("Settings set to defaults.");
+		}
+
+		// Save the settings.
+		ev.action.setSettings(ev.payload.settings);
+	}
+
+	/**
+	 * Listens for the {@link SingletonAction.onKeyDown} event which is emitted by Stream Deck when an action is pressed. Stream Deck provides various events for tracking interaction
+	 * with devices including key down/up, dial rotations, and device connectivity, etc. When triggered, {@link ev} object contains information about the event including any payloads
+	 * and action information where applicable. In this example, our action will display a counter that increments by one each press. We track the current count on the action's persisted
+	 * settings using `setSettings` and `getSettings`.
+	 */
+	async onKeyDown(ev: KeyDownEvent<EffectSettings>): Promise<void> {
+		// Update the count from the settings.
+		const { settings } = ev.payload;
+		
+		// Create a EffectRequest object to send to the Minecraft server.
+
+		const effectRequest = {
+			effectId: "{{effectId}}",
+			args: settings
+		};
+
+		// Send the HTTP request to the Minecraft client. Two form pararmeters are included, the deviceId and the request itself.
+		var url = new URL(`http://${settings.minecraftIp}/raw`);
+
+		url.searchParams.append("device", ev.deviceId);
+
+		const response = await fetch(url.toString(), {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(effectRequest)
+		});
+
+		if (!response.ok) {
+			await ev.action.showAlert();
+		}
+	}
+}
+
+/**
+ * Settings for {@link Effect{{effectId}}}.
+ */
+type EffectSettings = {
+	minecraftIp?: string;
+{{properties}}
+};
