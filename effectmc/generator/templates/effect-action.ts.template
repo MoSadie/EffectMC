@@ -8,11 +8,14 @@ export class Effect{{effectId}} extends SingletonAction<EffectSettings> {
 	
 	async onWillAppear(ev: WillAppearEvent<EffectSettings>): Promise<void> {
 		// Set default settings if they are not provided.
-		if (!ev.payload.settings.minecraftIp) {
+		if (!ev.payload.settings.minecraftip) {
 			streamDeck.logger.info("No settings, setting defaults.");
-			ev.payload.settings.minecraftIp = "localhost:3000";
+			ev.payload.settings.minecraftip = "localhost:3000";
 {{defaults}}
 			streamDeck.logger.info("Settings set to defaults.");
+		} else if (ev.payload.settings.minecraftip.startsWith("http://")) {
+			streamDeck.logger.info("Removing unneeded protocol information");
+			ev.payload.settings.minecraftip = ev.payload.settings.minecraftip.substring(7);
 		}
 
 		// Save the settings.
@@ -37,7 +40,7 @@ export class Effect{{effectId}} extends SingletonAction<EffectSettings> {
 		};
 
 		// Send the HTTP request to the Minecraft client. Two form pararmeters are included, the deviceId and the request itself.
-		var url = new URL(`http://${settings.minecraftIp}/raw`);
+		var url = new URL(`http://${settings.minecraftip}/raw`);
 
 		url.searchParams.append("device", ev.deviceId);
 
@@ -59,6 +62,6 @@ export class Effect{{effectId}} extends SingletonAction<EffectSettings> {
  * Settings for {@link Effect{{effectId}}}.
  */
 type EffectSettings = {
-	minecraftIp?: string;
+	minecraftip?: string;
 {{properties}}
 };

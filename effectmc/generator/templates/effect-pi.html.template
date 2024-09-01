@@ -10,7 +10,7 @@
 <body>
 <sdpi-item label="Minecraft IP">
     <sdpi-textfield
-        setting="minecraftIp"
+        setting="minecraftip"
         placeholder="localhost:3000"
         value="localhost:3000"
         required>
