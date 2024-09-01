@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'application'
 }
 
 version = 3.0
@@ -46,4 +47,8 @@ publishing {
             from components.java
         }
     }
+}
+
+application {
+    mainClassName = 'com.mosadie.effectmc.core.export.EffectExporter'
 }

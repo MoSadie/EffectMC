@@ -6,11 +6,33 @@ public abstract class EffectProperty {
     final boolean required;
     final String label;
 
+    final String sdPropType;
+
     EffectProperty(PropertyType type, String id, boolean required, String label) {
         this.TYPE = type;
         this.id = id;
         this.required = required;
         this.label = label;
+
+        switch (type) {
+            case FLOAT:
+            case DOUBLE:
+            case INTEGER:
+                this.sdPropType = "number";
+                break;
+
+            case BOOLEAN:
+                this.sdPropType = "boolean";
+                break;
+
+            case BODY:
+            case STRING:
+            case SELECTION:
+            case COMMENT:
+            default:
+                this.sdPropType = "string";
+                break;
+        }
     }
 
     public String getId() {
@@ -35,6 +57,7 @@ public abstract class EffectProperty {
 
     public abstract String getAsString(Object input);
     public abstract String getHTMLInput();
+
     public abstract String getSDHTMLInput();
 
     public abstract boolean getAsBoolean(Object input);

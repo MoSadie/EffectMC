@@ -64,21 +64,8 @@ public class EffectRawRequestHandler implements HttpHandler {
             return;
         }
 
-        Map<String, Object> bodyParameters = new HashMap<>();
-
-        try {
-            Util.parseQuery(body, bodyParameters);
-        } catch (UnsupportedEncodingException e) {
-            core.getExecutor().log("Exception occurred parsing body query!");
-            String response = "Something went wrong parsing the body query.";
-            exchange.sendResponseHeaders(400, response.getBytes().length);
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.getResponseBody().close();
-            return;
-        }
-
         // Handle no device (send unauthorized)
-        if (!parameters.containsKey("device") && !bodyParameters.containsKey("device")) {
+        if (!parameters.containsKey("device")) {
             String message = "Missing device property";
             exchange.sendResponseHeaders(401, message.getBytes().length);
             exchange.getResponseBody().write(message.getBytes());
@@ -86,22 +73,8 @@ public class EffectRawRequestHandler implements HttpHandler {
             return;
         }
 
-        // Combine the parameters, where any specified in the body overwrite the query parameters
-        for (String key : bodyParameters.keySet()) {
-            parameters.put(key, bodyParameters.get(key));
-        }
-
-        // Check for request parameter, if not present, send 400
-        if (!parameters.containsKey("request")) {
-            String message = "Missing request property";
-            exchange.sendResponseHeaders(400, message.getBytes().length);
-            exchange.getResponseBody().write(message.getBytes());
-            exchange.getResponseBody().close();
-            return;
-        }
-
         // Create EffectRequest
-        EffectRequest request = core.requestFromJson(parameters.get("request").toString());
+        EffectRequest request = core.requestFromJson(body);
 
         if (request == null) {
             String message = "Invalid request JSON, check game logs for more information";
