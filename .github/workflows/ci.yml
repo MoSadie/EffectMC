@@ -196,7 +196,7 @@ jobs:
 
   buildPlugin:
     name: Build Stream Deck Plugin
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: buildCore
 
     steps:
@@ -221,13 +221,18 @@ jobs:
         run: 'npm install -g @elgato/cli'
 
       # Build Core
-      - name: Build/Install Core
+      - name: Create effects.json
         working-directory: ./MinecraftMod/core
         run: './gradlew run'
 
       # Copy effects.json
       - name: Copy effects.json
         run: 'cp ./MinecraftMod/core/effects.json ./effectmc/effects.json'
+
+      # Install modules
+      - name: Install Modules
+        working-directory: ./effectmc
+        run: 'npm install'
 
       # Generate Stream Deck Plugin
       - name: Generate Stream Deck Plugin
