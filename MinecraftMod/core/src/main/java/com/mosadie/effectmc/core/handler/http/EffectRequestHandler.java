@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class EffectRequestHandler implements HttpHandler {
@@ -47,7 +48,7 @@ public class EffectRequestHandler implements HttpHandler {
 
 
         // Read from Body
-        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8));
         String body = null;
 
         try {
