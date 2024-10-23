@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,12 +50,11 @@ public class EffectRawRequestHandler implements HttpHandler {
 
 
         // Read from Body
-        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8));
         String body = null;
 
         try {
             body = reader.readLine();
-
         } catch (IOException e) {
             core.getExecutor().log("WARN: An IOException occurred reading body: " + e.toString());
             String response = "Something went wrong reading the body of the request.";
