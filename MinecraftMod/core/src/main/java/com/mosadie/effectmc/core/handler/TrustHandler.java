@@ -41,6 +41,8 @@ public class TrustHandler {
                 trustedDevices = new ArrayList<>();
 
                 writeTrustFile();
+
+                return true;
             } catch (Exception e) {
                 core.getExecutor().log("Failed to create trust file. Exception: " + e.getMessage());
                 trustedDevices = null;
