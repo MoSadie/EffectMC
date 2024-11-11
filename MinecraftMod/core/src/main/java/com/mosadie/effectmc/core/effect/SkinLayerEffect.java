@@ -33,16 +33,16 @@ public class SkinLayerEffect extends Effect {
             return new EffectResult("Invalid Arguments", EffectResult.Result.ERROR);
         }
 
-        VISIBILITY visibility = VISIBILITY.valueOf(getPropAsString(args, "visibility"));
-        SKIN_SECTION section = SKIN_SECTION.valueOf(getPropAsString(args, "section"));
+        VISIBILITY visibility = VISIBILITY.getFromName(getPropAsString(args, "visibility"));
+        SKIN_SECTION section = SKIN_SECTION.getFromName(getPropAsString(args, "section"));
 
         if (visibility == VISIBILITY.TOGGLE) {
-            if (core.getExecutor().toggleSkinLayer(section))
+            if (section != null && core.getExecutor().toggleSkinLayer(section))
                 return new EffectResult("Toggled " + section + " skin section", EffectResult.Result.SUCCESS);
             else
                 return new EffectResult("Failed to toggle skin section.", EffectResult.Result.ERROR);
         } else {
-            if (core.getExecutor().setSkinLayer(section, visibility == VISIBILITY.SHOW))
+            if (section != null && core.getExecutor().setSkinLayer(section, visibility == VISIBILITY.SHOW))
                 return new EffectResult("Set " + section + " to " + visibility, EffectResult.Result.SUCCESS);
             else
                 return new EffectResult("Failed to set skin section visibility.", EffectResult.Result.ERROR);
@@ -88,6 +88,14 @@ public class SkinLayerEffect extends Effect {
                 list.add(visibility.name());
             }
             return list.toArray(new String[0]);
+        }
+
+        public static VISIBILITY getFromName(String name) {
+            try {
+                return VISIBILITY.valueOf(name.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
     }
 }

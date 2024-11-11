@@ -24,7 +24,7 @@ if (!existsSync(srcFolder)) {
 // Generate the manifest
 const manifest = {
     Name: 'EffectMC',
-    Version: '3.0.0.0',
+    Version: '3.1.0.0',
     Author: 'MoSadie',
     Actions: effects.map((effect) => ({
         Name: effect.name,

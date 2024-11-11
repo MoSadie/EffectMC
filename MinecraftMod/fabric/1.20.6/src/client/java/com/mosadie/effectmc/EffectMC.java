@@ -765,6 +765,62 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		return null;
 	}
 
+	@Override
+	public void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume) {
+		MinecraftClient.getInstance().execute(() -> {
+			SoundCategory mcCategory;
+
+			switch (category) {
+				case MASTER:
+					mcCategory = SoundCategory.MASTER;
+					break;
+
+				case MUSIC:
+					mcCategory = SoundCategory.MUSIC;
+					break;
+
+				case RECORDS:
+					mcCategory = SoundCategory.RECORDS;
+					break;
+
+				case WEATHER:
+					mcCategory = SoundCategory.WEATHER;
+					break;
+
+				case BLOCKS:
+					mcCategory = SoundCategory.BLOCKS;
+					break;
+
+				case HOSTILE:
+					mcCategory = SoundCategory.HOSTILE;
+					break;
+
+				case NEUTRAL:
+					mcCategory = SoundCategory.NEUTRAL;
+					break;
+
+				case PLAYERS:
+					mcCategory = SoundCategory.PLAYERS;
+					break;
+
+				case AMBIENT:
+					mcCategory = SoundCategory.AMBIENT;
+					break;
+
+				case VOICE:
+					mcCategory = SoundCategory.VOICE;
+					break;
+
+				default:
+					LOGGER.error("Unknown volume category!");
+					return;
+			}
+
+			MinecraftClient.getInstance().options.getSoundVolumeOption(mcCategory).setValue(volume / 100.0d);
+			MinecraftClient.getInstance().options.write();
+		});
+	}
+
 	private void connectIfTrue(boolean connect) {
 		if (connect) {
 			joinServer(serverInfo.address);

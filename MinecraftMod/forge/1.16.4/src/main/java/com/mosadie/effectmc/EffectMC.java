@@ -715,6 +715,53 @@ public class EffectMC implements EffectExecutor {
         return null;
     }
 
+    @Override
+    public void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume) {
+        Minecraft.getInstance().execute(() -> {
+
+            SoundCategory mcSoundCategory;
+
+            switch (category) {
+                case MASTER:
+                    mcSoundCategory = SoundCategory.MASTER;
+                    break;
+                case MUSIC:
+                    mcSoundCategory = SoundCategory.MUSIC;
+                    break;
+                case RECORDS:
+                    mcSoundCategory = SoundCategory.RECORDS;
+                    break;
+                case WEATHER:
+                    mcSoundCategory = SoundCategory.WEATHER;
+                    break;
+                case BLOCKS:
+                    mcSoundCategory = SoundCategory.BLOCKS;
+                    break;
+                case HOSTILE:
+                    mcSoundCategory = SoundCategory.HOSTILE;
+                    break;
+                case NEUTRAL:
+                    mcSoundCategory = SoundCategory.NEUTRAL;
+                    break;
+                case PLAYERS:
+                    mcSoundCategory = SoundCategory.PLAYERS;
+                    break;
+                case AMBIENT:
+                    mcSoundCategory = SoundCategory.AMBIENT;
+                    break;
+                case VOICE:
+                    mcSoundCategory = SoundCategory.VOICE;
+                    break;
+                default:
+                    LOGGER.error("Unknown volume category!");
+                    return;
+            }
+
+            Minecraft.getInstance().gameSettings.setSoundLevel(mcSoundCategory, (volume / 100.0f));
+            Minecraft.getInstance().gameSettings.saveOptions();
+        });
+    }
+
     private void connectIfTrue(boolean connect) {
         if (connect) {
             joinServer(serverData.serverIP);

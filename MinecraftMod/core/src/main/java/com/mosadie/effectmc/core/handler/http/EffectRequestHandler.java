@@ -123,6 +123,9 @@ public class EffectRequestHandler implements HttpHandler {
             case SUCCESS:
                 status = 200;
                 break;
+            case UNSUPPORTED:
+                status = 501;
+                break;
         }
 
         // Send response

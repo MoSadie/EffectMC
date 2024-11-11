@@ -70,7 +70,9 @@ public class EffectHandler {
         }
 
         // Execute the effect
-        return effect.execute(core, request.getArgs());
+        Effect.EffectResult result = effect.execute(core, request.getArgs());
+        core.getExecutor().log("Effect Result: (" + result.result.name() + ") " + result.message);
+        return result;
     }
 
     public static class EffectTranslatableComponent {
