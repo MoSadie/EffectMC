@@ -768,6 +768,104 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Rejoin",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/rejoin?device=postman",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"rejoin"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ShowItemToast",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/showitemtoast?device=postman&item={ \"Count\": 1b,   \"id\"   : \"minecraft:diamond\" }&title=Hello&subtitle=Postman!",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"showitemtoast"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman"
+						},
+						{
+							"key": "item",
+							"value": "{ \"Count\": 1b,   \"id\"   : \"minecraft:diamond\" }",
+							"description": "JSON form of ItemStack NBT (use /effectmc exportitem to get an idea)"
+						},
+						{
+							"key": "title",
+							"value": "Hello"
+						},
+						{
+							"key": "subtitle",
+							"value": "Postman!"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SetVolume",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/setvolume?device=postman&volume=50&category=MASTER",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"setvolume"
+					],
+					"query": [
+						{
+							"key": "device",
+							"value": "postman"
+						},
+						{
+							"key": "volume",
+							"value": "50",
+							"description": "Integer from 0-100 inclusive. 0 = Muted"
+						},
+						{
+							"key": "category",
+							"value": "MASTER",
+							"description": "Valid options: MASTER, MUSIC, RECORDS, WEATHER, BLOCKS, HOSTILE, NEUTRAL, PLAYERS, AMBIENT, VOICE"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
