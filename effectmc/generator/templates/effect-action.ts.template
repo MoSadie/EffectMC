@@ -9,10 +9,10 @@ export class Effect{{effectId}} extends SingletonAction<EffectSettings> {
 	async onWillAppear(ev: WillAppearEvent<EffectSettings>): Promise<void> {
 		// Set default settings if they are not provided.
 		if (!ev.payload.settings.minecraftip) {
-			streamDeck.logger.info("No settings, setting defaults.");
+			streamDeck.logger.info("No settings for effect {{effectId}}, setting defaults.");
 			ev.payload.settings.minecraftip = "localhost:3000";
 {{defaults}}
-			streamDeck.logger.info("Settings set to defaults.");
+			streamDeck.logger.info("Settings set to defaults for effect {{effectId}}.");
 		} else if (ev.payload.settings.minecraftip.startsWith("http://")) {
 			streamDeck.logger.info("Removing unneeded protocol information");
 			ev.payload.settings.minecraftip = ev.payload.settings.minecraftip.substring(7);

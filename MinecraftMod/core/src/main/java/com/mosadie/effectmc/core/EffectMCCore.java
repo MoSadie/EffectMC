@@ -79,6 +79,7 @@ public class EffectMCCore {
         registerEffect(new SetRenderDistanceEffect());
         registerEffect(new RejoinEffect());
         registerEffect(new ShowItemToastEffect());
+        registerEffect(new SetVolumeEffect());
 
         effectHandler = new EffectHandler(this, effectMap);
     }

@@ -27,6 +27,7 @@ public abstract class Effect {
             SKIPPED,
             UNAUTHORIZED,
             ERROR,
+            UNSUPPORTED,
             UNKNOWN
         }
 
@@ -42,7 +43,7 @@ public abstract class Effect {
         }
 
         public boolean isError() {
-            return result == Result.ERROR || result == Result.UNAUTHORIZED || result == Result.SKIPPED;
+            return result == Result.ERROR || result == Result.UNAUTHORIZED || result == Result.SKIPPED || result == Result.UNKNOWN || result == Result.UNSUPPORTED;
         }
     }
 

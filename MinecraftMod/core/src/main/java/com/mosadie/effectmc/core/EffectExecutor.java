@@ -65,4 +65,6 @@ public interface EffectExecutor {
     String getSPWorldName();
 
     String getServerIP();
+
+    void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume);
 }
