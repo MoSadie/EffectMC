@@ -30,6 +30,11 @@ public class SendChatMessageEffect extends Effect {
         }
 
         String message = getPropAsString(args, "message");
+
+        if (message.toLowerCase().startsWith("/effectmc ")) {
+            return new EffectResult("Cannot trigger EffectMC commands.", EffectResult.Result.ERROR);
+        }
+
         core.getExecutor().log("Sending chat message: " + message);
         if (core.getExecutor().sendChatMessage(message))
             return new EffectResult("Sending chat message " + message, EffectResult.Result.SUCCESS);

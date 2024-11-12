@@ -2,6 +2,8 @@ package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
@@ -14,6 +16,7 @@ import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -110,7 +113,16 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
         LOGGER.info("Server start result: " + result);
 
         // Register command
-        ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("effectmc")
+        ClientCommandManager.DISPATCHER.register(clientCommand());
+
+        Header authHeader = new BasicHeader("Authorization", "Bearer " + MinecraftClient.getInstance().getSession().getAccessToken());
+        List<Header> headers = new ArrayList<>();
+        headers.add(authHeader);
+        authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
+    }
+
+    private LiteralArgumentBuilder<FabricClientCommandSource> clientCommand() {
+        return ClientCommandManager.literal("effectmc")
                 .then(ClientCommandManager.literal("trust").executes((context -> {
                     MinecraftClient.getInstance().send(core::setTrustFlag);
                     receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
@@ -159,15 +171,46 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
                     core.setExportFlag();
                     receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
                     return 0;
-                }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trust");
-                    return 0;
-                })));
+                }))).then(ClientCommandManager.literal("trigger").then(ClientCommandManager.argument("json", StringArgumentType.greedyString()).executes((context -> {
+                    String json = StringArgumentType.getString(context, "json");
+                    EffectRequest request = core.requestFromJson(json);
 
-        Header authHeader = new BasicHeader("Authorization", "Bearer " + MinecraftClient.getInstance().getSession().getAccessToken());
-        List<Header> headers = new ArrayList<>();
-        headers.add(authHeader);
-        authedClient = HttpClientBuilder.create().setDefaultHeaders(headers).build();
+                    if (request == null) {
+                        receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+                        return 0;
+                    }
+
+                    String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+                    Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+                    Effect.EffectResult result = core.triggerEffect(device, request);
+                    switch (result.result) {
+                        case SUCCESS:
+                            receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+                            break;
+                        case ERROR:
+                            receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+                            break;
+                        case UNAUTHORIZED:
+                            receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+                            break;
+                        case UNKNOWN:
+                            receiveChatMessage("[EffectMC] Unknown effect.");
+                            break;
+                        case SKIPPED:
+                            receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+                            break;
+                        case UNSUPPORTED:
+                            receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+                            break;
+                    }
+
+                    return 0;
+                })))).executes((context -> {
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
+                    return 0;
+                }));
     }
 
     @Override
