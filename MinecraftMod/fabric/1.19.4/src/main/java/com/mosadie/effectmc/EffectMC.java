@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
 import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.Device;
 import com.mosadie.effectmc.core.handler.DeviceType;
@@ -183,8 +185,32 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 					core.setExportFlag();
 					receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
 					return 0;
-				}))).executes((context -> {
-					receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect trust");
+				}))).then(ClientCommandManager.literal("trigger").then(ClientCommandManager.argument("json", StringArgumentType.greedyString()).executes((context -> {
+					String json = StringArgumentType.getString(context, "json");
+					EffectRequest request = core.requestFromJson(json);
+
+					if (request == null) {
+						receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+						return 0;
+					}
+
+					String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+					Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+					Effect.EffectResult result = core.triggerEffect(device, request);
+					switch (result.result) {
+						case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+						case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+						case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+						case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
+						case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+						case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+					}
+
+					return 0;
+				})))).executes((context -> {
+					receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
 					return 0;
 				})));
 	}

@@ -3,6 +3,7 @@ package com.mosadie.effectmc;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
@@ -12,6 +13,7 @@ import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
 import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
@@ -225,8 +227,32 @@ public class EffectMC implements EffectExecutor {
                     core.setExportFlag();
                     receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
                     return 0;
-                }))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trust");
+                }))).then(Commands.literal("trigger").then(Commands.argument("json", StringArgumentType.greedyString()).executes((context -> {
+                    String json = StringArgumentType.getString(context, "json");
+                    EffectRequest request = core.requestFromJson(json);
+
+                    if (request == null) {
+                        receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+                        return 0;
+                    }
+
+                    String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+                    Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+                    Effect.EffectResult result = core.triggerEffect(device, request);
+                    switch (result.result) {
+                        case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+                        case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+                        case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+                        case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
+                        case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+                        case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+                    }
+
+                    return 0;
+                })))).executes((context -> {
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");

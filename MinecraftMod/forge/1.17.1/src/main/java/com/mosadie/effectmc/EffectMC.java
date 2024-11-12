@@ -8,6 +8,7 @@ import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
 import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
@@ -166,9 +167,37 @@ public class EffectMC implements EffectExecutor {
             event.setCanceled(true);
             core.setExportFlag();
             receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
+        } else if (event.getMessage().equalsIgnoreCase("/effectmc trigger")) {
+            event.setCanceled(true);
+            receiveChatMessage("[EffectMC] Usage: /effectmc trigger <json>");
+            receiveChatMessage("[EffectMC] Use /effectmc exporteffect to generate the json.");
+        } else if (event.getMessage().startsWith("/effectmc trigger ")) {
+            event.setCanceled(true);
+            String json = event.getMessage().substring("/effectmc trigger ".length());
+
+            EffectRequest request = core.requestFromJson(json);
+
+            if (request == null) {
+                receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+                return;
+            }
+
+            String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+            Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+            Effect.EffectResult result = core.triggerEffect(device, request);
+            switch (result.result) {
+                case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+                case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+                case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+                case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
+                case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+                case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+            }
         } else if (event.getMessage().equalsIgnoreCase("/effectmc")) {
             event.setCanceled(true);
-            receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect,to trust");
+            receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
         }
     }
 
