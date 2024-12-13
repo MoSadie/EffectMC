@@ -1,5 +1,8 @@
 {
     "homepage": "https://github.com/MoSadie/EffectMC",
+    "1.21.4": {
+        "3.1.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v3.1.0"
+    },
     "1.21.3": {
         "3.1.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v3.1.0",
         "3.0.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v3.0.0"
@@ -95,6 +98,8 @@
         "1.0.0": "See https://github.com/MoSadie/EffectMC/releases/tag/v1.0.0"
     },
     "promos": {
+        "1.21.4-latest": "3.1.0",
+        "1.21.4-recommended": "3.1.0",
         "1.21.3-latest": "3.1.0",
         "1.21.3-recommended": "3.1.0",
         "1.21.1-latest": "3.1.0",
