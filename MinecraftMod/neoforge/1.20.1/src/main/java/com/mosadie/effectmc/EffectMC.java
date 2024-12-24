@@ -2,15 +2,11 @@ package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
-import com.mosadie.effectmc.core.effect.*;
-import com.mosadie.effectmc.core.effect.internal.Effect;
-import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -32,7 +28,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -45,7 +40,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.client.event.ClientChatEvent;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -113,7 +107,6 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Server start result: " + result);
 
         MinecraftForge.EVENT_BUS.addListener(this::registerClientCommand);
-        MinecraftForge.EVENT_BUS.addListener(this::listenForTranslation);
 
         Header authHeader = new BasicHeader("Authorization", "Bearer " + Minecraft.getInstance().getUser().getAccessToken());
         List<Header> headers = new ArrayList<>();
@@ -125,7 +118,7 @@ public class EffectMC implements EffectExecutor {
         LOGGER.info("Registering effectmc command.");
         event.getDispatcher().register(Commands.literal("effectmc")
                 .then(Commands.literal("trust").executes((context -> {
-                    Minecraft.getInstance().execute(core::setTrustFlag);
+                    Minecraft.getInstance().execute(core::setTrustNextRequest);
                     receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
                     return 0;
                 })))
@@ -168,70 +161,11 @@ public class EffectMC implements EffectExecutor {
                     showItemToast(NbtUtils.prettyPrint(tag), "Exported", Minecraft.getInstance().player.getMainHandItem().getDisplayName().getString());
                     receiveChatMessage("[EffectMC] Exported held item data to log file!");
                     return 0;
-                }))).then(Commands.literal("exporteffect").executes((context -> {
-                    core.setExportFlag();
-                    receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
-                    return 0;
-                }))).then(Commands.literal("trigger").then(Commands.argument("json", StringArgumentType.greedyString()).executes((context -> {
-                    String json = StringArgumentType.getString(context, "json");
-                    EffectRequest request = core.requestFromJson(json);
-
-                    if (request == null) {
-                        receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
-                        return 0;
-                    }
-
-                    String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
-
-                    Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
-
-                    Effect.EffectResult result = core.triggerEffect(device, request);
-                    switch (result.result) {
-                        case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
-                        case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
-                        case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
-                        case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
-                        case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
-                        case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
-                    }
-
-                    return 0;
-                })))).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
+                }))).executes((context -> {
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
-    }
-
-    public void listenForTranslation(ClientChatReceivedEvent event) {
-        Component component = event.getMessage();
-
-        if (component.getContents() instanceof TranslatableContents translationTextComponent) {
-
-            if (translationTextComponent.getKey().equals(EffectMCCore.TRANSLATION_TRIGGER_KEY)) {
-                event.setCanceled(true);
-
-                if (translationTextComponent.getArgs().length != 1) {
-                    log("Invalid length of args for translation trigger!");
-                    return;
-                }
-
-                String data = String.valueOf(translationTextComponent.getArgs()[0]);
-
-                EffectRequest request = core.requestFromJson(data);
-
-                if (request == null) {
-                    log("Invalid request json for translation trigger!");
-                    return;
-                }
-
-                String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
-
-                Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
-
-                core.triggerEffect(device, request);
-            }
-        }
     }
 
     @Override
@@ -272,7 +206,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setSkinLayer(SkinLayerEffect.SKIN_SECTION section, boolean visibility) {
+    public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
         Options options = Minecraft.getInstance().options;
 
         switch (section) {
@@ -315,7 +249,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean toggleSkinLayer(SkinLayerEffect.SKIN_SECTION section) {
+    public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
         Options options = Minecraft.getInstance().options;
         switch (section) {
 
@@ -404,7 +338,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean triggerDisconnect(DisconnectEffect.NEXT_SCREEN nextScreenType, String title, String message) {
+    public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
         Minecraft.getInstance().execute(() -> {
             if (Minecraft.getInstance().level != null) {
                 LOGGER.info("Disconnecting from world...");
@@ -473,9 +407,9 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public void showTrustPrompt(Device device) {
+    public void showTrustPrompt(String device) {
         Minecraft.getInstance().execute(() -> {
-            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
+            ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Component.literal("EffectMC - Trust Prompt"), Component.literal("Do you want to trust this device? (" + device + ")"));
             Minecraft.getInstance().setScreen(screen);
         });
     }
@@ -578,7 +512,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setSkin(URL skinUrl, SetSkinEffect.SKIN_TYPE skinType) {
+    public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
         if (skinUrl == null) {
             LOGGER.warn("Skin URL is null!");
             return false;
@@ -623,7 +557,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean openScreen(OpenScreenEffect.SCREEN screen) {
+    public boolean openScreen(OpenScreenHandler.SCREEN screen) {
         Minecraft.getInstance().execute(() -> {
             leaveIfNeeded();
 
@@ -657,7 +591,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setPOV(SetPovEffect.POV pov) {
+    public boolean setPOV(SetPovHandler.POV pov) {
         CameraType mcPov;
 
         switch (pov) {
@@ -703,7 +637,7 @@ public class EffectMC implements EffectExecutor {
     }
 
     @Override
-    public boolean setChatVisibility(ChatVisibilityEffect.VISIBILITY visibility) {
+    public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
         ChatVisiblity result;
         switch (visibility) {
             case SHOW:
@@ -761,53 +695,6 @@ public class EffectMC implements EffectExecutor {
 
         LOGGER.info("Attempted to get SP World Name, but no integrated server was found!");
         return null;
-    }
-
-    @Override
-    public void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume) {
-        Minecraft.getInstance().execute(() -> {
-
-            SoundSource mcSoundSource;
-
-            switch (category) {
-                case MASTER:
-                    mcSoundSource = SoundSource.MASTER;
-                    break;
-                case MUSIC:
-                    mcSoundSource = SoundSource.MUSIC;
-                    break;
-                case RECORDS:
-                    mcSoundSource = SoundSource.RECORDS;
-                    break;
-                case WEATHER:
-                    mcSoundSource = SoundSource.WEATHER;
-                    break;
-                case BLOCKS:
-                    mcSoundSource = SoundSource.BLOCKS;
-                    break;
-                case HOSTILE:
-                    mcSoundSource = SoundSource.HOSTILE;
-                    break;
-                case NEUTRAL:
-                    mcSoundSource = SoundSource.NEUTRAL;
-                    break;
-                case PLAYERS:
-                    mcSoundSource = SoundSource.PLAYERS;
-                    break;
-                case AMBIENT:
-                    mcSoundSource = SoundSource.AMBIENT;
-                    break;
-                case VOICE:
-                    mcSoundSource = SoundSource.VOICE;
-                    break;
-                default:
-                    LOGGER.error("Unknown volume category!");
-                    return;
-            }
-
-            Minecraft.getInstance().options.getSoundSourceOptionInstance(mcSoundSource).set(volume / 100.0d);
-            Minecraft.getInstance().options.save();
-        });
     }
 
     @Override

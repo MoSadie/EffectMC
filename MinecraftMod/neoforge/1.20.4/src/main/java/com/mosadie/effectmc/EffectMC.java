@@ -2,12 +2,14 @@ package com.mosadie.effectmc;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
 import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
 import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.Device;
 import com.mosadie.effectmc.core.handler.DeviceType;
@@ -166,8 +168,32 @@ public class EffectMC implements EffectExecutor {
                     core.setExportFlag();
                     receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
                     return 0;
-                })).executes((context -> {
-                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
+                })).then(Commands.literal("trigger").then(Commands.argument("json", StringArgumentType.greedyString()).executes((context -> {
+                    String json = StringArgumentType.getString(context, "json");
+                    EffectRequest request = core.requestFromJson(json);
+
+                    if (request == null) {
+                        receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+                        return 0;
+                    }
+
+                    String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+                    Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+                    Effect.EffectResult result = core.triggerEffect(device, request);
+                    switch (result.result) {
+                        case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+                        case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+                        case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+                        case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
+                        case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+                        case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+                    }
+
+                    return 0;
+                })))).executes((context -> {
+                    receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
                     return 0;
                 })));
         LOGGER.info("Registered effectmc command.");
@@ -177,29 +203,31 @@ public class EffectMC implements EffectExecutor {
     private void listenForTranslation(ClientChatReceivedEvent event) {
         Component component = event.getMessage();
 
-        ComponentContents contents = component.getContents();
-        if (contents instanceof TranslatableContents translatableContents && translatableContents.getKey().equals(EffectMCCore.TRANSLATION_TRIGGER_KEY)) {
-            event.setCanceled(true);
+        if (component.getContents() instanceof TranslatableContents translationTextComponent) {
 
-            if (translatableContents.getArgs().length != 1) {
-                log("Invalid length of args for translation trigger!");
-                return;
+            if (translationTextComponent.getKey().equals(EffectMCCore.TRANSLATION_TRIGGER_KEY)) {
+                event.setCanceled(true);
+
+                if (translationTextComponent.getArgs().length != 1) {
+                    log("Invalid length of args for translation trigger!");
+                    return;
+                }
+
+                String data = String.valueOf(translationTextComponent.getArgs()[0]);
+
+                EffectRequest request = core.requestFromJson(data);
+
+                if (request == null) {
+                    log("Invalid request json for translation trigger!");
+                    return;
+                }
+
+                String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+                Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+                core.triggerEffect(device, request);
             }
-
-            String data = String.valueOf(translatableContents.getArgs()[0]);
-
-            EffectRequest request = core.requestFromJson(data);
-
-            if (request == null) {
-                log("Invalid request json for translation trigger!");
-                return;
-            }
-
-            String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
-
-            Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
-
-            core.triggerEffect(device, request);
         }
     }
 
@@ -733,6 +761,53 @@ public class EffectMC implements EffectExecutor {
 
         LOGGER.info("Failed to get Server IP!");
         return null;
+    }
+
+    @Override
+    public void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume) {
+        Minecraft.getInstance().execute(() -> {
+
+            SoundSource mcSoundSource;
+
+            switch (category) {
+                case MASTER:
+                    mcSoundSource = SoundSource.MASTER;
+                    break;
+                case MUSIC:
+                    mcSoundSource = SoundSource.MUSIC;
+                    break;
+                case RECORDS:
+                    mcSoundSource = SoundSource.RECORDS;
+                    break;
+                case WEATHER:
+                    mcSoundSource = SoundSource.WEATHER;
+                    break;
+                case BLOCKS:
+                    mcSoundSource = SoundSource.BLOCKS;
+                    break;
+                case HOSTILE:
+                    mcSoundSource = SoundSource.HOSTILE;
+                    break;
+                case NEUTRAL:
+                    mcSoundSource = SoundSource.NEUTRAL;
+                    break;
+                case PLAYERS:
+                    mcSoundSource = SoundSource.PLAYERS;
+                    break;
+                case AMBIENT:
+                    mcSoundSource = SoundSource.AMBIENT;
+                    break;
+                case VOICE:
+                    mcSoundSource = SoundSource.VOICE;
+                    break;
+                default:
+                    LOGGER.error("Unknown volume category!");
+                    return;
+            }
+
+            Minecraft.getInstance().options.getSoundSourceOptionInstance(mcSoundSource).set(volume / 100.0d);
+            Minecraft.getInstance().options.save();
+        });
     }
 
     private void connectIfTrue(boolean connect) {
