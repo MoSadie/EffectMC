@@ -3,11 +3,15 @@ package com.mosadie.effectmc;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.text2speech.Narrator;
 import com.mosadie.effectmc.core.EffectExecutor;
 import com.mosadie.effectmc.core.EffectMCCore;
 import com.mosadie.effectmc.core.WorldState;
+import com.mosadie.effectmc.core.effect.*;
+import com.mosadie.effectmc.core.effect.internal.Effect;
+import com.mosadie.effectmc.core.effect.internal.EffectRequest;
 import com.mosadie.effectmc.core.handler.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -123,7 +127,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 		LOGGER.info("Registering Client Command");
 		dispatcher.register(ClientCommandManager.literal("effectmc")
 				.then(ClientCommandManager.literal("trust").executes((context -> {
-					MinecraftClient.getInstance().send(core::setTrustNextRequest);
+					MinecraftClient.getInstance().send(core::setTrustFlag);
 					receiveChatMessage("[EffectMC] Now prompting to trust the next request sent.");
 					return 0;
 				})))
@@ -166,8 +170,36 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 					showItemToast(tag.toString(), "Exported", MinecraftClient.getInstance().player.getMainHandStack().getName().getString());
 					receiveChatMessage("[EffectMC] Exported held item data to log file!");
 					return 0;
-				}))).executes((context -> {
-					receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, trust");
+				}))).then(ClientCommandManager.literal("exporteffect").executes((context -> {
+					core.setExportFlag();
+					receiveChatMessage("[EffectMC] Will export the next triggered effect as JSON to the current log file.");
+					return 0;
+				}))).then(ClientCommandManager.literal("trigger").then(ClientCommandManager.argument("json", StringArgumentType.greedyString()).executes((context -> {
+					String json = StringArgumentType.getString(context, "json");
+					EffectRequest request = core.requestFromJson(json);
+
+					if (request == null) {
+						receiveChatMessage("[EffectMC] Invalid JSON for effect request!");
+						return 0;
+					}
+
+					String worldId = getWorldState() == WorldState.SINGLEPLAYER ? getSPWorldName() : getServerIP();
+
+					Device device = new Device(worldId, getWorldState() == WorldState.SINGLEPLAYER ? DeviceType.WORLD : DeviceType.SERVER);
+
+					Effect.EffectResult result = core.triggerEffect(device, request);
+					switch (result.result) {
+						case SUCCESS -> receiveChatMessage("[EffectMC] Effect \"" + request.getEffectId() + "\" triggered successfully: " + result.message);
+						case ERROR -> receiveChatMessage("[EffectMC] Error triggering effect: " + result.message);
+						case UNAUTHORIZED -> receiveChatMessage("[EffectMC] World/Server not trusted. Use /effectmc trust to trust the current world/server.");
+						case UNKNOWN -> receiveChatMessage("[EffectMC] Unknown effect.");
+						case SKIPPED -> receiveChatMessage("[EffectMC] Effect skipped: " + result.message);
+						case UNSUPPORTED -> receiveChatMessage("[EffectMC] Effect unsupported: " + result.message);
+					}
+
+					return 0;
+				})))).executes((context -> {
+					receiveChatMessage("[EffectMC] Available subcommands: exportbook, exportitem, exporteffect, trigger, trust");
 					return 0;
 				})));
 	}
@@ -201,7 +233,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean setSkinLayer(SkinLayerHandler.SKIN_SECTION section, boolean visibility) {
+	public boolean setSkinLayer(SkinLayerEffect.SKIN_SECTION section, boolean visibility) {
 		GameOptions options = MinecraftClient.getInstance().options;
 
 		switch (section) {
@@ -243,7 +275,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean toggleSkinLayer(SkinLayerHandler.SKIN_SECTION section) {
+	public boolean toggleSkinLayer(SkinLayerEffect.SKIN_SECTION section) {
 		GameOptions options = MinecraftClient.getInstance().options;
 
 		switch (section) {
@@ -334,15 +366,15 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public void showTrustPrompt(String device) {
+	public void showTrustPrompt(Device device) {
 		MinecraftClient.getInstance().send(() -> {
-			ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device? (" + device + ")"));
+			ConfirmScreen screen = new ConfirmScreen(new EffectMCCore.TrustBooleanConsumer(device, core), Text.of("EffectMC - Trust Prompt"), Text.of("Do you want to trust this device?\n(Type: " + device.getType() + (device.getType() == DeviceType.OTHER ? " Device Id:" + device.getId() : "") + ")"));
 			MinecraftClient.getInstance().setScreen(screen);
 		});
 	}
 
 	@Override
-	public boolean triggerDisconnect(DisconnectHandler.NEXT_SCREEN nextScreenType, String title, String message) {
+	public boolean triggerDisconnect(DisconnectEffect.NEXT_SCREEN nextScreenType, String title, String message) {
 		MinecraftClient.getInstance().send(() -> {
 			leaveIfNeeded();
 
@@ -507,7 +539,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean setSkin(URL skinUrl, SetSkinHandler.SKIN_TYPE skinType) {
+	public boolean setSkin(URL skinUrl, SetSkinEffect.SKIN_TYPE skinType) {
 		if (skinUrl == null) {
 			LOGGER.warn("Skin URL is null!");
 			return false;
@@ -552,7 +584,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean openScreen(OpenScreenHandler.SCREEN screen) {
+	public boolean openScreen(OpenScreenEffect.SCREEN screen) {
 		MinecraftClient.getInstance().execute(() -> {
 			leaveIfNeeded();
 
@@ -586,7 +618,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean setPOV(SetPovHandler.POV pov) {
+	public boolean setPOV(SetPovEffect.POV pov) {
 		Perspective mcPov;
 
 		switch (pov) {
@@ -632,7 +664,7 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 	}
 
 	@Override
-	public boolean setChatVisibility(ChatVisibilityHandler.VISIBILITY visibility) {
+	public boolean setChatVisibility(ChatVisibilityEffect.VISIBILITY visibility) {
 		ChatVisibility result;
 		switch (visibility) {
 			case SHOW:
@@ -704,6 +736,62 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 		LOGGER.info("Failed to get Server IP!");
 		return null;
+	}
+
+	@Override
+	public void setVolume(SetVolumeEffect.VOLUME_CATEGORIES category, int volume) {
+		MinecraftClient.getInstance().execute(() -> {
+			SoundCategory mcCategory;
+
+			switch (category) {
+				case MASTER:
+					mcCategory = SoundCategory.MASTER;
+					break;
+
+				case MUSIC:
+					mcCategory = SoundCategory.MUSIC;
+					break;
+
+				case RECORDS:
+					mcCategory = SoundCategory.RECORDS;
+					break;
+
+				case WEATHER:
+					mcCategory = SoundCategory.WEATHER;
+					break;
+
+				case BLOCKS:
+					mcCategory = SoundCategory.BLOCKS;
+					break;
+
+				case HOSTILE:
+					mcCategory = SoundCategory.HOSTILE;
+					break;
+
+				case NEUTRAL:
+					mcCategory = SoundCategory.NEUTRAL;
+					break;
+
+				case PLAYERS:
+					mcCategory = SoundCategory.PLAYERS;
+					break;
+
+				case AMBIENT:
+					mcCategory = SoundCategory.AMBIENT;
+					break;
+
+				case VOICE:
+					mcCategory = SoundCategory.VOICE;
+					break;
+
+				default:
+					LOGGER.error("Unknown volume category!");
+					return;
+			}
+
+			MinecraftClient.getInstance().options.getSoundVolumeOption(mcCategory).setValue(volume / 100.0d);
+			MinecraftClient.getInstance().options.write();
+		});
 	}
 
 	private void connectIfTrue(boolean connect) {
