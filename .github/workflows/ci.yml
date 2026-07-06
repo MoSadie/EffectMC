@@ -222,7 +222,7 @@ jobs:
       fail-fast: false
       matrix:
         mod-loader: ['fabric', 'neoforge']
-        mc-version: ["26.1"]
+        mc-version: ["26.1", "26.2"]
                 
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
