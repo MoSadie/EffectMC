@@ -401,6 +401,11 @@ public class EffectMC implements EffectExecutor {
     @Override
     public boolean sendChatMessage(String message) {
         if (Minecraft.getInstance().player != null) {
+            if (Minecraft.getInstance().options.chatVisibility().get() == ChatVisiblity.HIDDEN) { // As of v3.1.0 discovered hidden chat & send message breaks the signature chain. Bandaid fix.
+                LOGGER.info("Chat is hidden, not sending message.");
+                return false;
+            }
+
             if (message.startsWith("/")) {
                 LOGGER.info("Sending command message: " + message);
                 Minecraft.getInstance().player.connection.sendCommand(message.substring(1));

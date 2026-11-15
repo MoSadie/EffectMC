@@ -369,6 +369,11 @@ public class EffectMC implements ModInitializer, ClientModInitializer, EffectExe
 
 	@Override
 	public boolean sendChatMessage(String message) {
+		if (Minecraft.getInstance().options.chatVisibility().get() == ChatVisiblity.HIDDEN) { // As of v3.1.0 discovered hidden chat & send message breaks the signature chain. Bandaid fix.
+			LOGGER.info("Chat is hidden, not sending message.");
+			return false;
+		}
+
 		if (Minecraft.getInstance().player != null) {
 			if (message.startsWith("/")) {
 				LOGGER.info("Sending command message: " + message);
